@@ -1,0 +1,5 @@
+.DS_Store
+*.zip
+DeepClaw/build/
+DeepClaw/*.autosave
+__pycache__/
