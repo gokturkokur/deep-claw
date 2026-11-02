@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { DESIGN } from '../config/game';
 import { t } from '../i18n';
+import { mt } from '../i18n/magnet';
 import { services } from '../services';
 import { createBackdrop, type Backdrop } from '../ui/Backdrop';
 import { Button, createConfirm } from '../ui/components';
@@ -80,6 +81,18 @@ export class MainMenu extends Phaser.Scene {
       tint: COLORS.green,
       onClick: () => goTo(this, 'LevelSelect'),
     }).setDepth(20);
+
+    // prototype entry (separate mode, does not touch the save)
+    new Button(this, cx, 1156, {
+      w: 380,
+      h: 96,
+      label: mt('menuButton'),
+      fontSize: 38,
+      tint: COLORS.red,
+      onClick: () => goTo(this, 'MagnetGame'),
+    })
+      .setDepth(20)
+      .setName('magnetTest');
 
     // bottom corners: sound toggle and settings
     const muted = () => save.data.settings.music <= 0.001 && save.data.settings.sfx <= 0.001;

@@ -6,7 +6,7 @@ export interface Pt {
 }
 
 /** Open the game in debug mode (exposes window.__game and window.__dc). */
-export async function open(page: Page, query = '&norender=1'): Promise<string[]> {
+export async function open(page: Page, query = '&norender=1', scene = 'MainMenu'): Promise<string[]> {
   const errors: string[] = [];
   page.on('console', (m) => {
     if (m.type() === 'error') errors.push(m.text());
@@ -16,7 +16,7 @@ export async function open(page: Page, query = '&norender=1'): Promise<string[]>
     if (r.status() >= 400) errors.push(`HTTP ${r.status()} ${r.url()}`);
   });
   await page.goto('/?debug=1' + query);
-  await waitScene(page, 'MainMenu');
+  await waitScene(page, scene);
   return errors;
 }
 
