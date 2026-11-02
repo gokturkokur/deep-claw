@@ -25,3 +25,12 @@ An original portrait mobile arcade game in the "swinging claw mining" genre, bui
 
 ## Status (update this section when it changes)
 - 2026-11-02: repo restructured for the Phaser build. `MASTER_PROMPT.md` written. No game code yet.
+- 2026-11-02: first full build done on branch `claude/sharp-turing-k259yo` (PR into `main`): all 8 screens, 20 levels, shop with 5 items, save system, original SVG art and synthesized audio, unit tests (Vitest) and browser tests (Playwright). See `docs/REPORT.md` for what is done, test results and known gaps.
+
+## How things are organised
+- Pure game logic (no Phaser, unit tested): `src/systems/` (Claw, Collision, Session, Economy, Shop, Progress, Save, Balance). Phaser scenes only draw and forward input.
+- All numbers: `src/config/game.ts` (feel, layout) and `src/config/economy.ts` (values, weights, prices, effects).
+- Levels: `src/data/levels.ts`. After changing a level run `npx vite-node tools/balance-report.ts` and `npm test` (balance check).
+- Art / sound files: `public/assets/`, listed in `src/assets/manifest.ts` and `docs/ASSETS.md`. The generators in `tools/` made the first version only.
+- Test hooks: open the game with `?debug=1` to get `window.__game` and `window.__dc` (session, services). Playwright tests use them.
+- Software-rendered headless Chromium runs the game at about 6 fps, so browser tests step the session by code (`stepSession`) instead of waiting for real time.

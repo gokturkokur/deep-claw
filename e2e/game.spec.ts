@@ -60,10 +60,10 @@ test.describe('Deep Claw', () => {
     await stepUntil(page, 'swinging');
     const st = await sessionState(page);
     expect(st.earned).toBe(250);
-    await page.waitForTimeout(1500);
-    // the HUD shows the new amount
-    const hud = await page.evaluate(() => (window as any).__game.scene.getScene('Game').moneyText.text);
-    expect(hud).toBe('$250');
+    // the HUD counts up to the new amount
+    await expect
+      .poll(() => page.evaluate(() => (window as any).__game.scene.getScene('Game').moneyText.text), { timeout: 40_000 })
+      .toBe('$250');
     expect(errors).toEqual([]);
   });
 
