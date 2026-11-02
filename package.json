@@ -11,7 +11,8 @@
     "test": "vitest run",
     "test:e2e": "playwright test",
     "assets:art": "node tools/make-art.mjs",
-    "assets:audio": "node tools/make-audio.mjs"
+    "assets:audio": "node tools/make-audio.mjs",
+    "assets:magnet-art": "node tools/make-magnet-art.mjs"
   },
   "devDependencies": {
     "@fontsource/lilita-one": "^5.3.0",

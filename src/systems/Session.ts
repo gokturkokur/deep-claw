@@ -4,6 +4,7 @@ import { BEETLE_DIAMOND_VALUE, BAG, OBJECTS, SHOP, type ObjType } from '../confi
 import type { LevelDef } from '../data/levels';
 import { Claw, type ClawHost } from './Claw';
 import { sweep, type Shape } from './Collision';
+import { chainBlast } from './Explosion';
 import { baseStrength, collectValue, rollBag, starsFor, NO_MODIFIERS, type BagOutcome, type Modifiers } from './Economy';
 import { makeRng, randomSeed, type Rng } from './Rng';
 
@@ -275,22 +276,10 @@ export class Session implements ClawHost {
 
   /** Powder keg: destroys everything within the radius, chaining through other kegs. */
   private explode(first: Entity): void {
-    const queue: Entity[] = [first];
-    first.alive = false;
-    const r2 = KEG.blastRadius * KEG.blastRadius;
-    while (queue.length) {
-      const keg = queue.shift() as Entity;
-      this.events.push({ type: 'explode', id: keg.id, x: keg.x, y: keg.y });
-      for (const o of this.entities) {
-        if (!o.alive || o === keg) continue;
-        const dx = o.x - keg.x;
-        const dy = o.y - keg.y;
-        if (dx * dx + dy * dy > r2) continue;
-        o.alive = false;
-        if (o.type === 'keg') queue.push(o);
-        else this.events.push({ type: 'destroyed', id: o.id, x: o.x, y: o.y });
-      }
-    }
+    chainBlast(this.entities, first, KEG.blastRadius, (e) => e.type === 'keg', {
+      explode: (k) => this.events.push({ type: 'explode', id: k.id, x: k.x, y: k.y }),
+      destroyed: (o) => this.events.push({ type: 'destroyed', id: o.id, x: o.x, y: o.y }),
+    });
     this.shapesDirty = true;
   }
 

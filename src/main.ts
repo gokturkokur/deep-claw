@@ -5,6 +5,7 @@ import { Game } from './scenes/Game';
 import { GameOver } from './scenes/GameOver';
 import { LevelComplete } from './scenes/LevelComplete';
 import { LevelSelect } from './scenes/LevelSelect';
+import { MagnetGame } from './scenes/MagnetGame';
 import { MainMenu } from './scenes/MainMenu';
 import { Pause } from './scenes/Pause';
 import { Preload } from './scenes/Preload';
@@ -28,5 +29,5 @@ new Phaser.Game({
   render: { antialias: true, powerPreference: 'high-performance', roundPixels: false },
   input: { activePointers: 2 },
   fps: { target: 60 },
-  scene: [Boot, Preload, MainMenu, LevelSelect, Game, Pause, Settings, LevelComplete, GameOver, Shop],
+  scene: [Boot, Preload, MainMenu, LevelSelect, Game, Pause, Settings, LevelComplete, GameOver, Shop, MagnetGame],
 });

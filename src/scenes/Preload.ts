@@ -31,6 +31,8 @@ export class Preload extends Phaser.Scene {
   }
 
   create(): void {
-    this.scene.start('MainMenu');
+    // ?mode=magnet opens the magnet prototype directly (the menu button "Magnet Test" does the same)
+    const magnet = new URLSearchParams(location.search).get('mode') === 'magnet';
+    this.scene.start(magnet ? 'MagnetGame' : 'MainMenu');
   }
 }

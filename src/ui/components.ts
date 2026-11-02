@@ -135,6 +135,7 @@ export class Slider extends Phaser.GameObjects.Container {
     initial: number,
     private readonly onChange: (v: number) => void,
     private readonly onRelease: () => void,
+    hitH = 100,
   ) {
     super(scene, x, y);
     this.trackW = w;
@@ -143,7 +144,7 @@ export class Slider extends Phaser.GameObjects.Container {
     this.fill = scene.add.nineslice(-w / 2, 0, 'slider_fill', undefined, w, 36, 18, 18, 12, 12).setOrigin(0, 0.5);
     this.knob = scene.add.image(0, 0, 'slider_knob').setDisplaySize(64, 64);
     this.add([track, this.fill, this.knob]);
-    this.setSize(w + 64, 100);
+    this.setSize(w + 64, hitH);
     this.setInteractive({ useHandCursor: true, draggable: false });
     this.on('pointerdown', (p: Phaser.Input.Pointer) => {
       this.dragging = true;
@@ -169,6 +170,12 @@ export class Slider extends Phaser.GameObjects.Container {
     this.value = Phaser.Math.Clamp((lx + this.trackW / 2) / this.trackW, 0, 1);
     this.layoutKnob();
     this.onChange(this.value);
+  }
+
+  /** Move the knob from code (0..1) without calling onChange. */
+  setValue(v: number): void {
+    this.value = Phaser.Math.Clamp(v, 0, 1);
+    this.layoutKnob();
   }
 
   private layoutKnob(): void {

@@ -1,4 +1,4 @@
-import { CLAW, type ClawState } from '../config/game';
+import { CLAW, type ClawConfig, type ClawState } from '../config/game';
 
 /** Explicit, exhaustive transition table. Anything else throws. */
 export const TRANSITIONS: Record<ClawState, readonly ClawState[]> = {
@@ -25,6 +25,12 @@ export interface ClawHost {
   hookable(id: number): boolean;
   /** Multiplier on pull speed (Turbo oil, strength bag...). */
   strength(): number;
+  /**
+   * Optional: total weight of everything riding on the claw when it carries more than one thing
+   * (magnet mode). If defined it replaces the single hooked object's weight in the retract formula;
+   * 0 means "empty". Deep Claw does not implement it.
+   */
+  carriedWeight?(): number;
 }
 
 const DEG = Math.PI / 180;
@@ -60,7 +66,7 @@ export class Claw {
   constructor(
     readonly pivotX: number,
     readonly pivotY: number,
-    private readonly cfg = CLAW,
+    private readonly cfg: ClawConfig = CLAW,
   ) {
     this.length = cfg.homeLength;
     this.updateTip();
@@ -100,6 +106,17 @@ export class Claw {
     this.prevTipX = this.tipX;
     this.prevTipY = this.tipY;
     this.events.push('launched');
+    return true;
+  }
+
+  /**
+   * Ends a launch early without a collision (magnet mode: load is full, or the first item stuck).
+   * Goes through the normal 'missed' -> 'retracting' path, so no new states are needed.
+   */
+  recall(): boolean {
+    if (this.state !== 'launching') return false;
+    this.hookedId = -1;
+    this.transition('missed');
     return true;
   }
 
@@ -180,7 +197,10 @@ export class Claw {
       }
       case 'retracting': {
         let v: number = this.cfg.emptyRetractSpeed;
-        if (this.hookedId >= 0) {
+        const load = host.carriedWeight ? host.carriedWeight() : 0;
+        if (load > 0) {
+          v = Math.max(this.cfg.minRetractSpeed, (this.cfg.baseRetractSpeed * host.strength()) / Math.max(0.1, load));
+        } else if (this.hookedId >= 0) {
           const w = Math.max(0.1, host.weightOf(this.hookedId));
           v = Math.max(this.cfg.minRetractSpeed, (this.cfg.baseRetractSpeed * host.strength()) / w);
         }
