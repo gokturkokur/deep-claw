@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { SAVE, SHOP } from '../src/config/economy';
+import { ITEMS, SAVE, SHOP } from '../src/config/economy';
 import { LEVELS } from '../src/data/levels';
 import { starsFor, rollBag, bagExpectedValue, NO_MODIFIERS } from '../src/systems/Economy';
 import { commitOutcome, leaveShop } from '../src/systems/Progress';
@@ -14,21 +14,22 @@ describe('shop', () => {
     expect(a[0].id).toBe('blastCap');
     expect(rollShop(42, 3)).toEqual(a);
     const ids = new Set<string>();
-    for (let seed = 0; seed < 40; seed++) rollShop(seed, 1).forEach((o) => ids.add(o.id));
-    expect(ids.size).toBe(5); // every item can show up
+    for (let seed = 0; seed < 200; seed++) rollShop(seed, 1).forEach((o) => ids.add(o.id));
+    expect(ids.size).toBe(8); // every item can show up
   });
 
-  it('prices stay inside the configured ranges', () => {
+  it('prices stay inside the configured ranges and are expensive', () => {
     for (let seed = 0; seed < 100; seed++) {
       for (const o of rollShop(seed, 10)) {
-        if (o.id === 'turbo') expect(o.price).toBeGreaterThanOrEqual(300), expect(o.price).toBeLessThanOrEqual(500);
-        if (o.id === 'lantern') expect(o.price).toBeGreaterThanOrEqual(200), expect(o.price).toBeLessThanOrEqual(400);
-        if (o.id === 'gemLens') expect(o.price).toBeGreaterThanOrEqual(350), expect(o.price).toBeLessThanOrEqual(600);
-        if (o.id === 'crusher') expect(o.price).toBeGreaterThanOrEqual(50), expect(o.price).toBeLessThanOrEqual(150);
+        const def = ITEMS[o.id];
+        if (o.id === 'blastCap') continue;
+        expect(o.price).toBeGreaterThanOrEqual(def.priceMin);
+        expect(o.price).toBeLessThanOrEqual(def.priceMax);
       }
     }
-    expect(blastCapPrice(1)).toBe(150);
-    expect(blastCapPrice(100)).toBe(250);
+    expect(blastCapPrice(1)).toBe(400);
+    expect(blastCapPrice(100)).toBe(900);
+    expect(ITEMS.extraMiner.priceMin).toBeGreaterThanOrEqual(3000);
   });
 
   it('cannot buy without money', () => {
@@ -41,14 +42,14 @@ describe('shop', () => {
 
   it('Blast Caps stack, boosts are bought once', () => {
     const save = defaultSave();
-    save.wallet = 1000;
+    save.wallet = 2000;
     expect(buy(save, { id: 'blastCap', price: 150 }).ok).toBe(true);
     expect(buy(save, { id: 'blastCap', price: 150 }).ok).toBe(true);
     expect(save.inventory.blastCaps).toBe(2);
-    expect(save.wallet).toBe(700);
+    expect(save.wallet).toBe(1700);
     expect(buy(save, { id: 'turbo', price: 300 }).ok).toBe(true);
     expect(buy(save, { id: 'turbo', price: 300 })).toEqual({ ok: false, reason: 'owned' });
-    expect(save.wallet).toBe(400);
+    expect(save.wallet).toBe(1400);
     expect(activeModifiers(save).turbo).toBe(true);
   });
 
@@ -68,7 +69,7 @@ describe('progress and one-level effects', () => {
     const t = LEVELS[0].target;
     const r = commitOutcome(save, won(1, Math.ceil(t * 1.3)), 7)!;
     expect(r.stars).toBe(2);
-    expect(save.wallet).toBe(Math.ceil(t * 1.3));
+    expect(save.wallet).toBe(Math.round(Math.ceil(t * 1.3) * SHOP.walletShare));
     expect(save.unlockedLevel).toBe(2);
     expect(save.currentLevel).toBe(2);
     expect(save.phase).toBe('shop');

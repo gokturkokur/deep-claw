@@ -33,7 +33,7 @@ Fonts: the game uses **Lilita One** (SIL Open Font License, bundled in `src/font
 | `deco_fossil` | `public/assets/images/deco_fossil.svg` | 120 x 70 | center | 1 | Fossil ribs decoration in the soil |
 | `deco_roots` | `public/assets/images/deco_roots.svg` | 110 x 90 | center | 1 | Tree roots decoration in the soil |
 | `deco_sun` | `public/assets/images/deco_sun.svg` | 180 x 180 | center | 1 | Low sun glow |
-| `diamond` | `public/assets/images/diamond.svg` | 76 x 76 | center | 1 (sparkle added in code) | Diamond ($600) |
+| `diamond` | `public/assets/images/diamond.svg` | 64 x 52 | center | 1 (sparkle added in code) | Diamond ($600) |
 | `drop` | `public/assets/images/drop.svg` | 20 x 30 | center | 1 | Water drip particle |
 | `dust` | `public/assets/images/dust.svg` | 24 x 24 | center | 1 | Soft dust mote particle |
 | `glow` | `public/assets/images/glow.svg` | 256 x 256 | center | 1 | Warm lantern glow, additive blend |
@@ -47,6 +47,9 @@ Fonts: the game uses **Lilita One** (SIL Open Font License, bundled in `src/font
 | `icon_crusher` | `public/assets/images/icon_crusher.svg` | 64 x 64 | center | 1 | Ore Crusher icon (hammer) |
 | `icon_gear` | `public/assets/images/icon_gear.svg` | 64 x 64 | center | 1 | Settings icon |
 | `icon_gem` | `public/assets/images/icon_gem.svg` | 64 x 64 | center | 1 | Gem Lens icon (magnifier with gem) |
+| `icon_hourglass` | `public/assets/images/icon_hourglass.svg` | 64 x 64 | center | 1 | Hourglass icon |
+| `icon_goldrush` | `public/assets/images/icon_goldrush.svg` | 64 x 64 | center | 1 | Gold Fever icon |
+| `icon_miner` | `public/assets/images/icon_miner.svg` | 64 x 64 | center | 1 | Extra Miner icon |
 | `icon_lantern` | `public/assets/images/icon_lantern.svg` | 64 x 64 | center | 1 | Lucky Lantern icon |
 | `icon_lock` | `public/assets/images/icon_lock.svg` | 64 x 64 | center | 1 | Locked level icon |
 | `icon_mute` | `public/assets/images/icon_mute.svg` | 64 x 64 | center | 1 | Sound off icon |

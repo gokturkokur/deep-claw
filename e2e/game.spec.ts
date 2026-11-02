@@ -79,7 +79,7 @@ test.describe('Deep Claw', () => {
     await stepSession(page, 0.5);
     await waitScene(page, 'LevelComplete');
     let save = await saveData(page);
-    expect(save.wallet).toBeGreaterThanOrEqual(1400);
+    expect(save.wallet).toBeGreaterThanOrEqual(800);
     expect(save.phase).toBe('shop');
     const walletBefore = save.wallet;
     await clickButton(page, 'To the shop');

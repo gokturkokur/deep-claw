@@ -7,14 +7,14 @@
 - Kanca durum makinesi (Swinging, Launching, Hooked, Missed, Retracting, Collecting), süpürmeli (swept) çarpışma, dt en fazla 50 ms.
 - 9 nesne türü: altın (3 boy), elmas, kaya (2 boy), gizemli torba, barut fıçısı (zincirleme patlama), böcek (hareketli).
 - 20 bölüm (`src/data/levels.ts`), 60 sn, hedef, 1-2-3 yıldız, denge kontrolü.
-- Dükkân: Patlatıcı Kapsül (kalıcı), Turbo Vinç Yağı, Şanslı Fener, Mücevher Merceği, Cevher Ezici (sadece sonraki bölüm). Rastgele stok.
+- Dükkân: 8 eşya. Patlatıcı Kapsül (kalıcı); Turbo Vinç Yağı, Şanslı Fener, Mücevher Merceği, Cevher Ezici, Kum Saati (+15 sn), Altın Ateşi (altın x1,5), Yardımcı Madenci (7 sn'de bir en yakın altını alır) sadece sonraki bölüm için. Her ziyarette 4 boost + Kapsül görünür. Fiyatlar yüksek (300-4500).
 - Kayıt: localStorage, sürümlü JSON, bozuk/eski kayıt güvenli. İngilizce / Türkçe.
 - Orijinal SVG görseller (`public/assets/images`) ve sentezlenmiş sesler (`public/assets/audio`), tek manifest.
 - Sayfa arka plana gidince otomatik duraklama ve ses kısma.
 
 ## Test sonuçları
 
-- Birim testleri (Vitest): **106 test geçti** (kanca, çarpışma, oturum, ekonomi, dükkân, kayıt, bölüm geçerliliği, bölüm dengesi).
+- Birim testleri (Vitest): **109 test geçti** (kanca, çarpışma, oturum, ekonomi, dükkân, kayıt, bölüm geçerliliği, bölüm dengesi).
 - Tarayıcı testleri (Playwright, Chromium): **17 test geçti** (açılış, konsol hatası yok, dokunuşla fırlatma, HUD düğmesi fırlatmıyor, toplama, kazan-dükkân-satın al-sonraki bölüm, yeniden yükle-Devam, kaybet-yeniden dene, Patlatıcı, dil, 5 ekran boyutu için düzen kontrolü, ekran galerisi).
 - Ekran görüntüleri: `docs/screenshots/` (360x640, 390x844, 412x915, 768x1024, 1280x720). Siyah bant yok, HUD ekran içinde ve üst üste binmiyor.
 
@@ -32,3 +32,6 @@
 ## Sonraki fikirler
 
 Daha fazla bölüm, gerçek ses ve çizimler, reklam/IAP yok ama istenirse eklenebilir, yüksek DPI doku, başarımlar, günlük ödül.
+
+## Ekonomi notu
+Bir bölümü ilk kez geçince kazancın %60'ı cüzdana girer (`SHOP.walletShare`), kalanı işletme gideri sayılır. Fiyatlar `src/config/economy.ts` içinde; sayıları oradan değiştirmek yeterli.

@@ -102,7 +102,7 @@ test('screens gallery (shop, level select, complete, game over, pause, settings)
     const s = d.services.save.data;
     s.unlockedLevel = 8;
     s.currentLevel = 8;
-    s.wallet = 820;
+    s.wallet = 2820;
     s.hasProgress = true;
     s.inventory.blastCaps = 2;
     s.levels = { '1': { stars: 3, best: 1900 }, '2': { stars: 2, best: 2100 }, '3': { stars: 1, best: 1800 }, '4': { stars: 3, best: 3100 }, '5': { stars: 2, best: 2900 }, '6': { stars: 1, best: 2600 }, '7': { stars: 2, best: 3000 } };

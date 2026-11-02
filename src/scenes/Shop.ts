@@ -53,9 +53,9 @@ export class Shop extends Phaser.Scene {
     this.floats = new FloatingTexts(this, 4, 60);
 
     const offers = rollShop(shop.seed, shop.afterLevel);
-    const cardH = 172;
-    const gap = 16;
-    const y0 = topY + 330;
+    const cardH = 146;
+    const gap = 10;
+    const y0 = topY + 296;
     offers.forEach((offer, i) => this.buildRow(offer, cx, y0 + i * (cardH + gap), cardH));
 
     const finished = shop.afterLevel >= LEVELS.length;
@@ -86,21 +86,21 @@ export class Shop extends Phaser.Scene {
     c.add(panel(this, cx, y, 660, h));
     const icon = IMAGES.icon_blast; // all icons share the 64x64 size
     c.add(this.add.image(cx - 270, y, ITEMS[id].icon).setDisplaySize(icon.w * 1.45, icon.h * 1.45));
-    c.add(txt(this, cx - 205, y - 46, text.name, 34, { originX: 0, color: COLORS.textGold, strokeW: 5, wrap: 270, align: 'left' }));
-    c.add(txt(this, cx - 205, y + 20, text.desc, 21, { originX: 0, strokeW: 3, wrap: 290, align: 'left', shadow: false }));
-    const owned = ITEMS[id].kind === 'stack' ? txt(this, cx + 232, y + 66, '', 24, { color: COLORS.textGreen, strokeW: 4 }) : undefined;
+    c.add(txt(this, cx - 205, y - 42, text.name, 32, { originX: 0, color: COLORS.textGold, strokeW: 5, wrap: 270, align: 'left' }));
+    c.add(txt(this, cx - 205, y + 14, text.desc, 20, { originX: 0, strokeW: 3, wrap: 290, align: 'left', shadow: false }));
+    const owned = ITEMS[id].kind === 'stack' ? txt(this, cx + 232, y + 58, '', 22, { color: COLORS.textGreen, strokeW: 4 }) : undefined;
     if (owned) c.add(owned);
-    const button = new Button(this, cx + 232, y - 12, {
-      w: 190,
-      h: 104,
+    const button = new Button(this, cx + 232, y - 10, {
+      w: 200,
+      h: 96,
       label: money(offer.price),
-      fontSize: 34,
+      fontSize: 32,
       tint: COLORS.gold,
       onClick: () => this.tryBuy(offer),
       silent: true,
     });
     c.add(button);
-    const status = txt(this, cx + 232, y - 12, '', 40, { color: COLORS.textGreen, strokeW: 6 }).setVisible(false);
+    const status = txt(this, cx + 232, y - 10, '', 40, { color: COLORS.textGreen, strokeW: 6 }).setVisible(false);
     c.add(status);
     this.rows.push({ offer, button, status, owned, container: c });
   }

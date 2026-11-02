@@ -7,9 +7,12 @@ export interface Modifiers {
   lantern: boolean;
   gemLens: boolean;
   crusher: boolean;
+  hourglass: boolean;
+  goldRush: boolean;
+  extraMiner: boolean;
 }
 
-export const NO_MODIFIERS: Modifiers = { turbo: false, lantern: false, gemLens: false, crusher: false };
+export const NO_MODIFIERS: Modifiers = { turbo: false, lantern: false, gemLens: false, crusher: false, hourglass: false, goldRush: false, extraMiner: false };
 
 /** Money paid when a plain (non bag) object reaches the surface. */
 export function collectValue(type: ObjType, mods: Modifiers, carriesDiamond = false): number {
@@ -29,7 +32,7 @@ export function collectValue(type: ObjType, mods: Modifiers, carriesDiamond = fa
     case 'keg':
       return 0;
     default:
-      return def.value;
+      return Math.round(def.value * (mods.goldRush ? EFFECTS.goldRushMult : 1));
   }
 }
 

@@ -144,6 +144,9 @@ export class Game extends Phaser.Scene {
       .setOrigin(0.5, 1)
       .setDisplaySize(118, 150)
       .setDepth(D.rig + 1);
+    if (this.session.mods.extraMiner) {
+      this.add.image(px - 150, WORLD.surfaceY + 4, 'miner').setOrigin(0.5, 1).setDisplaySize(96, 122).setDepth(D.rig + 1).setTint(0xb8d8ff);
+    }
     this.rope = this.add.tileSprite(px, py, 10, 4, 'rope').setOrigin(0.5, 0).setDepth(D.rope);
     this.drum = this.add.image(px, py, 'winch_drum').setDisplaySize(70, 70).setDepth(D.rope + 0.2);
     this.clawImg = this.add.image(px, py, 'claw_open').setOrigin(0.5, 0).setDisplaySize(90, 72).setDepth(D.claw);
@@ -240,11 +243,14 @@ export class Game extends Phaser.Scene {
 
     // active one-level boosts
     const mods = this.session.mods;
-    const icons: Array<[boolean, 'icon_turbo' | 'icon_lantern' | 'icon_gem' | 'icon_crusher']> = [
+    const icons: Array<[boolean, 'icon_turbo' | 'icon_lantern' | 'icon_gem' | 'icon_crusher' | 'icon_hourglass' | 'icon_goldrush' | 'icon_miner']> = [
       [mods.turbo, 'icon_turbo'],
       [mods.lantern, 'icon_lantern'],
       [mods.gemLens, 'icon_gem'],
       [mods.crusher, 'icon_crusher'],
+      [mods.hourglass, 'icon_hourglass'],
+      [mods.goldRush, 'icon_goldrush'],
+      [mods.extraMiner, 'icon_miner'],
     ];
     let bx = E.left + 24 + 26;
     for (const [on, key] of icons) {

@@ -1,4 +1,5 @@
 import { BEETLE, KEG, LEVEL_RULES, CLAW, WORLD } from '../config/game';
+import { EFFECTS } from '../config/economy';
 import { BEETLE_DIAMOND_VALUE, BAG, OBJECTS, SHOP, type ObjType } from '../config/economy';
 import type { LevelDef } from '../data/levels';
 import { Claw, type ClawHost } from './Claw';
@@ -63,13 +64,15 @@ export class Session implements ClawHost {
   status: 'playing' | 'won' | 'lost' = 'playing';
   events: SessionEvent[] = [];
   elapsed = 0;
+  private helperTimer = 0;
 
   constructor(opts: SessionOptions) {
     this.level = opts.level;
     this.mods = opts.modifiers ?? NO_MODIFIERS;
     this.blastCaps = opts.blastCaps ?? 0;
     this.rng = opts.rng ?? makeRng(randomSeed());
-    this.timeLeft = opts.durationSec ?? LEVEL_RULES.durationSec;
+    this.timeLeft = (opts.durationSec ?? LEVEL_RULES.durationSec) + (this.mods.hourglass ? EFFECTS.hourglassSec : 0);
+    this.helperTimer = EFFECTS.helperIntervalSec;
     this.claw = new Claw(WORLD.pivotX, WORLD.pivotY);
 
     let id = 1;
@@ -189,6 +192,7 @@ export class Session implements ClawHost {
     }
 
     this.moveBeetles(dt);
+    if (this.mods.extraMiner) this.runHelper(dt);
 
     this.claw.update(dt, this, this.level.swingMult ?? 1);
     for (const ev of this.claw.events) {
@@ -214,6 +218,30 @@ export class Session implements ClawHost {
     }
 
     this.checkEnd();
+  }
+
+  /** Extra Miner: every few seconds the helper pulls up the closest free gold or diamond. */
+  private runHelper(dt: number): void {
+    this.helperTimer -= dt;
+    if (this.helperTimer > 0 || this.timeLeft <= 0) return;
+    this.helperTimer = EFFECTS.helperIntervalSec;
+    let best: Entity | null = null;
+    let bestD = Infinity;
+    for (const e of this.entities) {
+      if (!e.alive || e.hooked) continue;
+      if (e.type !== 'goldS' && e.type !== 'goldM' && e.type !== 'goldL' && e.type !== 'diamond') continue;
+      const d = Math.hypot(e.x - WORLD.pivotX, e.y - WORLD.pivotY);
+      if (d < bestD) {
+        bestD = d;
+        best = e;
+      }
+    }
+    if (!best) return;
+    best.alive = false;
+    this.shapesDirty = true;
+    const value = collectValue(best.type, this.mods, false);
+    this.earned += value;
+    this.events.push({ type: 'collect', id: best.id, kind: best.type, value, x: best.x, y: best.y });
   }
 
   private moveBeetles(dt: number): void {

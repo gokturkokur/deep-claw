@@ -62,5 +62,8 @@ export const tr: Strings = {
     lantern: { name: 'Şanslı Fener', desc: 'Sonraki bölüm: Gizemli Torba ödülleri daha iyi.' },
     gemLens: { name: 'Mücevher Merceği', desc: 'Sonraki bölüm: elmaslar x1,5 değerinde.' },
     crusher: { name: 'Cevher Ezici', desc: 'Sonraki bölüm: kayalar x3 değerinde.' },
+    hourglass: { name: 'Kum Saati', desc: 'Sonraki bölüm: +15 saniye.' },
+    goldRush: { name: 'Altın Ateşi', desc: 'Sonraki bölüm: altınlar x1,5 değerinde.' },
+    extraMiner: { name: 'Yardımcı Madenci', desc: 'Sonraki bölüm: yardımcı 7 sn\'de bir en yakın altını alır.' },
   },
 };

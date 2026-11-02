@@ -40,7 +40,7 @@ export function defaultSave(): SaveData {
     wallet: 0,
     levels: {},
     inventory: { blastCaps: 0 },
-    boosts: { turbo: false, lantern: false, gemLens: false, crusher: false },
+    boosts: { turbo: false, lantern: false, gemLens: false, crusher: false, hourglass: false, goldRush: false, extraMiner: false },
     shop: null,
     hasProgress: false,
     hintShown: false,

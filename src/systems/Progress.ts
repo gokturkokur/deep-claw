@@ -1,6 +1,7 @@
 import { LEVELS } from '../data/levels';
 import { BOOST_IDS } from '../config/economy';
 import { LEVEL_RULES } from '../config/game';
+import { SHOP } from '../config/economy';
 import { starsFor } from './Economy';
 import { randomSeed } from './Rng';
 import type { SaveData } from './Save';
@@ -43,7 +44,7 @@ export function commitOutcome(save: SaveData, o: LevelOutcome, seed: number = ra
 
   let walletGain = 0;
   if (firstClear) {
-    walletGain = o.earned;
+    walletGain = Math.round(o.earned * SHOP.walletShare);
     save.wallet += walletGain;
     save.unlockedLevel = Math.min(LEVELS.length, Math.max(save.unlockedLevel, o.levelId + 1));
     save.currentLevel = Math.min(LEVELS.length, o.levelId + 1);

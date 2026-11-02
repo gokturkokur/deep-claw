@@ -64,10 +64,10 @@ export const BAG = {
   itemNotionalValue: 150,
 } as const;
 
-export type ItemId = 'blastCap' | 'turbo' | 'lantern' | 'gemLens' | 'crusher';
+export type ItemId = 'blastCap' | 'turbo' | 'lantern' | 'gemLens' | 'crusher' | 'hourglass' | 'goldRush' | 'extraMiner';
 export type BoostId = Exclude<ItemId, 'blastCap'>;
 
-export const BOOST_IDS: readonly BoostId[] = ['turbo', 'lantern', 'gemLens', 'crusher'];
+export const BOOST_IDS: readonly BoostId[] = ['turbo', 'lantern', 'gemLens', 'crusher', 'hourglass', 'goldRush', 'extraMiner'];
 
 export interface ItemDef {
   id: ItemId;
@@ -78,21 +78,26 @@ export interface ItemDef {
 }
 
 export const ITEMS: Record<ItemId, ItemDef> = {
-  blastCap: { id: 'blastCap', kind: 'stack', priceMin: 150, priceMax: 250, icon: 'icon_blast' },
-  turbo: { id: 'turbo', kind: 'boost', priceMin: 300, priceMax: 500, icon: 'icon_turbo' },
-  lantern: { id: 'lantern', kind: 'boost', priceMin: 200, priceMax: 400, icon: 'icon_lantern' },
-  gemLens: { id: 'gemLens', kind: 'boost', priceMin: 350, priceMax: 600, icon: 'icon_gem' },
-  crusher: { id: 'crusher', kind: 'boost', priceMin: 50, priceMax: 150, icon: 'icon_crusher' },
+  blastCap: { id: 'blastCap', kind: 'stack', priceMin: 400, priceMax: 900, icon: 'icon_blast' },
+  turbo: { id: 'turbo', kind: 'boost', priceMin: 900, priceMax: 1500, icon: 'icon_turbo' },
+  lantern: { id: 'lantern', kind: 'boost', priceMin: 600, priceMax: 1100, icon: 'icon_lantern' },
+  gemLens: { id: 'gemLens', kind: 'boost', priceMin: 1000, priceMax: 1800, icon: 'icon_gem' },
+  crusher: { id: 'crusher', kind: 'boost', priceMin: 300, priceMax: 600, icon: 'icon_crusher' },
+  hourglass: { id: 'hourglass', kind: 'boost', priceMin: 1200, priceMax: 2000, icon: 'icon_hourglass' },
+  goldRush: { id: 'goldRush', kind: 'boost', priceMin: 1500, priceMax: 2500, icon: 'icon_goldrush' },
+  extraMiner: { id: 'extraMiner', kind: 'boost', priceMin: 3000, priceMax: 4500, icon: 'icon_miner' },
 };
 
-export const ITEM_IDS: readonly ItemId[] = ['blastCap', 'turbo', 'lantern', 'gemLens', 'crusher'];
+export const ITEM_IDS: readonly ItemId[] = ['blastCap', 'turbo', 'lantern', 'gemLens', 'crusher', 'hourglass', 'goldRush', 'extraMiner'];
 
 export const SHOP = {
   /** Blast Cap price rises by this much per cleared level, capped at priceMax. */
-  blastCapStep: 5,
+  blastCapStep: 25,
   /** Boost items shown per visit (Blast Cap is always shown). */
-  boostSlots: 3,
+  boostSlots: 4,
   maxBlastCaps: 9,
+  /** Share of a first-clear level's earnings that goes into the wallet (the rest is running costs). */
+  walletShare: 0.6,
 } as const;
 
 export const EFFECTS = {
@@ -102,6 +107,12 @@ export const EFFECTS = {
   gemLensMult: 1.5,
   /** Ore Crusher: rock value multiplier. */
   crusherMult: 3,
+  /** Hourglass: extra seconds. */
+  hourglassSec: 15,
+  /** Gold Fever: gold nugget value multiplier. */
+  goldRushMult: 1.5,
+  /** Extra Miner: the helper pulls up the nearest gold or diamond this often (s). */
+  helperIntervalSec: 7,
 } as const;
 
 export const SAVE = {

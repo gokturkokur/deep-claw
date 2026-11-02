@@ -69,14 +69,14 @@ nugget('gold_l.svg', 148, 124, 37, 5);
 put(
   'diamond.svg',
   svg(
-    76,
-    76,
-    `<ellipse cx="38" cy="70" rx="22" ry="4.5" fill="#000" opacity=".25"/>
-<polygon points="10,28 24,8 52,8 66,28 38,68" fill="url(#g)" ${stroke(4)}/>
-<polygon points="10,28 66,28 38,68" fill="#1b8fd6" opacity=".55"/>
-<polygon points="24,8 38,28 52,8" fill="#e8ffff" opacity=".8"/>
-<path d="M24 8 L30 28 L38 68 M52 8 L46 28 L38 68 M10 28 L66 28" stroke="#fff" stroke-width="2.4" fill="none" opacity=".75"/>
-<polygon points="16,26 26,12 32,12 22,26" fill="#fff" opacity=".7"/>`,
+    64,
+    52,
+    `<ellipse cx="32" cy="48" rx="20" ry="3.5" fill="#000" opacity=".25"/>
+<polygon points="4,18 15,5 49,5 60,18 32,46" fill="url(#g)" ${stroke(3.5)}/>
+<polygon points="4,18 60,18 32,46" fill="#1b8fd6" opacity=".5"/>
+<polygon points="15,5 32,18 49,5" fill="#e8ffff" opacity=".8"/>
+<path d="M15 5 L22 18 L32 46 M49 5 L42 18 L32 46 M4 18 L60 18" stroke="#fff" stroke-width="2" fill="none" opacity=".7"/>
+<polygon points="10,17 17,8 22,8 15,17" fill="#fff" opacity=".7"/>`,
     lg('g', ['#c9fbff', '#58cdf5', '#1f7fd1'], 0.2, 0, 0.8, 1),
   ),
 );
@@ -377,5 +377,9 @@ put('icon_clock.svg', iconBase(`<circle cx="32" cy="34" r="24" fill="#fff" ${str
 put('icon_target.svg', iconBase(`<circle cx="32" cy="32" r="26" fill="#fff" ${stroke(4)}/><circle cx="32" cy="32" r="17" fill="#e8472a" stroke="${INK}" stroke-width="3"/><circle cx="32" cy="32" r="9" fill="#fff" stroke="${INK}" stroke-width="3"/><circle cx="32" cy="32" r="3" fill="#e8472a"/>`));
 put('icon_lock.svg', iconBase(`<path d="M20 28 V20 a12 12 0 0 1 24 0 V28" fill="none" stroke="${INK}" stroke-width="9" stroke-linecap="round"/><path d="M20 28 V20 a12 12 0 0 1 24 0 V28" fill="none" stroke="#c4c9cf" stroke-width="4.5" stroke-linecap="round"/><rect x="12" y="28" width="40" height="30" rx="8" fill="url(#g)" ${stroke(4)}/><circle cx="32" cy="42" r="4.5" fill="${INK}"/>`, lg('g', ['#ffd86a', '#c98a22'])));
 put('logo_claw.svg', svg(240, 240, `<g transform="translate(120 20) scale(1.6) translate(-50 0)"><path d="M50 24 C10 28 0 60 14 88 C16 92 24 88 22 84 C12 62 20 44 50 40 Z" fill="url(#j)" ${stroke(5)}/><path d="M50 24 C90 28 100 60 86 88 C84 92 76 88 78 84 C88 62 80 44 50 40 Z" fill="url(#j)" ${stroke(5)}/><rect x="36" y="2" width="28" height="36" rx="8" fill="url(#j)" ${stroke(5)}/><circle cx="50" cy="8" r="9" fill="#d9dde0" ${stroke(4)}/></g><polygon points="120,150 150,170 138,205 102,205 90,170" fill="url(#d)" stroke="${INK}" stroke-width="5" stroke-linejoin="round"/><path d="M104 172 L120 160 L136 172" stroke="#fff" stroke-width="4" fill="none" opacity=".7"/>`, lg('j', ['#e9edf0', '#a3abb3', '#656c75'], 0, 0, 1, 1) + lg('d', ['#c9fbff', '#58cdf5', '#1f7fd1'])));
+
+put('icon_hourglass.svg', iconBase(`<path d="M16 6 H48 M16 58 H48" stroke="${INK}" stroke-width="8" stroke-linecap="round"/><path d="M18 8 H46 C46 24 36 28 32 32 C36 36 46 40 46 56 H18 C18 40 28 36 32 32 C28 28 18 24 18 8 Z" fill="#cfeeff" opacity=".7" ${stroke(3.5)}/><path d="M24 12 H40 C38 22 32 26 32 30 C32 26 26 22 24 12 Z" fill="#ffd23a"/><path d="M32 34 L22 54 H42 Z" fill="#ffd23a"/>`));
+put('icon_goldrush.svg', iconBase(`<polygon points="${blob(32, 40, 24, 16, 9, 7)}" fill="url(#g)" ${stroke(3.5)}/><polygon points="${blob(22, 24, 14, 10, 8, 3)}" fill="url(#g)" ${stroke(3)}/><polygon points="${blob(44, 20, 12, 9, 8, 5)}" fill="url(#g)" ${stroke(3)}/><path d="M50 4 l2 6 l6 2 l-6 2 l-2 6 l-2 -6 l-6 -2 l6 -2 Z" fill="#fff6c8"/>`, lg('g', ['#ffe97a', '#f6bf1f', '#c47d08'])));
+put('icon_miner.svg', iconBase(`<circle cx="32" cy="38" r="20" fill="#f3b878" ${stroke(3.5)}/><rect x="14" y="32" width="36" height="14" rx="7" fill="#2f3b4d" ${stroke(3)}/><circle cx="24" cy="39" r="5" fill="#bfe9ff"/><circle cx="40" cy="39" r="5" fill="#bfe9ff"/><path d="M12 30 C12 6 52 6 52 30 Z" fill="#ffd23a" ${stroke(3.5)}/><rect x="26" y="8" width="12" height="9" rx="4" fill="#fff3a8" ${stroke(2.5)}/><path d="M24 50 Q32 56 40 50" stroke="${INK}" stroke-width="3" fill="none" stroke-linecap="round"/>`));
 
 console.log('art written to', OUT_DIR);

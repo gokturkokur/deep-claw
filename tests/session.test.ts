@@ -233,6 +233,38 @@ describe('modifiers', () => {
   });
 });
 
+describe('new shop items', () => {
+  it('Hourglass adds 15 seconds', () => {
+    const a = new Session({ level: level([o('goldS', 100, 1100)]), rng: makeRng(1) });
+    const b = new Session({ level: level([o('goldS', 100, 1100)]), modifiers: { ...NO_MODIFIERS, hourglass: true }, rng: makeRng(1) });
+    expect(b.timeLeft - a.timeLeft).toBe(15);
+  });
+  it('Gold Fever: gold x1.5, rocks and diamonds unchanged', () => {
+    const play = (type: LevelObject['type']) => {
+      const s = new Session({ level: level([below(type, 450), o('goldS', 100, 1100)]), modifiers: { ...NO_MODIFIERS, goldRush: true }, rng: makeRng(1) });
+      pull(s, 90);
+      return s.earned;
+    };
+    expect(play('goldM')).toBe(375);
+    expect(play('diamond')).toBe(600);
+    expect(play('rockS')).toBe(10);
+  });
+  it('Extra Miner collects the nearest gold on a timer and never takes rocks', () => {
+    const s = new Session({
+      level: level([o('goldS', 200, 500), o('goldM', 500, 900), o('rockS', 360, 400)], 100000),
+      modifiers: { ...NO_MODIFIERS, extraMiner: true },
+      rng: makeRng(1),
+    });
+    for (let t = 0; t < 7.2; t += 1 / 60) s.update(1 / 60);
+    expect(s.earned).toBe(100);
+    for (let t = 0; t < 7.2; t += 1 / 60) s.update(1 / 60);
+    expect(s.earned).toBe(350);
+    for (let t = 0; t < 20; t += 1 / 60) s.update(1 / 60);
+    expect(s.earned).toBe(350);
+    expect(s.entities.find((e) => e.type === 'rockS')?.alive).toBe(true);
+  });
+});
+
 describe('beetles', () => {
   it('walk inside their lane and bounce at the ends', () => {
     const s = new Session({

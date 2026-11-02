@@ -60,6 +60,9 @@ export const en = {
     lantern: { name: 'Lucky Lantern', desc: 'Next level: better Mystery Bag prizes.' },
     gemLens: { name: 'Gem Lens', desc: 'Next level: diamonds worth x1.5.' },
     crusher: { name: 'Ore Crusher', desc: 'Next level: rocks worth x3.' },
+    hourglass: { name: 'Hourglass', desc: 'Next level: +15 seconds.' },
+    goldRush: { name: 'Gold Fever', desc: 'Next level: gold nuggets worth x1.5.' },
+    extraMiner: { name: 'Extra Miner', desc: 'Next level: a helper grabs the nearest gold every 7 s.' },
   },
 } as const;
 
