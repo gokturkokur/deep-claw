@@ -199,8 +199,8 @@ export function createConfirm(scene: Phaser.Scene, layout: Layout, depth = 500):
   const title = txt(scene, DESIGN.width / 2, DESIGN.height / 2 - 140, '', 46, { color: COLORS.textGold, wrap: 520 });
   const body = txt(scene, DESIGN.width / 2, DESIGN.height / 2 - 40, '', 34, { wrap: 520 });
   let yes: () => void = () => undefined;
-  const bYes = new Button(scene, DESIGN.width / 2 - 140, DESIGN.height / 2 + 120, { w: 230, label: '', tint: COLORS.green, onClick: () => { group.setVisible(false); yes(); } });
-  const bNo = new Button(scene, DESIGN.width / 2 + 140, DESIGN.height / 2 + 120, { w: 230, label: '', tint: COLORS.red, onClick: () => group.setVisible(false) });
+  const bYes = new Button(scene, DESIGN.width / 2 - 140, DESIGN.height / 2 + 120, { w: 230, label: t('yes'), fontSize: 40, tint: COLORS.green, onClick: () => { group.setVisible(false); yes(); } });
+  const bNo = new Button(scene, DESIGN.width / 2 + 140, DESIGN.height / 2 + 120, { w: 230, label: t('no'), fontSize: 40, tint: COLORS.red, onClick: () => group.setVisible(false) });
   group.add([shade, p, title, body, bYes, bNo]);
   return {
     show(tt, text, onYes) {

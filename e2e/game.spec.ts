@@ -173,9 +173,10 @@ test.describe('Deep Claw', () => {
       const d = (window as any).__dc;
       d.services.save.data.inventory.blastCaps = 2;
       d.services.save.save();
+      d.game.scene.getScene('MainMenu').scene.start('Game', { levelId: 1 });
     });
-    await clickButton(page, 'Play');
     await waitScene(page, 'Game');
+    expect(await page.evaluate(() => (window as any).__dc.session.blastCaps)).toBe(2);
     await launchDown(page);
     await stepUntil(page, 'retracting');
     await page.keyboard.press('d');
@@ -188,9 +189,9 @@ test.describe('Deep Claw', () => {
   test('settings: switch the language to Turkish', async ({ page }) => {
     await open(page);
     await page.evaluate(() => {
-      const g = (window as any).__game;
-      g.scene.pause('MainMenu');
-      g.scene.launch('Settings', { from: 'MainMenu' });
+      const menu = (window as any).__game.scene.getScene('MainMenu');
+      menu.scene.pause();
+      menu.scene.launch('Settings', { from: 'MainMenu' });
     });
     await waitScene(page, 'Settings');
     await clickButton(page, 'Türkçe');

@@ -6,7 +6,7 @@ export interface Pt {
 }
 
 /** Open the game in debug mode (exposes window.__game and window.__dc). */
-export async function open(page: Page, query = ''): Promise<string[]> {
+export async function open(page: Page, query = '&norender=1'): Promise<string[]> {
   const errors: string[] = [];
   page.on('console', (m) => {
     if (m.type() === 'error') errors.push(m.text());

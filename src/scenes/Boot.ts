@@ -20,6 +20,16 @@ export class Boot extends Phaser.Scene {
       (window as unknown as Record<string, unknown>).__dc = { game: this.game, services };
     }
 
+    // Test-only: skip drawing so logic tests run at full speed on machines without a GPU.
+    // (Scenes still build their render lists, which input hit-testing needs; only the GPU draw calls are skipped.)
+    if (new URLSearchParams(location.search).get('norender') === '1') {
+      const gl = (this.game.renderer as Phaser.Renderer.WebGL.WebGLRenderer).gl;
+      if (gl) {
+        gl.drawElements = () => undefined;
+        gl.drawArrays = () => undefined;
+      }
+    }
+
     const go = () => this.scene.start('Preload');
     let started = false;
     const once = () => {

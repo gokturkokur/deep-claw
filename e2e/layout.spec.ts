@@ -19,7 +19,7 @@ mkdirSync(OUT, { recursive: true });
 for (const [name, w, h] of SIZES) {
   test(`layout ${name}: no bars, HUD inside the screen, nothing overlaps`, async ({ page }) => {
     await page.setViewportSize({ width: w, height: h });
-    const errors = await open(page);
+    const errors = await open(page, '');
     await page.waitForTimeout(800);
     await page.screenshot({ path: `${OUT}/${name}-menu.png` });
 
@@ -85,12 +85,13 @@ for (const [name, w, h] of SIZES) {
 
 test('screens gallery (shop, level select, complete, game over, pause, settings) at 390x844', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
-  const errors = await open(page);
+  const errors = await open(page, '');
   const goto = async (key: string, data?: object) => {
     await page.evaluate(([k, d]) => {
       const g = (window as any).__game;
-      g.scene.getScenes(true).forEach((s: any) => g.scene.stop(s.scene.key));
-      g.scene.start(k, d);
+      const active = g.scene.getScenes(true);
+      active.forEach((s: any) => s.scene.stop());
+      g.scene.getScene('Boot').scene.start(k, d);
     }, [key, data ?? {}] as const);
     await waitScene(page, key);
     await page.waitForTimeout(1200);
@@ -135,16 +136,16 @@ test('screens gallery (shop, level select, complete, game over, pause, settings)
   await page.waitForTimeout(1500);
   await page.screenshot({ path: `${OUT}/screen-game-level10.png` });
   await page.evaluate(() => {
-    const g = (window as any).__game;
-    g.scene.pause('Game');
-    g.scene.launch('Pause', { levelId: 10 });
+    const game = (window as any).__game.scene.getScene('Game');
+    game.scene.pause();
+    game.scene.launch('Pause', { levelId: 10 });
   });
   await waitScene(page, 'Pause');
   await page.screenshot({ path: `${OUT}/screen-pause.png` });
   await page.evaluate(() => {
-    const g = (window as any).__game;
-    g.scene.pause('Pause');
-    g.scene.launch('Settings', { from: 'Pause', levelId: 10 });
+    const pause = (window as any).__game.scene.getScene('Pause');
+    pause.scene.pause();
+    pause.scene.launch('Settings', { from: 'Pause', levelId: 10 });
   });
   await waitScene(page, 'Settings');
   await page.waitForTimeout(800);
