@@ -36,6 +36,7 @@ export class Game extends Phaser.Scene {
   private fuseTimer = 0;
   private beetleFrame = 0;
   private reelOn = false;
+  private lastSwingSide = 0;
 
   // HUD
   private hudBar!: Phaser.GameObjects.Image;
@@ -72,6 +73,7 @@ export class Game extends Phaser.Scene {
     this.ending = false;
     this.paused = false;
     this.reelOn = false;
+    this.lastSwingSide = 0;
     this.shownMoney = 0;
     this.moneyFrom = 0;
     this.moneyT = 1;
@@ -133,17 +135,17 @@ export class Game extends Phaser.Scene {
     const px = WORLD.pivotX;
     const py = WORLD.pivotY;
     this.add
-      .image(px, py - 28, 'winch')
+      .image(px, py - 34, 'winch')
       .setOrigin(0.5, 0)
-      .setDisplaySize(168, 119)
+      .setDisplaySize(204, 144)
       .setDepth(D.rig);
     this.miner = this.add
-      .image(px - 128, WORLD.surfaceY + 2, 'miner')
+      .image(px + 158, WORLD.surfaceY + 4, 'miner').setFlipX(true)
       .setOrigin(0.5, 1)
-      .setDisplaySize(96, 122)
+      .setDisplaySize(118, 150)
       .setDepth(D.rig + 1);
     this.rope = this.add.tileSprite(px, py, 10, 4, 'rope').setOrigin(0.5, 0).setDepth(D.rope);
-    this.drum = this.add.image(px, py, 'winch_drum').setDisplaySize(62, 62).setDepth(D.rope + 0.2);
+    this.drum = this.add.image(px, py, 'winch_drum').setDisplaySize(70, 70).setDepth(D.rope + 0.2);
     this.clawImg = this.add.image(px, py, 'claw_open').setOrigin(0.5, 0).setDisplaySize(90, 72).setDepth(D.claw);
     this.tweens.add({ targets: this.miner, scaleY: this.miner.scaleY * 1.025, duration: 900, yoyo: true, repeat: -1, ease: 'Sine.InOut' });
   }
@@ -203,6 +205,7 @@ export class Game extends Phaser.Scene {
 
   private createHud(): void {
     const L = this.layout;
+    const E = this.hudEdges();
     const top = L.top;
     const cx = DESIGN.width / 2;
     this.hudBar = this.add.image(cx, top, 'bar').setOrigin(0.5, 0).setDepth(D.hud);
@@ -212,28 +215,28 @@ export class Game extends Phaser.Scene {
     fit();
 
     const rowA = top + DESIGN.safeTop + 48;
-    this.coinIcon = this.add.image(L.left + 46, rowA, 'icon_coin').setDisplaySize(52, 52).setDepth(D.hud + 1);
-    this.moneyText = txt(this, L.left + 82, rowA + 2, money(0), 50, { color: COLORS.textGold, originX: 0, strokeW: 7 }).setDepth(D.hud + 1);
+    this.coinIcon = this.add.image(E.left + 46, rowA, 'icon_coin').setDisplaySize(52, 52).setDepth(D.hud + 1);
+    this.moneyText = txt(this, E.left + 82, rowA + 2, money(0), 50, { color: COLORS.textGold, originX: 0, strokeW: 7 }).setDepth(D.hud + 1);
     this.clockIcon = this.add.image(cx - 70, rowA, 'icon_clock').setDisplaySize(52, 52).setDepth(D.hud + 1);
     this.timerText = txt(this, cx - 30, rowA + 2, '60', 56, { originX: 0, strokeW: 8 }).setDepth(D.hud + 1);
 
-    this.pauseBtn = new Button(this, L.right - 66, rowA, {
+    this.pauseBtn = new Button(this, E.right - 66, rowA, {
       round: true,
       icon: 'icon_pause',
       tint: COLORS.brown,
       onClick: () => this.openPause(),
     }).setDepth(D.hud + 2).setName('pause');
 
-    this.levelText = txt(this, L.left + 24, top + 196, '', 34, { originX: 0, color: '#f4dba8' }).setDepth(D.hud + 1);
-    this.targetText = txt(this, L.left + 24, top + 238, '', 40, { originX: 0, strokeW: 6 }).setDepth(D.hud + 1);
+    this.levelText = txt(this, E.left + 24, top + 186, '', 30, { originX: 0, color: '#f4dba8' }).setDepth(D.hud + 1);
+    this.targetText = txt(this, E.left + 24, top + 246, '', 34, { originX: 0, strokeW: 6 }).setDepth(D.hud + 1);
 
-    this.blastBtn = new Button(this, L.right - 70, top + 262, {
+    this.blastBtn = new Button(this, E.right - 70, top + 262, {
       round: true,
       icon: 'icon_blast',
       tint: COLORS.red,
       onClick: () => this.useBlast(),
     }).setDepth(D.hud + 2).setName('blast');
-    this.blastCount = txt(this, L.right - 70 + 34, top + 262 + 34, 'x0', 34, { strokeW: 6, color: COLORS.textGold }).setDepth(D.hud + 3);
+    this.blastCount = txt(this, E.right - 70 + 34, top + 262 + 34, 'x0', 34, { strokeW: 6, color: COLORS.textGold }).setDepth(D.hud + 3);
 
     // active one-level boosts
     const mods = this.session.mods;
@@ -243,7 +246,7 @@ export class Game extends Phaser.Scene {
       [mods.gemLens, 'icon_gem'],
       [mods.crusher, 'icon_crusher'],
     ];
-    let bx = L.left + 24 + 26;
+    let bx = E.left + 24 + 26;
     for (const [on, key] of icons) {
       if (!on) continue;
       this.boostIcons.push(this.add.image(bx, top + 300, key).setDisplaySize(52, 52).setDepth(D.hud + 1));
@@ -263,21 +266,27 @@ export class Game extends Phaser.Scene {
     }
   }
 
+  /** HUD stays within a 960 px wide centre on very wide screens (desktop), edge to edge on phones. */
+  private hudEdges(): { left: number; right: number } {
+    return { left: Math.max(this.layout.left, DESIGN.width / 2 - 480), right: Math.min(this.layout.right, DESIGN.width / 2 + 480) };
+  }
+
   private relayoutHud(): void {
     const L = this.layout;
+    const E = this.hudEdges();
     const top = L.top;
     const rowA = top + DESIGN.safeTop + 48;
     this.hudBar.setPosition(DESIGN.width / 2, top).setDisplaySize(L.width + 8, 160);
-    this.coinIcon.setPosition(L.left + 46, rowA);
-    this.moneyText.setPosition(L.left + 82, rowA + 2);
+    this.coinIcon.setPosition(E.left + 46, rowA);
+    this.moneyText.setPosition(E.left + 82, rowA + 2);
     this.clockIcon.setPosition(DESIGN.width / 2 - 70, rowA);
     this.timerText.setPosition(DESIGN.width / 2 - 30, rowA + 2);
-    this.pauseBtn.setPosition(L.right - 66, rowA);
-    this.levelText.setPosition(L.left + 24, top + 196);
-    this.targetText.setPosition(L.left + 24, top + 238);
-    this.blastBtn.setPosition(L.right - 70, top + 262);
-    this.blastCount.setPosition(L.right - 70 + 34, top + 262 + 34);
-    let bx = L.left + 24 + 26;
+    this.pauseBtn.setPosition(E.right - 66, rowA);
+    this.levelText.setPosition(E.left + 24, top + 186);
+    this.targetText.setPosition(E.left + 24, top + 246);
+    this.blastBtn.setPosition(E.right - 70, top + 262);
+    this.blastCount.setPosition(E.right - 70 + 34, top + 262 + 34);
+    let bx = E.left + 24 + 26;
     for (const i of this.boostIcons) {
       i.setPosition(bx, top + 300);
       bx += 58;
@@ -516,6 +525,13 @@ export class Game extends Phaser.Scene {
     this.drum.rotation += spin * dt;
     const reeling = c.state === 'launching' || c.state === 'retracting';
     this.miner.setRotation(reeling ? Math.sin(time / 70) * 0.04 : 0);
+
+    // soft creak each time the swing passes the centre
+    if (c.state === 'swinging') {
+      const side = c.angleDeg >= 90 ? 1 : -1;
+      if (this.lastSwingSide !== 0 && side !== this.lastSwingSide) services.audio.sfx('tick', 0.35);
+      this.lastSwingSide = side;
+    }
 
     // reel sound loop
     if (reeling !== this.reelOn) {

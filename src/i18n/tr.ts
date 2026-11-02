@@ -57,7 +57,7 @@ export const tr: Strings = {
   bagStrength: 'Güçlü çekiş!',
   blastUsed: 'Güm!',
   items: {
-    blastCap: { name: 'Patlatıcı Kapsül', desc: 'Çektiğin şeyi yok eder. Çekerken düğmeye (veya D tuşuna) bas.' },
+    blastCap: { name: 'Patlatıcı Kapsül', desc: 'Çektiğin şeyi yok eder. Düğme veya D tuşu.' },
     turbo: { name: 'Turbo Vinç Yağı', desc: 'Sonraki bölüm: çekme hızı x1,5.' },
     lantern: { name: 'Şanslı Fener', desc: 'Sonraki bölüm: Gizemli Torba ödülleri daha iyi.' },
     gemLens: { name: 'Mücevher Merceği', desc: 'Sonraki bölüm: elmaslar x1,5 değerinde.' },

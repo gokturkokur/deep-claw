@@ -31,18 +31,18 @@ export class Settings extends Phaser.Scene {
     const cy = DESIGN.height / 2;
 
     dim(this, layout, 0.7);
-    panel(this, cx, cy, 640, 900);
-    txt(this, cx, cy - 380, t('settings').toUpperCase(), 64, { color: COLORS.textGold, strokeW: 9 });
+    panel(this, cx, cy, 640, 980);
+    txt(this, cx, cy - 410, t('settings').toUpperCase(), 64, { color: COLORS.textGold, strokeW: 9 });
 
     // sliders
     const sliderW = 420;
-    txt(this, cx, cy - 290, t('music'), 38);
-    new Slider(this, cx, cy - 235, sliderW, save.data.settings.music, (v) => audio.setMusicVolume(v), () => save.save());
-    txt(this, cx, cy - 150, t('sfx'), 38);
+    txt(this, cx, cy - 320, t('music'), 38);
+    new Slider(this, cx, cy - 265, sliderW, save.data.settings.music, (v) => audio.setMusicVolume(v), () => save.save());
+    txt(this, cx, cy - 180, t('sfx'), 38);
     new Slider(
       this,
       cx,
-      cy - 95,
+      cy - 125,
       sliderW,
       save.data.settings.sfx,
       (v) => audio.setSfxVolume(v),
@@ -53,8 +53,8 @@ export class Settings extends Phaser.Scene {
     );
 
     // vibration
-    txt(this, cx - 130, cy + 10, t('vibration'), 38);
-    const vib = new Button(this, cx + 170, cy + 10, {
+    txt(this, cx - 130, cy - 20, t('vibration'), 38);
+    const vib = new Button(this, cx + 170, cy - 20, {
       w: 190,
       h: 96,
       label: save.data.settings.vibration ? t('on') : t('off'),
@@ -70,9 +70,9 @@ export class Settings extends Phaser.Scene {
     });
 
     // language
-    txt(this, cx, cy + 115, t('language'), 38);
+    txt(this, cx, cy + 80, t('language'), 38);
     const mk = (lang: Lang, label: string, x: number) => {
-      const b = new Button(this, x, cy + 195, {
+      const b = new Button(this, x, cy + 160, {
         w: 250,
         h: 96,
         label,
@@ -92,7 +92,7 @@ export class Settings extends Phaser.Scene {
 
     // reset
     const confirm = createConfirm(this, layout);
-    new Button(this, cx, cy + 320, {
+    new Button(this, cx, cy + 290, {
       w: 480,
       h: 96,
       label: t('resetProgress'),
@@ -105,7 +105,7 @@ export class Settings extends Phaser.Scene {
         }),
     });
 
-    new Button(this, cx, cy + 420, {
+    new Button(this, cx, cy + 400, {
       w: 320,
       h: 96,
       label: t('close'),

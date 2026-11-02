@@ -55,7 +55,7 @@ export const en = {
   bagStrength: 'Strong pull!',
   blastUsed: 'Boom!',
   items: {
-    blastCap: { name: 'Blast Cap', desc: 'Destroys what you are pulling. Press the button (or D) while reeling in.' },
+    blastCap: { name: 'Blast Cap', desc: 'Destroys what you are pulling in. Button or D key.' },
     turbo: { name: 'Turbo Winch Oil', desc: 'Next level: pull speed x1.5.' },
     lantern: { name: 'Lucky Lantern', desc: 'Next level: better Mystery Bag prizes.' },
     gemLens: { name: 'Gem Lens', desc: 'Next level: diamonds worth x1.5.' },
