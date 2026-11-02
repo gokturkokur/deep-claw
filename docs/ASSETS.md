@@ -81,6 +81,27 @@ Collision shapes (not the art!) are set in `src/config/economy.ts`. They are sli
 
 Drawn sizes in the world: claw 90 x 72, winch 168 x 119, miner 96 x 122, drum 62 x 62 (set in `src/scenes/Game.ts`).
 
+### Magnet Test prototype images
+
+Only used by the separate Magnet Test mode (see `docs/MAGNET_PROTOTYPE.md`). They are drawn at exactly the listed size. `npm run assets:magnet-art` rewrites all of them from `tools/make-magnet-art.mjs`, so run it only if you want the first placeholder versions back: it overwrites your own files with the same names. Collision shapes and values are in `src/config/magnet.ts`.
+
+| Key | File | Size (px) | Anchor | Frames | What it shows |
+|---|---|---|---|---|---|
+| `mg_bike` | `public/assets/images/mg_bike.svg` | 150 x 96 | center | 1 | Rusty bicycle (valuable, heavy) |
+| `mg_cart` | `public/assets/images/mg_cart.svg` | 110 x 100 | center | 1 | Shopping cart (valuable, very heavy) |
+| `mg_chain` | `public/assets/images/mg_chain.svg` | 88 x 84 | center | 1 | Pile of rusty chain (cheap heavy scrap) |
+| `mg_coins` | `public/assets/images/mg_coins.svg` | 72 x 56 | center | 1 | Bunch of coins (light) |
+| `mg_engine` | `public/assets/images/mg_engine.svg` | 112 x 92 | center | 1 | Old engine block (cheap, heaviest scrap) |
+| `mg_grenade` | `public/assets/images/mg_grenade.svg` | 56 x 72 | center | 1 | Old grenade (explodes on a direct touch) |
+| `mg_keys` | `public/assets/images/mg_keys.svg` | 76 x 64 | center | 1 | Key bunch (light) |
+| `mg_knife` | `public/assets/images/mg_knife.svg` | 84 x 48 | center | 1 | Pocket knife (light) |
+| `mg_magnet` | `public/assets/images/mg_magnet.svg` | 88 x 72 | top centre = rope end; the poles at the bottom are the touching face | 1 (rotated by code) | Horseshoe magnet |
+| `mg_manhole` | `public/assets/images/mg_manhole.svg` | 96 x 96 | center | 1 | Manhole cover (cheap heavy scrap) |
+| `mg_pipe` | `public/assets/images/mg_pipe.svg` | 128 x 44 | center | 1 | Rusty iron pipe lying sideways (cheap heavy scrap) |
+| `mg_safe` | `public/assets/images/mg_safe.svg` | 96 x 96 | center | 1 | Locked safe (valuable, random money) |
+
+Scrap uses rust browns and dull iron on purpose, so it reads as junk next to the brighter valuables. Keep that contrast if you redraw them.
+
 ## Sounds
 
 All sounds were synthesised for this project (no samples, no licences needed). Replace any file with your own `.wav` of the same name.
