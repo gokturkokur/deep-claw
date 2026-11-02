@@ -14,7 +14,6 @@ import { makeRng, randomSeed, type Rng } from './Rng';
 export interface MagnetEntity {
   id: number;
   kind: MagnetItemId;
-  metal: boolean;
   explosive: boolean;
   x: number;
   y: number;
@@ -111,7 +110,6 @@ export class MagnetSession implements ClawHost {
       const e: MagnetEntity = {
         id,
         kind: p.kind,
-        metal: def.metal,
         explosive: !!def.explosive,
         x: p.x,
         y: p.y,
@@ -137,7 +135,7 @@ export class MagnetSession implements ClawHost {
   }
 
   // ---- ClawHost ----------------------------------------------------------
-  /** Only things that stop the magnet are swept here: non-metal and metal that is too heavy to lift. */
+  /** Only things that stop the magnet are swept here: items too heavy for the remaining capacity. */
   sweep(ax: number, ay: number, bx: number, by: number): { id: number; t: number } | null {
     this.blockers.length = 0;
     for (const e of this.entities) if (e.alive && !e.attached && !this.liftable(e)) this.blockers.push(e.shape);
@@ -161,19 +159,22 @@ export class MagnetSession implements ClawHost {
     return this.byId.get(id);
   }
 
-  /** Metal that still fits into the remaining capacity. Everything else is an obstacle. */
+  /**
+   * Fits into the remaining capacity, so it sticks on touch. Anything heavier is an obstacle that
+   * stops the magnet. A grenade always counts as liftable: touching it sets it off, full or not.
+   */
   liftable(e: MagnetEntity): boolean {
-    return e.metal && e.weight <= this.settings.capacity - this.load + 1e-9;
+    return e.explosive || e.weight <= this.settings.capacity - this.load + 1e-9;
   }
 
   isFull(): boolean {
     return this.load > 0 && this.settings.capacity - this.load < MAGNET.minItemWeight - 1e-9;
   }
 
-  /** Metal things that are still down there and worth delivering. */
+  /** Things that are still down there and can be delivered (everything but grenades). */
   collectibleCount(): number {
     let n = 0;
-    for (const e of this.entities) if (e.alive && e.metal && !e.explosive) n++;
+    for (const e of this.entities) if (e.alive && !e.explosive) n++;
     return n;
   }
 
@@ -241,14 +242,14 @@ export class MagnetSession implements ClawHost {
     }
   }
 
-  /** Pull field: metal inside the radius slides towards the magnet face. */
+  /** Pull field: items inside the radius slide towards the magnet face. Grenades ignore it. */
   private pull(dt: number): void {
     const R = this.settings.pullRadius;
     const tx = this.claw.tipX;
     const ty = this.claw.tipY;
     for (const e of this.entities) {
       if (this.claw.state !== 'launching') return;
-      if (!e.alive || e.attached || !this.liftable(e)) continue;
+      if (!e.alive || e.attached || e.explosive || !this.liftable(e)) continue;
       const dx = tx - e.x;
       const dy = ty - e.y;
       const d = Math.hypot(dx, dy);

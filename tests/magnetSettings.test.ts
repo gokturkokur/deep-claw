@@ -14,7 +14,7 @@ describe('magnet settings', () => {
   it('are remembered between sessions', () => {
     const store = new MemoryStore();
     const s = defaultSettings();
-    s.pullRadius = 310;
+    s.pullRadius = 150;
     s.capacity = 12.5;
     s.mode = 'firstStick';
     s.showRing = false;
@@ -44,6 +44,13 @@ describe('magnet settings', () => {
     expect(s.showRing).toBe(MAGNET_SETTINGS.showRing.def);
     expect(s.descentSpeed).toBe(775);
     expect(sanitizeSettings(null)).toEqual(defaultSettings());
+  });
+
+  it('ignore values remembered under the old storage key (the old, much bigger radius)', () => {
+    const store = new MemoryStore();
+    store.setItem('deepclaw.magnet.settings', JSON.stringify({ ...defaultSettings(), pullRadius: 420 }));
+    expect(MAGNET_SETTINGS.storageKey).not.toBe('deepclaw.magnet.settings');
+    expect(loadSettings(store).pullRadius).toBe(MAGNET_SETTINGS.pullRadius.def);
   });
 
   it('snap to the slider step', () => {

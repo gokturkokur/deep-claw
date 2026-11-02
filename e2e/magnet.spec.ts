@@ -7,7 +7,7 @@ test.setTimeout(240_000);
 
 const OUT = 'docs/screenshots';
 mkdirSync(OUT, { recursive: true });
-const SETTINGS_KEY = 'deepclaw.magnet.settings';
+const SETTINGS_KEY = 'deepclaw.magnet.settings.v2';
 
 /** Fast-forward the magnet session with normal 1/60 s updates until it is home again. */
 const finishDive = (page: Page) =>
@@ -88,7 +88,7 @@ test.describe('Magnet Test (prototype)', () => {
     await page.mouse.down();
     await page.mouse.move(to.x, to.y, { steps: 6 });
     await page.mouse.up();
-    expect(await page.evaluate(() => (window as any).__dc.magnet.settings.pullRadius)).toBe(420);
+    expect(await page.evaluate(() => (window as any).__dc.magnet.settings.pullRadius)).toBe(200);
 
     // the two toggle buttons show readable labels
     const labels = await page.evaluate(() => {
@@ -106,7 +106,7 @@ test.describe('Magnet Test (prototype)', () => {
     expect(live.showRing).toBe(false);
     expect(await page.evaluate(() => (window as any).__dc.magnetScene.ring.visible)).toBe(false);
     const stored = JSON.parse((await page.evaluate((k) => localStorage.getItem(k), SETTINGS_KEY)) as string);
-    expect(stored).toMatchObject({ pullRadius: 420, mode: 'firstStick', showRing: false });
+    expect(stored).toMatchObject({ pullRadius: 200, mode: 'firstStick', showRing: false });
 
     // tapping the panel does not launch the magnet
     const pp = await page.evaluate(() => {
@@ -122,15 +122,15 @@ test.describe('Magnet Test (prototype)', () => {
     expect((await state(page)).frozen).toBe(false);
     await page.reload();
     await waitScene(page, 'MagnetGame');
-    expect(await page.evaluate(() => ({ ...(window as any).__dc.magnet.settings }))).toMatchObject({ pullRadius: 420, mode: 'firstStick', showRing: false });
+    expect(await page.evaluate(() => ({ ...(window as any).__dc.magnet.settings }))).toMatchObject({ pullRadius: 200, mode: 'firstStick', showRing: false });
 
     // reset to defaults
     await clickButton(page, 'gear');
     await page.waitForFunction(() => (window as any).__dc.magnetScene.panelUi.isOpen);
     await clickButton(page, 'reset');
     st = await page.evaluate(() => ({ ...(window as any).__dc.magnet.settings }));
-    expect(st).toMatchObject({ pullRadius: 260, capacity: 6, mode: 'sweep', showRing: true });
-    expect(JSON.parse((await page.evaluate((k) => localStorage.getItem(k), SETTINGS_KEY)) as string)).toMatchObject({ pullRadius: 260, mode: 'sweep' });
+    expect(st).toMatchObject({ pullRadius: 110, capacity: 6, mode: 'sweep', showRing: true });
+    expect(JSON.parse((await page.evaluate((k) => localStorage.getItem(k), SETTINGS_KEY)) as string)).toMatchObject({ pullRadius: 110, mode: 'sweep' });
     expect(errors).toEqual([]);
   });
 
@@ -142,9 +142,9 @@ test.describe('Magnet Test (prototype)', () => {
     // magnet mid-dive with the ring visible
     await page.evaluate(() => {
       const s = (window as any).__dc.magnet;
-      s.claw.angleDeg = 84;
+      s.claw.angleDeg = 99; // between the pipe and the grenade: picks up the keys, heads for the safe
       s.launch();
-      for (let i = 0; i < 22; i++) s.update(1 / 60);
+      for (let i = 0; i < 26; i++) s.update(1 / 60);
     });
     await page.waitForTimeout(500);
     await page.screenshot({ path: `${OUT}/magnet-dive.png` });

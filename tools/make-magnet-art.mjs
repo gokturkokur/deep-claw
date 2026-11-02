@@ -53,18 +53,34 @@ const files = {
     `<ellipse cx="28" cy="44" rx="20" ry="24" fill="#5d6b3a" ${st}/><path d="M12 40 H44 M12 50 H44 M28 22 V66" stroke="${INK}" stroke-width="3" opacity=".6"/>` +
     `<rect x="20" y="12" width="16" height="12" rx="3" fill="#9aa1a8" ${st}/><path d="M36 14 q10 -2 10 8" fill="none" stroke="#c9d1d8" stroke-width="4" stroke-linecap="round"/>` +
     `<circle cx="46" cy="24" r="5" fill="none" stroke="#c9d1d8" stroke-width="3"/>`),
-  mg_tire: svg(104, 104,
-    shadow(104, 104, 40) +
-    `<circle cx="52" cy="50" r="44" fill="#2e2a28" ${st}/><circle cx="52" cy="50" r="19" fill="#6b655f" ${st}/>` +
-    `<path d="M52 10 V20 M52 80 V90 M12 50 H22 M82 50 H92 M24 22 l7 7 M73 71 l7 7 M80 22 l-7 7 M31 71 l-7 7" stroke="#5a5450" stroke-width="5" stroke-linecap="round"/>`),
-  mg_boot: svg(96, 88,
-    shadow(96, 88, 38) +
-    `<path d="M22 8 H50 L52 46 Q80 48 88 62 V76 H12 V8 Z" fill="#6a4a2c" ${st}/><rect x="12" y="66" width="76" height="12" fill="#2e2a28" ${st}/>` +
-    `<path d="M22 8 H50 V18 H22 Z" fill="#8a6540" ${st}/><path d="M30 28 H46 M30 38 H46" stroke="${INK}" stroke-width="3.5" stroke-linecap="round" opacity=".7"/>`),
-  mg_stone: svg(100, 84,
-    shadow(100, 84, 40) +
-    `<polygon points="10,62 16,34 38,14 66,10 88,28 92,56 76,72 28,74" fill="#8a8f93" ${st}/>` +
-    `<polygon points="30,26 50,20 66,22 52,40 34,44" fill="#b2b7ba" opacity=".7"/><path d="M60 46 l10 14 M34 56 l-6 -8" stroke="#6a6f73" stroke-width="3.5" stroke-linecap="round"/>`),
+  // Heavy cheap scrap: rust browns and dull iron, so it reads as junk next to the bright valuables.
+  mg_pipe: svg(128, 44,
+    shadow(128, 44, 54) +
+    `<rect x="14" y="9" width="102" height="24" rx="3" fill="#77716b" ${st}/>` +
+    `<rect x="108" y="5" width="14" height="32" rx="3" fill="#5f5a55" ${st}/>` +
+    `<path d="M30 25 q8 -6 18 -1 q6 4 12 0 M74 15 q10 6 22 0" stroke="#a5582a" stroke-width="6" stroke-linecap="round" fill="none"/>` +
+    `<path d="M22 14 H102" stroke="#b9b3ad" stroke-width="3" stroke-linecap="round" opacity=".7"/>` +
+    `<ellipse cx="14" cy="21" rx="8" ry="13" fill="#77716b" ${st}/><ellipse cx="14" cy="21" rx="4" ry="8" fill="${INK}"/>`),
+  mg_manhole: svg(96, 96,
+    shadow(96, 96, 38) +
+    `<circle cx="48" cy="46" r="40" fill="#4c4f52" ${st}/><circle cx="48" cy="46" r="30" fill="none" stroke="#6c7074" stroke-width="5"/>` +
+    `<path d="M26 34 H70 M22 46 H74 M26 58 H70" stroke="#2e3133" stroke-width="5" stroke-linecap="round"/>` +
+    `<path d="M20 22 a34 34 0 0 1 20 -12" fill="none" stroke="#fff" stroke-width="3" opacity=".25" stroke-linecap="round"/>` +
+    `<circle cx="66" cy="70" r="6" fill="#8a4a22" opacity=".8"/><circle cx="30" cy="68" r="4" fill="#8a4a22" opacity=".7"/>`),
+  mg_chain: svg(88, 84,
+    shadow(88, 84, 36) +
+    [[22, 58, 0], [44, 64, 90], [66, 56, 0], [32, 40, 90], [56, 38, 0], [44, 20, 90]]
+      .map(([x, y, r]) => `<rect x="${x - 13}" y="${y - 8}" width="26" height="16" rx="8" fill="none" stroke="${INK}" stroke-width="9" transform="rotate(${r} ${x} ${y})"/>` +
+        `<rect x="${x - 13}" y="${y - 8}" width="26" height="16" rx="8" fill="none" stroke="#a5582a" stroke-width="4.5" transform="rotate(${r} ${x} ${y})"/>`)
+      .join('')),
+  mg_engine: svg(112, 92,
+    shadow(112, 92, 46) +
+    `<rect x="12" y="28" width="88" height="52" rx="6" fill="#55504a" ${st}/>` +
+    `<rect x="20" y="10" width="72" height="22" rx="4" fill="#6b625a" ${st}/>` +
+    `<path d="M32 10 V32 M50 10 V32 M68 10 V32" stroke="${INK}" stroke-width="3.5"/>` +
+    `<rect x="4" y="40" width="10" height="26" rx="2" fill="#3b3733" ${st}/><rect x="98" y="40" width="10" height="26" rx="2" fill="#3b3733" ${st}/>` +
+    `<circle cx="38" cy="56" r="9" fill="#3b3733" ${st}/><circle cx="74" cy="56" r="9" fill="#3b3733" ${st}/>` +
+    `<path d="M16 76 q20 -10 34 0 M64 34 q14 4 30 -2" stroke="#9a5a2e" stroke-width="6" stroke-linecap="round" fill="none" opacity=".85"/>`),
 };
 
 for (const [name, body] of Object.entries(files)) writeFileSync(OUT + name + '.svg', body);
