@@ -47,6 +47,9 @@ export const CLAW = {
   maxDt: 0.05,
 } as const;
 
+/** Same keys as CLAW but with plain `number` values, so a mode (e.g. the magnet prototype) can pass its own tuned copy. */
+export type ClawConfig = { -readonly [K in keyof typeof CLAW]: number };
+
 export const LEVEL_RULES = {
   durationSec: 60,
   /** Stars: 1 = target, 2 = 125 % of target, 3 = 150 %. */
