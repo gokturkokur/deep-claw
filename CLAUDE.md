@@ -34,3 +34,4 @@ An original portrait mobile arcade game in the "swinging claw mining" genre, bui
 - Art / sound files: `public/assets/`, listed in `src/assets/manifest.ts` and `docs/ASSETS.md`. The generators in `tools/` made the first version only.
 - Test hooks: open the game with `?debug=1` to get `window.__game` and `window.__dc` (session, services). Playwright tests use them.
 - Software-rendered headless Chromium runs the game at about 6 fps, so browser tests step the session by code (`stepSession`) instead of waiting for real time.
+- Magnet Test prototype (branch `claude/magnet-prototype`): separate one-level mode, opened from the main menu or `?mode=magnet`. Details in `docs/MAGNET_PROTOTYPE.md`. Not part of the 20-level game and does not touch the save.
