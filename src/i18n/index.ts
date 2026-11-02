@@ -1,0 +1,46 @@
+import { en, type Strings } from './en';
+import { tr } from './tr';
+import type { Lang } from '../systems/Save';
+
+const TABLES: Record<Lang, Strings> = { en, tr };
+let current: Lang = 'en';
+
+export function detectLang(): Lang {
+  try {
+    const l = (navigator.language || 'en').toLowerCase();
+    return l.startsWith('tr') ? 'tr' : 'en';
+  } catch {
+    return 'en';
+  }
+}
+
+export function setLang(l: Lang): void {
+  current = l;
+  try {
+    document.documentElement.lang = l;
+  } catch {
+    /* ignore */
+  }
+}
+
+export function getLang(): Lang {
+  return current;
+}
+
+type Key = Exclude<keyof Strings, 'items'>;
+
+/** Look up a UI string; `{n}` style placeholders are replaced from `params`. */
+export function t(key: Key, params?: Record<string, string | number>): string {
+  let s = TABLES[current][key] as string;
+  if (params) for (const [k, v] of Object.entries(params)) s = s.replace(`{${k}}`, String(v));
+  return s;
+}
+
+export function itemText(id: keyof Strings['items']): { name: string; desc: string } {
+  return TABLES[current].items[id];
+}
+
+/** Format money with thousands separators using the active language. */
+export function money(n: number): string {
+  return '$' + Math.round(n).toLocaleString(current === 'tr' ? 'tr-TR' : 'en-US');
+}

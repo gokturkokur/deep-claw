@@ -13,7 +13,7 @@ export const WORLD = {
   pivotX: 360,
   pivotY: 236,
   /** y of the ground line where the rig stands. */
-  surfaceY: 296,
+  surfaceY: 320,
   /** Treasure may only be placed inside this box. */
   fieldMinX: 40,
   fieldMaxX: 680,
@@ -33,7 +33,7 @@ export const CLAW = {
   baseRetractSpeed: 500,
   minRetractSpeed: 60,
   /** Distance from the pivot to the jaw tip when the claw is home. */
-  homeLength: 70,
+  homeLength: 84,
   maxLength: 1160,
   /** Collision radius of the jaw tip. */
   tipRadius: 14,

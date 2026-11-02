@@ -37,6 +37,8 @@ const blob = (cx, cy, rx, ry, n, seed, jit = 0.18) => {
 };
 const stroke = (w = 4) => `stroke="${INK}" stroke-width="${w}" stroke-linejoin="round" stroke-linecap="round"`;
 
+const iconBase = (inner, defs = '') => svg(64, 64, inner, defs);
+
 // ---------------------------------------------------------------- treasure
 function nugget(name, w, h, seed, facets) {
   const cx = w / 2, cy = h / 2 + 2, rx = w / 2 - 6, ry = h / 2 - 7;
@@ -267,15 +269,16 @@ put(
     720,
     300,
     `<rect width="720" height="300" fill="url(#s)"/>
-<circle cx="560" cy="170" r="70" fill="#ffd9a0" opacity=".55"/><circle cx="560" cy="170" r="44" fill="#fff0c8" opacity=".8"/>
-<path d="M0 230 C80 190 150 200 230 226 C320 180 420 190 500 222 C580 190 660 196 720 214 L720 300 L0 300 Z" fill="#7a4a3c" opacity=".55"/>
-<path d="M0 262 C100 228 180 244 270 262 C380 226 480 240 560 262 C640 240 690 244 720 256 L720 300 L0 300 Z" fill="#5a3430"/>
-<ellipse cx="150" cy="90" rx="70" ry="16" fill="#fff" opacity=".35"/><ellipse cx="195" cy="80" rx="46" ry="14" fill="#fff" opacity=".35"/>
-<ellipse cx="420" cy="130" rx="60" ry="12" fill="#fff" opacity=".28"/>`,
+<path d="M0 226 C90 186 160 196 240 224 C330 184 420 192 500 224 C590 186 660 196 720 226 L720 300 L0 300 Z" fill="#7a4a3c" opacity=".55"/>
+<path d="M0 258 C110 226 190 244 280 260 C390 226 480 240 570 260 C650 238 700 246 720 258 L720 300 L0 300 Z" fill="#5a3430"/>`,
     lg('s', ['#3a2a5c', '#a5576b', '#f2a65a', '#ffd9a0']),
   ),
 );
-
+put('deco_sun.svg', svg(180, 180, `<circle cx="90" cy="90" r="86" fill="#ffd9a0" opacity=".35"/><circle cx="90" cy="90" r="62" fill="#ffe3b0" opacity=".6"/><circle cx="90" cy="90" r="42" fill="#fff4d2"/>`));
+put('deco_cloud.svg', svg(220, 70, `<g fill="#fff" opacity=".4"><ellipse cx="80" cy="44" rx="70" ry="18"/><ellipse cx="130" cy="34" rx="50" ry="18"/><ellipse cx="168" cy="48" rx="44" ry="14"/></g>`));
+put('icon_sound.svg', iconBase(`<path d="M8 24 H20 L34 12 V52 L20 40 H8 Z" fill="#fff" ${stroke(3.5)}/><path d="M42 22 Q50 32 42 42 M48 14 Q62 32 48 50" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round"/><path d="M42 22 Q50 32 42 42 M48 14 Q62 32 48 50" fill="none" stroke="${INK}" stroke-width="2" stroke-linecap="round" opacity=".5"/>`));
+put('icon_mute.svg', iconBase(`<path d="M8 24 H20 L34 12 V52 L20 40 H8 Z" fill="#fff" ${stroke(3.5)}/><path d="M42 24 L58 40 M58 24 L42 40" stroke="${INK}" stroke-width="9" stroke-linecap="round"/><path d="M42 24 L58 40 M58 24 L42 40" stroke="#ff6a4a" stroke-width="5" stroke-linecap="round"/>`));
+put('icon_gear.svg', iconBase(`<path d="M32 6 L38 10 L45 8 L48 15 L56 18 L54 26 L58 32 L54 38 L56 46 L48 49 L45 56 L38 54 L32 58 L26 54 L19 56 L16 49 L8 46 L10 38 L6 32 L10 26 L8 18 L16 15 L19 8 L26 10 Z" fill="#fff" ${stroke(3.5)}/><circle cx="32" cy="32" r="10" fill="#8a929a" ${stroke(3.5)}/>`));
 put(
   'ground_top.svg',
   svg(
@@ -364,7 +367,6 @@ const star = (fill, edge) => `<polygon points="48,6 60,34 90,36 66,56 74,86 48,7
 put('star_full.svg', svg(96, 96, star('url(#g)', INK) + `<polygon points="48,16 55,34 70,36 58,45" fill="#fff" opacity=".55"/>`, lg('g', ['#fff08a', '#ffc21a', '#e08a0a'])));
 put('star_empty.svg', svg(96, 96, star('#4a3523', '#1c0f06') + `<polygon points="48,16 55,34 70,36 58,45" fill="#fff" opacity=".08"/>`));
 
-const iconBase = (inner, defs = '') => svg(64, 64, inner, defs);
 put('icon_pause.svg', iconBase(`<rect x="16" y="12" width="12" height="40" rx="4" fill="#fff" ${stroke(3.5)}/><rect x="36" y="12" width="12" height="40" rx="4" fill="#fff" ${stroke(3.5)}/>`));
 put('icon_blast.svg', iconBase(`<rect x="12" y="22" width="22" height="34" rx="6" fill="#d4402a" ${stroke(3.5)} transform="rotate(-18 23 39)"/><rect x="28" y="18" width="22" height="34" rx="6" fill="#e8552f" ${stroke(3.5)} transform="rotate(14 39 35)"/><path d="M44 16 C46 8 52 8 54 3" fill="none" stroke="${INK}" stroke-width="3.5" stroke-linecap="round"/><circle cx="54" cy="4" r="4" fill="#ffd23a" stroke="#ff7a1a" stroke-width="2"/><path d="M20 30 l4 -4 M36 26 l4 -4" stroke="#fff" stroke-width="3" opacity=".4" stroke-linecap="round"/>`));
 put('icon_turbo.svg', iconBase(`<circle cx="32" cy="32" r="26" fill="url(#g)" ${stroke(3.5)}/><path d="M36 6 L18 36 H30 L26 58 L46 26 H34 Z" fill="#ffe34a" ${stroke(3)}/>`, lg('g', ['#7fd0ff', '#2a86d6'])));

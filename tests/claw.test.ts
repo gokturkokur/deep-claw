@@ -77,7 +77,7 @@ describe('swing', () => {
     while (c.state !== 'swinging' && guard++ < 1000) {
       c.update(1 / 60, noHost, 1);
       if (c.events.includes('missed')) sawMiss = true;
-      if (c.state !== 'swinging') expect(c.phase).toBeCloseTo(phase, 9);
+      if ((c.state as string) !== 'swinging') expect(c.phase).toBeCloseTo(phase, 9);
     }
     expect(sawMiss).toBe(true);
     expect(c.state).toBe('swinging');
