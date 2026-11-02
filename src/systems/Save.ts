@@ -1,0 +1,199 @@
+import { BOOST_IDS, SAVE, SHOP, type BoostId } from '../config/economy';
+import { LEVELS } from '../data/levels';
+
+export type Lang = 'en' | 'tr';
+
+export interface ShopState {
+  /** Seed so a reload shows the same stock. */
+  seed: number;
+  /** Level that was just cleared. */
+  afterLevel: number;
+  /** Boost items already bought in this visit. */
+  bought: BoostId[];
+}
+
+export interface SaveData {
+  saveVersion: number;
+  /** Highest level the player may play. */
+  unlockedLevel: number;
+  /** Level that "Continue" opens (or the shop before it). */
+  currentLevel: number;
+  /** 'shop' = the player won and has not left the shop yet. */
+  phase: 'level' | 'shop';
+  wallet: number;
+  levels: Record<string, { stars: number; best: number }>;
+  inventory: { blastCaps: number };
+  /** Boosts bought for the next level. */
+  boosts: Record<BoostId, boolean>;
+  shop: ShopState | null;
+  hasProgress: boolean;
+  hintShown: boolean;
+  settings: { music: number; sfx: number; vibration: boolean; lang: Lang | null };
+}
+
+export function defaultSave(): SaveData {
+  return {
+    saveVersion: SAVE.version,
+    unlockedLevel: 1,
+    currentLevel: 1,
+    phase: 'level',
+    wallet: 0,
+    levels: {},
+    inventory: { blastCaps: 0 },
+    boosts: { turbo: false, lantern: false, gemLens: false, crusher: false },
+    shop: null,
+    hasProgress: false,
+    hintShown: false,
+    settings: { music: 0.6, sfx: 0.8, vibration: true, lang: null },
+  };
+}
+
+const num = (v: unknown, def: number, min: number, max: number): number =>
+  typeof v === 'number' && Number.isFinite(v) ? Math.min(max, Math.max(min, v)) : def;
+const int = (v: unknown, def: number, min: number, max: number): number => Math.round(num(v, def, min, max));
+const bool = (v: unknown, def: boolean): boolean => (typeof v === 'boolean' ? v : def);
+const isObj = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
+
+/** Upgrade older save shapes to the current one. Never throws. */
+export function migrate(raw: unknown): Record<string, unknown> {
+  if (!isObj(raw)) return {};
+  const version = typeof raw.saveVersion === 'number' ? raw.saveVersion : 0;
+  if (version >= SAVE.version) return raw;
+  // v0/v1 shape: { level, money, caps, stars: number[] , best: number[] }
+  const out: Record<string, unknown> = {};
+  const level = int(raw.level, 1, 1, LEVELS.length);
+  out.unlockedLevel = level;
+  out.currentLevel = level;
+  out.wallet = raw.money ?? raw.wallet;
+  out.inventory = { blastCaps: raw.caps ?? 0 };
+  const stars = Array.isArray(raw.stars) ? raw.stars : [];
+  const best = Array.isArray(raw.best) ? raw.best : [];
+  const levels: Record<string, { stars: number; best: number }> = {};
+  stars.forEach((s, i) => {
+    levels[String(i + 1)] = { stars: int(s, 0, 0, 3), best: int(best[i], 0, 0, 1e9) };
+  });
+  out.levels = levels;
+  out.hasProgress = level > 1 || (typeof out.wallet === 'number' && out.wallet > 0);
+  if (isObj(raw.settings)) out.settings = raw.settings;
+  return out;
+}
+
+/** Validate a loaded object, filling any missing / broken field with defaults. */
+export function sanitize(raw: unknown): SaveData {
+  const d = defaultSave();
+  const r = migrate(raw);
+  const maxLevel = LEVELS.length;
+
+  d.unlockedLevel = int(r.unlockedLevel, 1, 1, maxLevel);
+  d.currentLevel = int(r.currentLevel, d.unlockedLevel, 1, maxLevel);
+  if (d.currentLevel > d.unlockedLevel) d.unlockedLevel = d.currentLevel;
+  d.phase = r.phase === 'shop' ? 'shop' : 'level';
+  d.wallet = int(r.wallet, 0, 0, 1e9);
+  d.hasProgress = bool(r.hasProgress, false);
+  d.hintShown = bool(r.hintShown, false);
+
+  if (isObj(r.levels)) {
+    for (const [k, v] of Object.entries(r.levels)) {
+      const id = Number(k);
+      if (!Number.isInteger(id) || id < 1 || id > maxLevel || !isObj(v)) continue;
+      d.levels[String(id)] = { stars: int(v.stars, 0, 0, 3), best: int(v.best, 0, 0, 1e9) };
+    }
+  }
+  if (isObj(r.inventory)) d.inventory.blastCaps = int(r.inventory.blastCaps, 0, 0, SHOP.maxBlastCaps);
+  if (isObj(r.boosts)) for (const id of BOOST_IDS) d.boosts[id] = bool(r.boosts[id], false);
+
+  if (isObj(r.shop) && d.phase === 'shop') {
+    const bought = Array.isArray(r.shop.bought) ? r.shop.bought.filter((b): b is BoostId => BOOST_IDS.includes(b as BoostId)) : [];
+    d.shop = {
+      seed: int(r.shop.seed, 1, 0, 0xffffffff),
+      afterLevel: int(r.shop.afterLevel, Math.max(1, d.currentLevel - 1), 1, maxLevel),
+      bought,
+    };
+  } else {
+    d.phase = 'level';
+  }
+  if (d.phase === 'shop' && !d.shop) d.phase = 'level';
+
+  if (isObj(r.settings)) {
+    d.settings.music = num(r.settings.music, d.settings.music, 0, 1);
+    d.settings.sfx = num(r.settings.sfx, d.settings.sfx, 0, 1);
+    d.settings.vibration = bool(r.settings.vibration, true);
+    d.settings.lang = r.settings.lang === 'en' || r.settings.lang === 'tr' ? r.settings.lang : null;
+  }
+  return d;
+}
+
+export interface KeyValueStore {
+  getItem(key: string): string | null;
+  setItem(key: string, value: string): void;
+  removeItem(key: string): void;
+}
+
+/** In-memory store for tests and for browsers where localStorage is blocked. */
+export class MemoryStore implements KeyValueStore {
+  private m = new Map<string, string>();
+  getItem(k: string): string | null {
+    return this.m.get(k) ?? null;
+  }
+  setItem(k: string, v: string): void {
+    this.m.set(k, v);
+  }
+  removeItem(k: string): void {
+    this.m.delete(k);
+  }
+}
+
+export function safeStore(): KeyValueStore {
+  try {
+    const s = window.localStorage;
+    s.setItem('__t', '1');
+    s.removeItem('__t');
+    return s;
+  } catch {
+    return new MemoryStore();
+  }
+}
+
+export class SaveManager {
+  data: SaveData;
+
+  constructor(private readonly store: KeyValueStore) {
+    this.data = this.load();
+  }
+
+  load(): SaveData {
+    let parsed: unknown = null;
+    try {
+      const txt = this.store.getItem(SAVE.key);
+      parsed = txt ? JSON.parse(txt) : null;
+    } catch {
+      parsed = null;
+    }
+    this.data = sanitize(parsed);
+    return this.data;
+  }
+
+  save(): void {
+    try {
+      this.store.setItem(SAVE.key, JSON.stringify(this.data));
+    } catch {
+      /* storage full or blocked: keep playing */
+    }
+  }
+
+  /** Wipe progress but keep settings. */
+  resetProgress(): void {
+    const settings = this.data.settings;
+    this.data = defaultSave();
+    this.data.settings = settings;
+    this.data.hintShown = false;
+    this.save();
+  }
+
+  stars(level: number): number {
+    return this.data.levels[String(level)]?.stars ?? 0;
+  }
+  best(level: number): number {
+    return this.data.levels[String(level)]?.best ?? 0;
+  }
+}
