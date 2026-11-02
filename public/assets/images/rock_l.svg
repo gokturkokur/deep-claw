@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="150" height="130" viewBox="0 0 150 130"><defs><linearGradient id="g" x1="0.2" y1="0" x2="0.7" y2="1"><stop offset="0" stop-color="#a79988"/><stop offset="0.5" stop-color="#776a5c"/><stop offset="1" stop-color="#4d4237"/></linearGradient></defs><ellipse cx="75" cy="123" rx="60" ry="6" fill="#000" opacity=".28"/>
+<polygon points="139.0,68.0 121.9,100.5 88.6,131.7 45.3,110.5 12.3,86.9 12.9,49.3 43.2,22.5 88.3,5.8 121.7,35.6" fill="url(#g)" stroke="#2b1608" stroke-width="4.5" stroke-linejoin="round" stroke-linecap="round"/>
+<polygon points="107.2,49.8 92.3,70.0 54.0,76.3 26.8,60.3 27.6,39.5 54.8,25.3 95.1,27.7" fill="#fff" opacity=".18"/>
+<path d="M55 47 l7 10 l-1 9" stroke="#3b3128" stroke-width="3" fill="none" stroke-linecap="round" opacity=".7"/><path d="M54 88 l-6 11 l5 13" stroke="#3b3128" stroke-width="3" fill="none" stroke-linecap="round" opacity=".7"/><path d="M68 65 l-6 17 l-5 10" stroke="#3b3128" stroke-width="3" fill="none" stroke-linecap="round" opacity=".7"/>
+<circle cx="108" cy="87.5" r="7.5" fill="#7a9a4b" opacity=".8"/>
+<circle cx="117" cy="94" r="5.250000000000001" fill="#8fb05a" opacity=".8"/></svg>
