@@ -32,7 +32,7 @@ export const OBJECTS: Record<ObjType, ObjDef> = {
   goldS: { type: 'goldS', value: 100, weight: 1.2, shape: { kind: 'circle', r: 28 }, hang: 22, texture: 'gold_s', collectible: true },
   goldM: { type: 'goldM', value: 250, weight: 2.2, shape: { kind: 'circle', r: 40 }, hang: 30, texture: 'gold_m', collectible: true },
   goldL: { type: 'goldL', value: 500, weight: 4.0, shape: { kind: 'circle', r: 58 }, hang: 44, texture: 'gold_l', collectible: true },
-  diamond: { type: 'diamond', value: 600, weight: 1.0, shape: { kind: 'circle', r: 34 }, hang: 26, texture: 'diamond', collectible: true },
+  diamond: { type: 'diamond', value: 600, weight: 1.0, shape: { kind: 'circle', r: 22 }, hang: 20, texture: 'diamond', collectible: true },
   rockS: { type: 'rockS', value: 10, weight: 3.0, shape: { kind: 'circle', r: 32 }, hang: 24, texture: 'rock_s', collectible: true },
   rockL: { type: 'rockL', value: 20, weight: 5.5, shape: { kind: 'rect', hw: 56, hh: 46 }, hang: 40, texture: 'rock_l', collectible: true },
   bag: { type: 'bag', value: 0, weight: 2.5, weightRange: [1.0, 4.0], shape: { kind: 'circle', r: 36 }, hang: 28, texture: 'bag', collectible: true },

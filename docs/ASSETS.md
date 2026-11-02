@@ -30,7 +30,6 @@ Fonts: the game uses **Lilita One** (SIL Open Font License, bundled in `src/font
 | `claw_open` | `public/assets/images/claw_open.svg` | 100 x 80 | top centre = rope attach point | 1 | Claw with open jaws (swinging / launching) |
 | `debris` | `public/assets/images/debris.svg` | 20 x 20 | center | 1 | Small rock chip particle |
 | `deco_cloud` | `public/assets/images/deco_cloud.svg` | 220 x 70 | center | 1 | Drifting cloud |
-| `deco_crystal` | `public/assets/images/deco_crystal.svg` | 90 x 90 | center | 1 | Blue crystal decoration in the soil |
 | `deco_fossil` | `public/assets/images/deco_fossil.svg` | 120 x 70 | center | 1 | Fossil ribs decoration in the soil |
 | `deco_roots` | `public/assets/images/deco_roots.svg` | 110 x 90 | center | 1 | Tree roots decoration in the soil |
 | `deco_sun` | `public/assets/images/deco_sun.svg` | 180 x 180 | center | 1 | Low sun glow |

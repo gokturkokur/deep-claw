@@ -13,7 +13,7 @@ export interface Backdrop {
 
 /**
  * Warm underground mine: sky + hills above the ground line, soil below with depth shading,
- * fossils / crystals / roots, lantern glow, drifting dust motes and the odd water drip.
+ * fossils / roots, lantern glow, drifting dust motes and the odd water drip.
  * Everything is oversized so tall and wide screens show decoration instead of black bars.
  */
 export function createBackdrop(scene: Phaser.Scene, layout: Layout, opts: { surface?: boolean } = {}): Backdrop {
@@ -41,15 +41,12 @@ export function createBackdrop(scene: Phaser.Scene, layout: Layout, opts: { surf
   // decorations in the soil (faint, not part of gameplay)
   const deco: Array<[string, number, number, number]> = [
     ['deco_fossil', 90, 1120, 0.5],
-    ['deco_crystal', 640, 980, 0.8],
     ['deco_roots', 40, 470, 0.35],
     ['deco_roots', 690, 700, 0.35],
     ['deco_fossil', 600, 560, 0.4],
-    ['deco_crystal', 70, 760, 0.7],
   ];
   for (const [k, x, y, a] of deco) {
-    const d = scene.add.image(x, y, k).setAlpha(a).setDepth(5);
-    if (k === 'deco_crystal') d.setBlendMode(Phaser.BlendModes.NORMAL);
+    scene.add.image(x, y, k).setAlpha(a).setDepth(5);
   }
 
   // lantern glow near the rig

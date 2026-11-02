@@ -312,7 +312,6 @@ put('glow.svg', svg(256, 256, `<circle cx="128" cy="128" r="128" fill="url(#g)"/
 put('vignette.svg', svg(64, 64, `<rect width="64" height="64" fill="url(#g)"/>`, `<radialGradient id="g" cx=".5" cy=".5" r=".75"><stop offset=".45" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".6"/></radialGradient>`));
 
 put('deco_fossil.svg', svg(120, 70, `<g fill="#cdbfa8" ${stroke(3)}><path d="M10 52 Q60 8 110 52" fill="none" stroke-width="8"/><path d="M26 44 L22 62 M46 28 L44 54 M70 26 L72 54 M92 40 L96 60" fill="none" stroke-width="6"/></g>`));
-put('deco_crystal.svg', svg(90, 90, `<g ${stroke(3)}><polygon points="10,84 24,30 38,84" fill="#8fe0ff"/><polygon points="34,84 52,10 70,84" fill="#6bc4f2"/><polygon points="62,84 74,40 86,84" fill="#a8ecff"/></g><path d="M50 22 L46 70" stroke="#fff" stroke-width="3" opacity=".6"/>`));
 put('deco_roots.svg', svg(110, 90, `<g fill="none" stroke="#7a4a28" stroke-width="7" stroke-linecap="round"><path d="M55 0 C58 24 30 36 22 62 C18 74 20 84 14 90"/><path d="M55 20 C70 34 86 44 90 66"/><path d="M40 40 C52 52 60 62 62 84"/></g>`));
 
 // ---------------------------------------------------------------- particles

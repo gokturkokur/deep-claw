@@ -28,7 +28,6 @@ export const IMAGES = {
   claw_open: { file: 'claw_open.svg', w: 100, h: 80 },
   debris: { file: 'debris.svg', w: 20, h: 20 },
   deco_cloud: { file: 'deco_cloud.svg', w: 220, h: 70 },
-  deco_crystal: { file: 'deco_crystal.svg', w: 90, h: 90 },
   deco_fossil: { file: 'deco_fossil.svg', w: 120, h: 70 },
   deco_roots: { file: 'deco_roots.svg', w: 110, h: 90 },
   deco_sun: { file: 'deco_sun.svg', w: 180, h: 180 },
