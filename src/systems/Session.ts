@@ -56,6 +56,8 @@ export interface SessionOptions {
   freezeCount?: number;
   /** Pay a bonus for hitting the middle of an object (on in the game, off in simple unit tests). */
   perfectBonus?: boolean;
+  /** The permanent Helper Miner from the Workshop. */
+  permanentHelper?: boolean;
 }
 
 export interface RunStats {
@@ -102,6 +104,8 @@ export class Session implements ClawHost {
   private readonly upg: Record<UpgradeId, number>;
   private readonly clawType: ClawId;
   private readonly perfectBonus: boolean;
+  /** Number of helpers: the permanent one plus the Extra Miner boost. */
+  readonly helpers: number;
 
   constructor(opts: SessionOptions) {
     this.level = opts.level;
@@ -112,6 +116,7 @@ export class Session implements ClawHost {
     this.upg = opts.upgrades ?? { winch: 0, muscle: 0, watch: 0, fortune: 0 };
     this.clawType = opts.clawType ?? 'standard';
     this.perfectBonus = !!opts.perfectBonus;
+    this.helpers = (opts.permanentHelper ? 1 : 0) + (this.mods.extraMiner ? 1 : 0);
     this.endlessSeed = opts.endlessSeed ?? null;
     const base = opts.durationSec ?? (this.endlessSeed !== null ? ENDLESS.startSec : LEVEL_RULES.durationSec);
     this.timeLeft = base + (this.mods.hourglass ? EFFECTS.hourglassSec : 0) + this.upg.watch * UPGRADES.watch.perLevel;
@@ -261,7 +266,7 @@ export class Session implements ClawHost {
     }
 
     if (this.freezeLeft <= 0) this.moveBeetles(dt);
-    if (this.mods.extraMiner) this.runHelper(dt);
+    if (this.helpers > 0) this.runHelper(dt);
 
     this.rushing = twistFor(this.level.id).rush && this.elapsed % TWIST.rushCycle > TWIST.rushCycle - TWIST.rushSec;
     this.claw.update(dt, this, (this.level.swingMult ?? 1) * (this.rushing ? TWIST.rushMult : 1));
@@ -296,25 +301,27 @@ export class Session implements ClawHost {
     this.helperTimer -= dt;
     if (this.helperTimer > 0 || this.timeLeft <= 0) return;
     this.helperTimer = EFFECTS.helperIntervalSec;
-    let best: Entity | null = null;
-    let bestD = Infinity;
-    for (const e of this.entities) {
-      if (!e.alive || e.hooked) continue;
-      if (e.type !== 'goldS' && e.type !== 'goldM' && e.type !== 'goldL' && e.type !== 'diamond') continue;
-      const d = Math.hypot(e.x - WORLD.pivotX, e.y - WORLD.pivotY);
-      if (d < bestD) {
-        bestD = d;
-        best = e;
+    for (let n = 0; n < this.helpers; n++) {
+      let best: Entity | null = null;
+      let bestD = Infinity;
+      for (const e of this.entities) {
+        if (!e.alive || e.hooked) continue;
+        if (e.type !== 'goldS' && e.type !== 'goldM' && e.type !== 'goldL' && e.type !== 'diamond') continue;
+        const d = Math.hypot(e.x - WORLD.pivotX, e.y - WORLD.pivotY);
+        if (d < bestD) {
+          bestD = d;
+          best = e;
+        }
       }
+      if (!best) return;
+      best.alive = false;
+      this.shapesDirty = true;
+      const value = collectValue(best.type, this.mods, false);
+      this.earned += value;
+      this.stats.collected++;
+      if (best.type === 'diamond') this.stats.diamonds++;
+      this.events.push({ type: 'collect', id: best.id, kind: best.type, value, x: best.x, y: best.y, combo: this.combo, mult: 1, bonus: 0 });
     }
-    if (!best) return;
-    best.alive = false;
-    this.shapesDirty = true;
-    const value = collectValue(best.type, this.mods, false);
-    this.earned += value;
-    this.stats.collected++;
-    if (best.type === 'diamond') this.stats.diamonds++;
-    this.events.push({ type: 'collect', id: best.id, kind: best.type, value, x: best.x, y: best.y, combo: this.combo, mult: 1, bonus: 0 });
   }
 
   private moveBeetles(dt: number): void {

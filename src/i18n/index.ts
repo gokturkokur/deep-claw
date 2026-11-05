@@ -76,3 +76,7 @@ export function rankName(i: number): string {
 export function quips(): readonly string[] {
   return TABLES[current].quips;
 }
+
+export function helperText(): { name: string; desc: string } {
+  return TABLES[current].helper;
+}

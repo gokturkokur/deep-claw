@@ -65,6 +65,7 @@ export const tr: Strings = {
   gotIt: 'Anladım!',
   showHints: 'İpuçlarını tekrar göster',
   hintsReset: 'İpuçları tekrar gösterilecek',
+  helper: { name: 'Yardımcı Madenci', desc: 'Hep açık: 7 sn\'de bir en yakın altını veya elması alır.' },
   wheelShort: 'Çark',
   spin: 'ÇEVİR',
   spinsLeft: 'Hak: {n}',

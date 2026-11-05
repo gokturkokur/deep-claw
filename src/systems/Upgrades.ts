@@ -1,4 +1,4 @@
-import { CLAW_TYPES, UPGRADES, type ClawId, type UpgradeId } from '../config/economy';
+import { CLAW_TYPES, HELPER, UPGRADES, type ClawId, type UpgradeId } from '../config/economy';
 import type { SaveData } from './Save';
 
 export function upgradeCost(id: UpgradeId, level: number): number {
@@ -34,4 +34,13 @@ export function equipClaw(save: SaveData, id: ClawId): boolean {
   if (!save.claws.owned.includes(id)) return false;
   save.claws.equipped = id;
   return true;
+}
+
+export function buyHelper(save: SaveData): BuyResult {
+  if (save.helper) return { ok: false, reason: 'owned' };
+  if (save.wallet < HELPER.price) return { ok: false, reason: 'funds' };
+  save.wallet -= HELPER.price;
+  save.helper = true;
+  save.hasProgress = true;
+  return { ok: true };
 }

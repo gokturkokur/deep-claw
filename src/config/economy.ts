@@ -266,3 +266,8 @@ export const WHEEL: ReadonlyArray<{ prize: WheelPrize; weight: number; color: nu
   { prize: { kind: 'money', amount: 6000 }, weight: 2, color: 0xffd23a },
 ];
 export const MAX_SPINS = 20;
+
+/** Permanent Helper Miner (Workshop): works every level, stacks with the Extra Miner boost. */
+export const HELPER = {
+  price: 100000,
+} as const;
