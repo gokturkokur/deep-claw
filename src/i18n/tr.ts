@@ -58,6 +58,7 @@ export const tr: Strings = {
   blastUsed: 'Güm!',
   rush: 'ATAK!',
   wheel: 'Şans Çarkı',
+  wheelShort: 'Çark',
   spin: 'ÇEVİR',
   spinsLeft: 'Hak: {n}',
   noSpins: 'Çark hakkı için bir bölümü 3 yıldızla geç!',

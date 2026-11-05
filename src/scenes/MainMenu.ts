@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import { DESIGN } from '../config/game';
 import { itemText, money, rankName, t } from '../i18n';
-import { RANK_STARS, rankIndex, totalStars } from '../systems/Campaign';
+import { rankIndex, totalStars } from '../systems/Campaign';
 import { LEVELS } from '../data/levels';
 import { canClaimDaily, claimDaily, dayKey, nextStreak, type DailyResult } from '../systems/Daily';
 import { services } from '../services';
@@ -47,7 +47,7 @@ export class MainMenu extends Phaser.Scene {
       goTo(this, 'Game', { levelId: 1 });
     };
 
-    const play = new Button(this, cx, 690, {
+    const play = new Button(this, cx, 665, {
       w: 460,
       h: 118,
       label: t('play'),
@@ -63,7 +63,7 @@ export class MainMenu extends Phaser.Scene {
     this.tweens.add({ targets: play, scale: { from: 1, to: 1.04 }, duration: 900, yoyo: true, repeat: -1, ease: 'Sine.InOut' });
 
     const hasSave = save.data.hasProgress;
-    new Button(this, cx, 805, {
+    new Button(this, cx, 780, {
       w: 460,
       label: t('continue'),
       fontSize: 46,
@@ -76,7 +76,7 @@ export class MainMenu extends Phaser.Scene {
       .setEnabled(hasSave)
       .setDepth(20);
 
-    new Button(this, cx, 910, {
+    new Button(this, cx, 885, {
       w: 460,
       label: t('levelSelect'),
       fontSize: 46,
@@ -84,35 +84,43 @@ export class MainMenu extends Phaser.Scene {
       onClick: () => goTo(this, 'LevelSelect'),
     }).setDepth(20);
 
-    // second row: shop, workshop and the extra modes
-    const small = (i: number, label: string, tint: number, scene: string, data?: object) =>
-      new Button(this, cx + (i - 2) * 142, 1030, { w: 134, h: 104, label, fontSize: 25, tint, onClick: () => goTo(this, scene, data) }).setDepth(20);
-    small(0, t('shopBtn'), COLORS.gold, 'Shop');
-    small(1, t('workshop'), COLORS.blue, 'Workshop', { back: 'MainMenu' });
-    small(2, t('endless'), 0x7a5ad8, 'Game', { mode: 'endless' });
-    small(3, t('weekly'), 0x2aa8b8, 'Game', { mode: 'weekly' });
-    small(4, t('achievements'), COLORS.green, 'Achievements');
+    // bottom dock: one round icon per mode, label underneath
+    const dockY = 1010;
+    const dock: Array<[string, string, string, number, string, object | undefined]> = [
+      ['shop', 'icon_shop', t('shopBtn'), COLORS.gold, 'Shop', undefined],
+      ['workshop', 'icon_wrench', t('workshop'), COLORS.blue, 'Workshop', { back: 'MainMenu' }],
+      ['endless', 'icon_infinity', t('endless'), 0x7a5ad8, 'Game', { mode: 'endless' }],
+      ['weekly', 'icon_calendar', t('weekly'), 0x2aa8b8, 'Game', { mode: 'weekly' }],
+      ['awards', 'icon_trophy', t('achievements'), COLORS.green, 'Achievements', undefined],
+      ['wheel', 'icon_wheel', t('wheelShort'), COLORS.red, 'Wheel', undefined],
+    ];
+    dock.forEach(([name, icon, label, tint, scene, data], i) => {
+      const x = cx + (i - 2.5) * 116;
+      const b = new Button(this, x, dockY, { round: true, w: 100, h: 100, icon: icon as never, tint, onClick: () => goTo(this, scene, data) }).setDepth(20).setName(name);
+      txt(this, x, dockY + 68, label, 22, { strokeW: 4, wrap: 112 }).setDepth(20);
+      if (name === 'wheel' && save.data.spins > 0) {
+        this.tweens.add({ targets: b, scale: { from: 1, to: 1.08 }, duration: 600, yoyo: true, repeat: -1 });
+        this.add.circle(x + 38, dockY - 38, 18, 0xe5483a).setStrokeStyle(4, 0x2b1608).setDepth(26);
+        txt(this, x + 38, dockY - 38, String(save.data.spins), 24, { strokeW: 4 }).setDepth(27);
+      }
+    });
 
-    // rank by total stars
+    // info pills at the top: rank and stars on the left, wallet on the right
     const stars = totalStars(save.data.levels);
     const ri = rankIndex(stars);
-    const rankY = Math.max(layout.top + 48, 0) + 40;
-    txt(this, 24, rankY, rankName(ri), 36, { originX: 0, color: COLORS.textGold, strokeW: 6 }).setDepth(25);
-    const next = RANK_STARS[ri + 1];
-    txt(this, 24, rankY + 40, `${stars} / ${LEVELS.length * 3}` + (next ? `  (${next})` : ''), 26, { originX: 0, color: '#f4dba8', strokeW: 4 }).setDepth(25);
+    const topY = Math.max(layout.top + 48, 0) + 36;
+    this.add.nineslice(24, topY, 'slider_track', undefined, 270, 64, 18, 18, 12, 12).setOrigin(0, 0.5).setDepth(24);
+    txt(this, 40, topY - 12, rankName(ri), 28, { originX: 0, color: COLORS.textGold, strokeW: 5 }).setDepth(25);
+    txt(this, 40, topY + 16, `${stars} / ${LEVELS.length * 3} ${t('stars')}`, 20, { originX: 0, color: '#f4dba8', strokeW: 3 }).setDepth(25);
+    this.add.nineslice(DESIGN.width - 24, topY, 'slider_track', undefined, 250, 64, 18, 18, 12, 12).setOrigin(1, 0.5).setDepth(24);
+    this.add.image(DESIGN.width - 24 - 250 + 36, topY, 'icon_coin').setDisplaySize(40, 40).setDepth(25);
+    txt(this, DESIGN.width - 24 - 16, topY, money(save.data.wallet), 30, { originX: 1, color: COLORS.textGold, strokeW: 5 }).setDepth(25);
 
-    // daily gift
+    // daily gift: only while there is something to claim
     const today = dayKey(new Date());
     if (canClaimDaily(save.data, today)) {
-      const gift = new Button(this, DESIGN.width - 100, 330, { round: true, icon: 'icon_gift', tint: COLORS.red, onClick: () => this.openGift(layout, today) }).setDepth(25).setName('gift');
-      this.tweens.add({ targets: gift, scale: { from: 1, to: 1.12 }, angle: { from: -6, to: 6 }, duration: 500, yoyo: true, repeat: -1 });
-    }
-
-    // lucky wheel
-    const wheelBtn = new Button(this, DESIGN.width - 100, 455, { round: true, icon: 'icon_wheel', tint: 0x7a5ad8, onClick: () => goTo(this, 'Wheel') }).setDepth(25).setName('wheel');
-    if (save.data.spins > 0) {
-      this.tweens.add({ targets: wheelBtn, scale: { from: 1, to: 1.1 }, duration: 600, yoyo: true, repeat: -1 });
-      txt(this, DESIGN.width - 62, 488, String(save.data.spins), 30, { color: COLORS.textGold, strokeW: 6 }).setDepth(26);
+      const gift = new Button(this, DESIGN.width - 80, topY + 100, { round: true, icon: 'icon_gift', tint: COLORS.red, onClick: () => this.openGift(layout, today) }).setDepth(25).setName('gift');
+      this.tweens.add({ targets: gift, scale: { from: 1, to: 1.1 }, angle: { from: -6, to: 6 }, duration: 500, yoyo: true, repeat: -1 });
     }
 
     // bottom corners: sound toggle and settings

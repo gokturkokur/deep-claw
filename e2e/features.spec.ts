@@ -151,7 +151,7 @@ test.describe('new features', () => {
 
   test('achievements screen opens and lists the awards', async ({ page }) => {
     await open(page);
-    await clickButton(page, 'Awards');
+    await clickButton(page, 'awards');
     await waitScene(page, 'Achievements');
   });
 

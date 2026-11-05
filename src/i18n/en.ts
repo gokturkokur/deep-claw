@@ -56,6 +56,7 @@ export const en = {
   blastUsed: 'Boom!',
   rush: 'RUSH!',
   wheel: 'Lucky Wheel',
+  wheelShort: 'Wheel',
   spin: 'SPIN',
   spinsLeft: 'Spins: {n}',
   noSpins: 'Clear a level with 3 stars to earn a spin!',
