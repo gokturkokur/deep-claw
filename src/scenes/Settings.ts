@@ -9,6 +9,7 @@ import type { Lang } from '../systems/Save';
 interface Data {
   from: 'MainMenu' | 'Pause';
   levelId?: number;
+  mode?: 'campaign' | 'weekly' | 'endless';
 }
 
 /** Overlay scene: music / SFX sliders, vibration, language, reset. */
@@ -117,7 +118,7 @@ export class Settings extends Phaser.Scene {
   }
 
   private close(refresh: boolean, toMenu = false): void {
-    const { from, levelId } = this.data0;
+    const { from, levelId, mode } = this.data0;
     services.save.save();
     this.scene.stop();
     if (from === 'MainMenu') {
@@ -131,7 +132,7 @@ export class Settings extends Phaser.Scene {
         return;
       }
       this.scene.stop('Pause');
-      this.scene.launch('Pause', { levelId });
+      this.scene.launch('Pause', { levelId, mode });
     }
   }
 }

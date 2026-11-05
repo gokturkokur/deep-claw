@@ -31,6 +31,13 @@ Telefonda denemek için: bilgisayar ve telefon aynı Wi-Fi'de olsun, `npm run de
 - **D** tuşu (veya ekrandaki patlatıcı düğmesi): çektiğin şeyi patlatır, kanca boş ve hızlı döner.
 - **P** veya **Esc**: duraklat.
 
+### Oyunda neler var
+
+- **Hikaye** (Oyna): 100 bölüm, 5 dünya, patron savaşları, Dusty ve Çakıl'ın macerası.
+- **Sonsuz**, **Haftalık** meydan okuma, **Günlük hediye**, **Ödüller** (başarımlar).
+- **Dükkân** (tüketilenler ve fırsatlar) ve **Atölye** (kalıcı yükseltmeler, kancalar, kıyafetler).
+- Seri (combo), bölüm görevleri, Zaman Dondurucu, Atlama Bileti.
+
 ### Komutlar
 
 | Komut | Ne yapar |
@@ -54,7 +61,8 @@ Telefonda denemek için: bilgisayar ve telefon aynı Wi-Fi'de olsun, `npm run de
 | `MASTER_PROMPT.md` | Oyunun tam tarifi |
 | `CLAUDE.md` | Bu repoda çalışan Claude oturumları için kurallar ve durum |
 | `src/config/` | Para, ağırlık, hız, fiyat gibi **tüm sayılar** burada |
-| `src/data/levels.ts` | 20 bölümün yerleşimi ve hedefleri |
+| `src/data/levels.ts`, `generatedLevels.ts` | 100 bölümün yerleşimi ve hedefleri |
+| `src/data/story.ts` | Hikaye diyalogları |
 | `docs/ASSETS.md` | Görsel ve ses listesi |
 | `docs/ANDROID.md` | Android paketi ve Google Play adımları |
 | `docs/REPORT.md` | Neler yapıldı, test sonuçları, eksikler |

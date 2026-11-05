@@ -8,13 +8,15 @@ import { COLORS, Layout, txt } from '../ui/theme';
 /** Overlay scene shown while the Game scene is paused. */
 export class Pause extends Phaser.Scene {
   private levelId = 1;
+  private mode: 'campaign' | 'weekly' | 'endless' = 'campaign';
 
   constructor() {
     super('Pause');
   }
 
-  init(data: { levelId: number }): void {
+  init(data: { levelId: number; mode?: 'campaign' | 'weekly' | 'endless' }): void {
     this.levelId = data.levelId;
+    this.mode = data.mode ?? 'campaign';
   }
 
   create(): void {
@@ -24,7 +26,7 @@ export class Pause extends Phaser.Scene {
     dim(this, layout, 0.66);
     panel(this, cx, cy, 600, 780);
     txt(this, cx, cy - 300, t('paused').toUpperCase(), 72, { color: COLORS.textGold, strokeW: 10 });
-    txt(this, cx, cy - 230, t('level', { n: this.levelId }), 36, { color: '#f4dba8' });
+    txt(this, cx, cy - 230, this.mode === 'campaign' ? t('level', { n: this.levelId }) : this.mode === 'weekly' ? t('weeklyTitle') : t('endless'), 36, { color: '#f4dba8' });
 
     const resume = () => {
       this.scene.stop();
@@ -40,7 +42,7 @@ export class Pause extends Phaser.Scene {
       tint: COLORS.gold,
       onClick: () => {
         this.scene.stop();
-        this.scene.start('Game', { levelId: this.levelId });
+        this.scene.start('Game', { levelId: this.levelId, mode: this.mode });
       },
     });
     new Button(this, cx, cy + 110, {
@@ -50,7 +52,7 @@ export class Pause extends Phaser.Scene {
       tint: COLORS.blue,
       onClick: () => {
         this.scene.pause();
-        this.scene.launch('Settings', { from: 'Pause', levelId: this.levelId });
+        this.scene.launch('Settings', { from: 'Pause', levelId: this.levelId, mode: this.mode });
       },
     });
     new Button(this, cx, cy + 230, {

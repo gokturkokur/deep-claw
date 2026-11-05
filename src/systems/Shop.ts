@@ -49,8 +49,8 @@ export function dealOffers(seed: number, rerolls = 0): ShopOffer[] {
   });
 }
 
-export function rerollCost(rerolls: number): number {
-  return SHOP.rerollBase * (rerolls + 1);
+export function rerollCost(rerolls = 0): number {
+  return SHOP.rerollBase * ((rerolls || 0) + 1);
 }
 
 export function reroll(save: SaveData): boolean {
@@ -58,7 +58,7 @@ export function reroll(save: SaveData): boolean {
   const cost = rerollCost(save.shop.rerolls);
   if (save.wallet < cost) return false;
   save.wallet -= cost;
-  save.shop.rerolls++;
+  save.shop.rerolls = (save.shop.rerolls || 0) + 1;
   save.shop.bought = [];
   return true;
 }

@@ -107,13 +107,32 @@ test('screens gallery (shop, level select, complete, game over, pause, settings)
     s.inventory.blastCaps = 2;
     s.levels = { '1': { stars: 3, best: 1900 }, '2': { stars: 2, best: 2100 }, '3': { stars: 1, best: 1800 }, '4': { stars: 3, best: 3100 }, '5': { stars: 2, best: 2900 }, '6': { stars: 1, best: 2600 }, '7': { stars: 2, best: 3000 } };
     s.phase = 'shop';
-    s.shop = { seed: 11, afterLevel: 7, bought: [] };
+    s.shop = { seed: 11, afterLevel: 7, bought: [], rerolls: 0 };
     d.services.save.save();
   });
+  await goto('MainMenu');
+  await page.screenshot({ path: `${OUT}/screen-menu.png` });
   await goto('Shop');
   await page.screenshot({ path: `${OUT}/screen-shop.png` });
+  await page.evaluate(() => (window as any).__game.scene.getScene('Shop').setTab('deals'));
+  await page.waitForTimeout(1000);
+  await page.screenshot({ path: `${OUT}/screen-shop-deals.png` });
+  await goto('Workshop');
+  await page.screenshot({ path: `${OUT}/screen-workshop-upgrades.png` });
+  await page.evaluate(() => (window as any).__game.scene.getScene('Workshop').setTab('claws'));
+  await page.waitForTimeout(800);
+  await page.screenshot({ path: `${OUT}/screen-workshop-claws.png` });
+  await page.evaluate(() => (window as any).__game.scene.getScene('Workshop').setTab('style'));
+  await page.waitForTimeout(800);
+  await page.screenshot({ path: `${OUT}/screen-workshop-style.png` });
+  await goto('Achievements');
+  await page.screenshot({ path: `${OUT}/screen-achievements.png` });
+  await goto('Results', { kind: 'endless', score: 4200, waves: 6, newBest: true, walletGain: 1260, best: 4200, bestWaves: 6, unlocked: ['endless5'] });
+  await page.screenshot({ path: `${OUT}/screen-results-endless.png` });
   await goto('LevelSelect');
   await page.screenshot({ path: `${OUT}/screen-levelselect.png` });
+  await goto('LevelSelect', { world: 3 });
+  await page.screenshot({ path: `${OUT}/screen-levelselect-world3.png` });
   await goto('LevelComplete', { levelId: 7, earned: 3600, target: 2700, won: true, blastCapsLeft: 2, stars: 3, firstClear: true, newBest: true, walletGain: 3600 });
   await page.screenshot({ path: `${OUT}/screen-levelcomplete.png` });
   await goto('GameOver', { levelId: 7, earned: 1900, target: 2700 });
@@ -124,6 +143,19 @@ test('screens gallery (shop, level select, complete, game over, pause, settings)
     d.services.save.data.boosts.turbo = true;
     d.services.save.data.boosts.gemLens = true;
   });
+  for (const lv of [25, 45, 65, 85]) {
+    await goto('Game', { levelId: lv });
+    await page.screenshot({ path: `${OUT}/screen-game-level${lv}.png` });
+  }
+  await goto('Game', { levelId: 20 });
+  await page.evaluate(() => {
+    const game = (window as any).__game.scene.getScene('Game');
+    game.scene.pause();
+    game.scene.launch('Story', { beat: 'w1_boss', from: 'Game' });
+  });
+  await waitScene(page, 'Story');
+  await page.waitForTimeout(3500);
+  await page.screenshot({ path: `${OUT}/screen-story.png` });
   await goto('Game', { levelId: 10 });
   await page.evaluate(() => {
     const s = (window as any).__dc.session;

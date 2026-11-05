@@ -428,7 +428,7 @@ export class Game extends Phaser.Scene {
     services.audio.loop('reel', false);
     this.reelOn = false;
     this.scene.pause();
-    this.scene.launch('Pause', { levelId: this.levelId });
+    this.scene.launch('Pause', { levelId: this.levelId, mode: this.mode });
   }
 
   // ------------------------------------------------------------------ loop
@@ -555,7 +555,7 @@ export class Game extends Phaser.Scene {
     if (ev.kind === 'diamond' || (ev.kind === 'beetle' && ev.value > 100)) audio.sfx('diamond');
     else if (ev.kind === 'chest') audio.sfx('bag');
     else if (ev.kind === 'rockS' || ev.kind === 'rockL') audio.sfx('rock');
-    else audio.sfx('gold');
+    else audio.sfx('gold', 1, Math.min(1.5, 1 + 0.05 * ev.combo));
     if (ev.value > 0) this.floats.show(this, px, py - 30, '+' + money(ev.value), COLORS.textGold, ev.value >= 500 ? 64 : 52);
     audio.vibrate(ev.value >= 500 ? 35 : 15);
   }
