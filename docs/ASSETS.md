@@ -50,6 +50,13 @@ Fonts: the game uses **Lilita One** (SIL Open Font License, bundled in `src/font
 | `icon_hourglass` | `public/assets/images/icon_hourglass.svg` | 64 x 64 | center | 1 | Hourglass icon |
 | `icon_goldrush` | `public/assets/images/icon_goldrush.svg` | 64 x 64 | center | 1 | Gold Fever icon |
 | `icon_miner` | `public/assets/images/icon_miner.svg` | 64 x 64 | center | 1 | Extra Miner icon |
+| `chest` | `public/assets/images/chest.svg` | 100 x 80 | center | 1 | Treasure chest ($800, heavy) |
+| `slime` | `public/assets/images/slime.svg` | 64 x 58 | center | 1 | Acid slime (pulling it up costs $150) |
+| `icon_gift` | `public/assets/images/icon_gift.svg` | 64 x 64 | center | 1 | Daily gift |
+| `icon_trophy` | `public/assets/images/icon_trophy.svg` | 64 x 64 | center | 1 | Achievements |
+| `icon_infinity` | `public/assets/images/icon_infinity.svg` | 64 x 64 | center | 1 | Endless mode |
+| `icon_calendar` | `public/assets/images/icon_calendar.svg` | 64 x 64 | center | 1 | Weekly challenge |
+| `icon_arrowup` | `public/assets/images/icon_arrowup.svg` | 64 x 64 | center | 1 | Upgrades |
 | `icon_lantern` | `public/assets/images/icon_lantern.svg` | 64 x 64 | center | 1 | Lucky Lantern icon |
 | `icon_lock` | `public/assets/images/icon_lock.svg` | 64 x 64 | center | 1 | Locked level icon |
 | `icon_mute` | `public/assets/images/icon_mute.svg` | 64 x 64 | center | 1 | Sound off icon |

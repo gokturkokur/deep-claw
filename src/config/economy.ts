@@ -9,7 +9,9 @@ export type ObjType =
   | 'rockL'
   | 'bag'
   | 'keg'
-  | 'beetle';
+  | 'beetle'
+  | 'chest'
+  | 'slime';
 
 export interface ObjDef {
   type: ObjType;
@@ -37,6 +39,8 @@ export const OBJECTS: Record<ObjType, ObjDef> = {
   rockL: { type: 'rockL', value: 20, weight: 5.5, shape: { kind: 'rect', hw: 56, hh: 46 }, hang: 40, texture: 'rock_l', collectible: true },
   bag: { type: 'bag', value: 0, weight: 2.5, weightRange: [1.0, 4.0], shape: { kind: 'circle', r: 36 }, hang: 28, texture: 'bag', collectible: true },
   keg: { type: 'keg', value: 0, weight: 1, shape: { kind: 'rect', hw: 34, hh: 44 }, hang: 0, texture: 'keg', collectible: false },
+  chest: { type: 'chest', value: 800, weight: 5.5, shape: { kind: 'rect', hw: 50, hh: 40 }, hang: 38, texture: 'chest', collectible: true },
+  slime: { type: 'slime', value: -150, weight: 1.5, shape: { kind: 'circle', r: 30 }, hang: 22, texture: 'slime', collectible: true },
   beetle: { type: 'beetle', value: 50, weight: 1.0, shape: { kind: 'circle', r: 28 }, hang: 22, texture: 'beetle_a', collectible: true },
 };
 
@@ -118,4 +122,57 @@ export const EFFECTS = {
 export const SAVE = {
   key: 'deepclaw.save',
   version: 2,
+} as const;
+
+/** Combo: back to back deliveries worth at least `minValue` raise the payout multiplier. */
+export const COMBO = {
+  step: 0.1,
+  max: 1.5,
+  minValue: 50,
+} as const;
+
+export type UpgradeId = 'winch' | 'muscle' | 'watch' | 'fortune';
+export const UPGRADE_IDS: readonly UpgradeId[] = ['winch', 'muscle', 'watch', 'fortune'];
+
+/** Permanent upgrades: price of level n+1 = base * growth^n. */
+export const UPGRADES: Record<UpgradeId, { max: number; base: number; growth: number; perLevel: number; icon: string }> = {
+  winch: { max: 5, base: 900, growth: 1.8, perLevel: 0.1, icon: 'icon_turbo' },
+  muscle: { max: 5, base: 1100, growth: 1.8, perLevel: 0.08, icon: 'icon_crusher' },
+  watch: { max: 5, base: 1500, growth: 1.9, perLevel: 3, icon: 'icon_clock' },
+  fortune: { max: 5, base: 1000, growth: 1.8, perLevel: 0.1, icon: 'icon_lantern' },
+};
+
+export type ClawId = 'standard' | 'wide' | 'swift' | 'titan';
+export const CLAW_IDS: readonly ClawId[] = ['standard', 'wide', 'swift', 'titan'];
+
+/** Claw types: different hit size, reel speed and pull strength. */
+export const CLAW_TYPES: Record<ClawId, { price: number; tipRadius: number; extendMult: number; strengthMult: number; tint: number }> = {
+  standard: { price: 0, tipRadius: 14, extendMult: 1, strengthMult: 1, tint: 0xffffff },
+  wide: { price: 2500, tipRadius: 26, extendMult: 0.95, strengthMult: 0.9, tint: 0xffd680 },
+  swift: { price: 3500, tipRadius: 14, extendMult: 1.3, strengthMult: 1, tint: 0x9fe0ff },
+  titan: { price: 6000, tipRadius: 18, extendMult: 1, strengthMult: 1.3, tint: 0xff9a8a },
+};
+
+/** Daily gift, 7 day cycle. */
+export type DailyReward = { kind: 'money'; amount: number } | { kind: 'caps'; amount: number } | { kind: 'boost' };
+export const DAILY_REWARDS: readonly DailyReward[] = [
+  { kind: 'caps', amount: 1 },
+  { kind: 'money', amount: 300 },
+  { kind: 'caps', amount: 2 },
+  { kind: 'money', amount: 700 },
+  { kind: 'boost' },
+  { kind: 'caps', amount: 3 },
+  { kind: 'money', amount: 2000 },
+];
+
+export const ENDLESS = {
+  startSec: 45,
+  waveBonusSec: 10,
+} as const;
+
+export const WEEKLY = {
+  difficulty: 8,
+  /** The target is this share of what the balance estimator thinks is possible. */
+  targetShare: 0.6,
+  rewardMoney: 1500,
 } as const;

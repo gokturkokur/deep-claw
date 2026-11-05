@@ -52,6 +52,9 @@ export class Claw {
   hitId = -1;
   /** Current speed of the rope (px/s, negative while retracting). */
   speed = 0;
+  /** Set from the equipped claw type / upgrades. */
+  extendMult = 1;
+  tipRadius: number = CLAW.tipRadius;
 
   private stateTimer = 0;
   private prevTipX = 0;
@@ -127,10 +130,10 @@ export class Claw {
       case 'launching': {
         this.prevTipX = this.tipX;
         this.prevTipY = this.tipY;
-        const step = this.cfg.extendSpeed * dt;
+        const step = this.cfg.extendSpeed * this.extendMult * dt;
         const prevLen = this.length;
         this.length += step;
-        this.speed = this.cfg.extendSpeed;
+        this.speed = this.cfg.extendSpeed * this.extendMult;
         let nx = this.pivotX + this.dirX * this.length;
         let ny = this.pivotY + this.dirY * this.length;
         const hit = host.sweep(this.prevTipX, this.prevTipY, nx, ny);

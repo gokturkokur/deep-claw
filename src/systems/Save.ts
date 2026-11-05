@@ -1,4 +1,4 @@
-import { BOOST_IDS, SAVE, SHOP, type BoostId } from '../config/economy';
+import { BOOST_IDS, CLAW_IDS, SAVE, SHOP, UPGRADE_IDS, UPGRADES, type BoostId, type ClawId, type UpgradeId } from '../config/economy';
 import { LEVELS } from '../data/levels';
 
 export type Lang = 'en' | 'tr';
@@ -10,6 +10,23 @@ export interface ShopState {
   afterLevel: number;
   /** Boost items already bought in this visit. */
   bought: BoostId[];
+}
+
+export interface Stats {
+  collected: number;
+  diamonds: number;
+  kegs: number;
+  rocks: number;
+  blasts: number;
+  chests: number;
+  bestCombo: number;
+  levelsWon: number;
+  totalEarned: number;
+  endlessWaves: number;
+}
+
+export function defaultStats(): Stats {
+  return { collected: 0, diamonds: 0, kegs: 0, rocks: 0, blasts: 0, chests: 0, bestCombo: 0, levelsWon: 0, totalEarned: 0, endlessWaves: 0 };
 }
 
 export interface SaveData {
@@ -26,6 +43,13 @@ export interface SaveData {
   /** Boosts bought for the next level. */
   boosts: Record<BoostId, boolean>;
   shop: ShopState | null;
+  stats: Stats;
+  achievements: string[];
+  daily: { last: string; streak: number };
+  upgrades: Record<UpgradeId, number>;
+  claws: { owned: ClawId[]; equipped: ClawId };
+  endless: { best: number; bestWaves: number };
+  weekly: { week: string; best: number; claimed: boolean };
   hasProgress: boolean;
   hintShown: boolean;
   settings: { music: number; sfx: number; vibration: boolean; lang: Lang | null };
@@ -42,6 +66,13 @@ export function defaultSave(): SaveData {
     inventory: { blastCaps: 0 },
     boosts: { turbo: false, lantern: false, gemLens: false, crusher: false, hourglass: false, goldRush: false, extraMiner: false },
     shop: null,
+    stats: defaultStats(),
+    achievements: [],
+    daily: { last: '', streak: 0 },
+    upgrades: { winch: 0, muscle: 0, watch: 0, fortune: 0 },
+    claws: { owned: ['standard'], equipped: 'standard' },
+    endless: { best: 0, bestWaves: 0 },
+    weekly: { week: '', best: 0, claimed: false },
     hasProgress: false,
     hintShown: false,
     settings: { music: 0.6, sfx: 0.8, vibration: true, lang: null },
@@ -113,6 +144,18 @@ export function sanitize(raw: unknown): SaveData {
     d.phase = 'level';
   }
   if (d.phase === 'shop' && !d.shop) d.phase = 'level';
+
+  if (isObj(r.stats)) for (const k of Object.keys(d.stats) as Array<keyof Stats>) d.stats[k] = int(r.stats[k], 0, 0, 1e12);
+  if (Array.isArray(r.achievements)) d.achievements = r.achievements.filter((a): a is string => typeof a === 'string').slice(0, 100);
+  if (isObj(r.daily)) d.daily = { last: typeof r.daily.last === 'string' ? r.daily.last.slice(0, 10) : '', streak: int(r.daily.streak, 0, 0, 10000) };
+  if (isObj(r.upgrades)) for (const id of UPGRADE_IDS) d.upgrades[id] = int(r.upgrades[id], 0, 0, UPGRADES[id].max);
+  if (isObj(r.claws)) {
+    const owned = Array.isArray(r.claws.owned) ? r.claws.owned.filter((c): c is ClawId => CLAW_IDS.includes(c as ClawId)) : [];
+    d.claws.owned = Array.from(new Set<ClawId>(['standard', ...owned]));
+    d.claws.equipped = d.claws.owned.includes(r.claws.equipped as ClawId) ? (r.claws.equipped as ClawId) : 'standard';
+  }
+  if (isObj(r.endless)) d.endless = { best: int(r.endless.best, 0, 0, 1e12), bestWaves: int(r.endless.bestWaves, 0, 0, 1e6) };
+  if (isObj(r.weekly)) d.weekly = { week: typeof r.weekly.week === 'string' ? r.weekly.week.slice(0, 10) : '', best: int(r.weekly.best, 0, 0, 1e12), claimed: bool(r.weekly.claimed, false) };
 
   if (isObj(r.settings)) {
     d.settings.music = num(r.settings.music, d.settings.music, 0, 1);

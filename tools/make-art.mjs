@@ -382,4 +382,26 @@ put('icon_hourglass.svg', iconBase(`<path d="M16 6 H48 M16 58 H48" stroke="${INK
 put('icon_goldrush.svg', iconBase(`<polygon points="${blob(32, 40, 24, 16, 9, 7)}" fill="url(#g)" ${stroke(3.5)}/><polygon points="${blob(22, 24, 14, 10, 8, 3)}" fill="url(#g)" ${stroke(3)}/><polygon points="${blob(44, 20, 12, 9, 8, 5)}" fill="url(#g)" ${stroke(3)}/><path d="M50 4 l2 6 l6 2 l-6 2 l-2 6 l-2 -6 l-6 -2 l6 -2 Z" fill="#fff6c8"/>`, lg('g', ['#ffe97a', '#f6bf1f', '#c47d08'])));
 put('icon_miner.svg', iconBase(`<circle cx="32" cy="38" r="20" fill="#f3b878" ${stroke(3.5)}/><rect x="14" y="32" width="36" height="14" rx="7" fill="#2f3b4d" ${stroke(3)}/><circle cx="24" cy="39" r="5" fill="#bfe9ff"/><circle cx="40" cy="39" r="5" fill="#bfe9ff"/><path d="M12 30 C12 6 52 6 52 30 Z" fill="#ffd23a" ${stroke(3.5)}/><rect x="26" y="8" width="12" height="9" rx="4" fill="#fff3a8" ${stroke(2.5)}/><path d="M24 50 Q32 56 40 50" stroke="${INK}" stroke-width="3" fill="none" stroke-linecap="round"/>`));
 
+
+put('chest.svg', svg(100, 80, `<ellipse cx="50" cy="75" rx="40" ry="5" fill="#000" opacity=".28"/>
+<path d="M8 36 C8 14 92 14 92 36 L92 70 L8 70 Z" fill="url(#w)" ${stroke(4.5)}/>
+<path d="M8 36 C8 14 92 14 92 36 Z" fill="url(#t)" ${stroke(4.5)}/>
+<path d="M22 24 C34 14 66 14 78 24" stroke="#fff" stroke-width="3" fill="none" opacity=".4" stroke-linecap="round"/>
+<rect x="8" y="34" width="84" height="9" fill="#d9a020" ${stroke(3.5)}/>
+<rect x="22" y="14" width="9" height="56" fill="#d9a020" ${stroke(3)}/><rect x="69" y="14" width="9" height="56" fill="#d9a020" ${stroke(3)}/>
+<rect x="41" y="34" width="18" height="22" rx="4" fill="#ffd23a" ${stroke(3.5)}/><circle cx="50" cy="44" r="3.5" fill="${INK}"/>
+<polygon points="30,14 38,6 46,12 54,4 64,12 72,8 70,16" fill="#ffd23a" ${stroke(2.5)}/>`, lg('w', ['#b9733a', '#8a4f26', '#5d3318']) + lg('t', ['#c98448', '#9a5a2c'])));
+put('slime.svg', svg(64, 58, `<ellipse cx="32" cy="53" rx="26" ry="4" fill="#000" opacity=".25"/>
+<path d="M6 48 C2 28 14 10 32 10 C50 10 62 28 58 48 C52 54 12 54 6 48 Z" fill="url(#g)" ${stroke(4)}/>
+<ellipse cx="22" cy="22" rx="8" ry="4" fill="#fff" opacity=".5"/>
+<circle cx="23" cy="34" r="6" fill="#fff" ${stroke(2.5)}/><circle cx="41" cy="34" r="6" fill="#fff" ${stroke(2.5)}/>
+<circle cx="24" cy="35" r="2.6" fill="${INK}"/><circle cx="40" cy="35" r="2.6" fill="${INK}"/>
+<path d="M24 44 Q32 49 40 44" stroke="${INK}" stroke-width="3" fill="none" stroke-linecap="round"/>
+<path d="M10 52 q-2 6 0 8 M52 52 q2 6 0 8" stroke="#6cc14a" stroke-width="4" fill="none" stroke-linecap="round"/>`, lg('g', ['#a8f06a', '#5fc040', '#2f8a2a'])));
+put('icon_gift.svg', iconBase(`<rect x="10" y="26" width="44" height="30" rx="4" fill="#e5483a" ${stroke(3.5)}/><rect x="8" y="18" width="48" height="12" rx="4" fill="#ff6a5a" ${stroke(3.5)}/><rect x="28" y="18" width="8" height="38" fill="#ffd23a" ${stroke(3)}/><path d="M32 18 C20 4 10 12 22 18 M32 18 C44 4 54 12 42 18" fill="none" stroke="${INK}" stroke-width="3.5" stroke-linecap="round"/>`));
+put('icon_trophy.svg', iconBase(`<path d="M16 8 H48 V26 C48 38 40 44 32 44 C24 44 16 38 16 26 Z" fill="url(#g)" ${stroke(3.5)}/><path d="M16 14 H8 C8 28 12 32 18 32 M48 14 H56 C56 28 52 32 46 32" fill="none" stroke="${INK}" stroke-width="3.5" stroke-linecap="round"/><rect x="28" y="44" width="8" height="8" fill="#c98a22" ${stroke(3)}/><rect x="18" y="52" width="28" height="8" rx="3" fill="url(#g)" ${stroke(3.5)}/>`, lg('g', ['#fff08a', '#f2b81c', '#c47d08'])));
+put('icon_infinity.svg', iconBase(`<path d="M32 32 C24 18 8 18 8 32 C8 46 24 46 32 32 C40 18 56 18 56 32 C56 46 40 46 32 32 Z" fill="none" stroke="${INK}" stroke-width="12" stroke-linejoin="round"/><path d="M32 32 C24 18 8 18 8 32 C8 46 24 46 32 32 C40 18 56 18 56 32 C56 46 40 46 32 32 Z" fill="none" stroke="#7fd4ff" stroke-width="6" stroke-linejoin="round"/>`));
+put('icon_calendar.svg', iconBase(`<rect x="8" y="12" width="48" height="46" rx="6" fill="#fff" ${stroke(3.5)}/><rect x="8" y="12" width="48" height="14" rx="6" fill="#e5483a" ${stroke(3.5)}/><rect x="18" y="6" width="6" height="12" rx="3" fill="${INK}"/><rect x="40" y="6" width="6" height="12" rx="3" fill="${INK}"/><path d="M20 38 l8 8 l16 -16" fill="none" stroke="#3aa84a" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>`));
+put('icon_arrowup.svg', iconBase(`<path d="M32 6 L56 32 H42 V58 H22 V32 H8 Z" fill="url(#g)" ${stroke(3.5)}/>`, lg('g', ['#9aff7a', '#3aa84a'])));
+
 console.log('art written to', OUT_DIR);

@@ -31,6 +31,9 @@ export function collectValue(type: ObjType, mods: Modifiers, carriesDiamond = fa
     case 'bag':
     case 'keg':
       return 0;
+    case 'slime':
+    case 'chest':
+      return def.value;
     default:
       return Math.round(def.value * (mods.goldRush ? EFFECTS.goldRushMult : 1));
   }

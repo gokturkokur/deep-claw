@@ -1,7 +1,9 @@
 import { LEVELS } from '../data/levels';
 import { BOOST_IDS } from '../config/economy';
 import { LEVEL_RULES } from '../config/game';
-import { SHOP } from '../config/economy';
+import { SHOP, WEEKLY } from '../config/economy';
+import { checkAchievements, type AchievementDef } from './Achievements';
+import type { RunStats } from './Session';
 import { starsFor } from './Economy';
 import { randomSeed } from './Rng';
 import type { SaveData } from './Save';
@@ -50,6 +52,7 @@ export function commitOutcome(save: SaveData, o: LevelOutcome, seed: number = ra
     save.currentLevel = Math.min(LEVELS.length, o.levelId + 1);
     save.phase = 'shop';
     save.shop = { seed, afterLevel: o.levelId, bought: [] };
+    save.stats.levelsWon++;
   }
   return { stars, firstClear, newBest, walletGain };
 }
@@ -63,3 +66,58 @@ export function leaveShop(save: SaveData): void {
 export function isFinalLevel(levelId: number): boolean {
   return levelId >= LEVELS.length;
 }
+
+/** Add the counters of one finished run (win or lose) to the lifetime stats. */
+export function mergeStats(save: SaveData, run: RunStats, earned: number): void {
+  const st = save.stats;
+  st.collected += run.collected;
+  st.diamonds += run.diamonds;
+  st.kegs += run.kegs;
+  st.rocks += run.rocks;
+  st.blasts += run.blasts;
+  st.chests += run.chests;
+  st.bestCombo = Math.max(st.bestCombo, run.bestCombo);
+  st.totalEarned += earned;
+  save.hasProgress = true;
+}
+
+export interface EndlessResult {
+  newBest: boolean;
+  walletGain: number;
+  waves: number;
+}
+
+/** Endless mode: score is kept as a personal best, 30 % of it goes to the wallet. */
+export function commitEndless(save: SaveData, score: number, wavesReached: number): EndlessResult {
+  const newBest = score > save.endless.best;
+  save.endless.best = Math.max(save.endless.best, score);
+  save.endless.bestWaves = Math.max(save.endless.bestWaves, wavesReached);
+  save.stats.endlessWaves = Math.max(save.stats.endlessWaves, wavesReached);
+  const walletGain = Math.round(score * 0.3);
+  save.wallet += walletGain;
+  return { newBest, walletGain, waves: wavesReached };
+}
+
+export interface WeeklyResult {
+  won: boolean;
+  newBest: boolean;
+  reward: number;
+}
+
+/** Weekly challenge: personal best per week, one reward per week for the first win. */
+export function commitWeekly(save: SaveData, week: string, earned: number, target: number): WeeklyResult {
+  if (save.weekly.week !== week) save.weekly = { week, best: 0, claimed: false };
+  const won = earned >= target;
+  const newBest = earned > save.weekly.best;
+  save.weekly.best = Math.max(save.weekly.best, earned);
+  let reward = 0;
+  if (won && !save.weekly.claimed) {
+    reward = WEEKLY.rewardMoney;
+    save.wallet += reward;
+    save.weekly.claimed = true;
+  }
+  return { won, newBest, reward };
+}
+
+export { checkAchievements };
+export type { AchievementDef };

@@ -1,5 +1,6 @@
 import { BEETLE, KEG, LEVEL_RULES, CLAW, WORLD } from '../config/game';
-import { EFFECTS } from '../config/economy';
+import { COMBO, CLAW_TYPES, ENDLESS, EFFECTS, UPGRADES, type ClawId, type UpgradeId } from '../config/economy';
+import { endlessWave } from './Fields';
 import { BEETLE_DIAMOND_VALUE, BAG, OBJECTS, SHOP, type ObjType } from '../config/economy';
 import type { LevelDef } from '../data/levels';
 import { Claw, type ClawHost } from './Claw';
@@ -30,7 +31,8 @@ export type SessionEvent =
   | { type: 'launch' }
   | { type: 'hit'; id: number }
   | { type: 'miss' }
-  | { type: 'collect'; id: number; kind: ObjType; value: number; x: number; y: number; bag?: BagOutcome }
+  | { type: 'collect'; id: number; kind: ObjType; value: number; x: number; y: number; bag?: BagOutcome; combo: number; mult: number }
+  | { type: 'wave'; wave: number }
   | { type: 'explode'; id: number; x: number; y: number }
   | { type: 'destroyed'; id: number; x: number; y: number }
   | { type: 'blast'; id: number; x: number; y: number }
@@ -43,6 +45,20 @@ export interface SessionOptions {
   blastCaps?: number;
   rng?: Rng;
   durationSec?: number;
+  upgrades?: Record<UpgradeId, number>;
+  clawType?: ClawId;
+  /** Endless mode: waves of generated fields, no target. */
+  endlessSeed?: number;
+}
+
+export interface RunStats {
+  collected: number;
+  diamonds: number;
+  kegs: number;
+  rocks: number;
+  blasts: number;
+  chests: number;
+  bestCombo: number;
 }
 
 export class Session implements ClawHost {
@@ -65,18 +81,38 @@ export class Session implements ClawHost {
   events: SessionEvent[] = [];
   elapsed = 0;
   private helperTimer = 0;
+  combo = 0;
+  wave = 1;
+  readonly endlessSeed: number | null;
+  readonly stats: RunStats = { collected: 0, diamonds: 0, kegs: 0, rocks: 0, blasts: 0, chests: 0, bestCombo: 0 };
+  private readonly upg: Record<UpgradeId, number>;
+  private readonly clawType: ClawId;
 
   constructor(opts: SessionOptions) {
     this.level = opts.level;
     this.mods = opts.modifiers ?? NO_MODIFIERS;
     this.blastCaps = opts.blastCaps ?? 0;
     this.rng = opts.rng ?? makeRng(randomSeed());
-    this.timeLeft = (opts.durationSec ?? LEVEL_RULES.durationSec) + (this.mods.hourglass ? EFFECTS.hourglassSec : 0);
+    this.upg = opts.upgrades ?? { winch: 0, muscle: 0, watch: 0, fortune: 0 };
+    this.clawType = opts.clawType ?? 'standard';
+    this.endlessSeed = opts.endlessSeed ?? null;
+    const base = opts.durationSec ?? (this.endlessSeed !== null ? ENDLESS.startSec : LEVEL_RULES.durationSec);
+    this.timeLeft = base + (this.mods.hourglass ? EFFECTS.hourglassSec : 0) + this.upg.watch * UPGRADES.watch.perLevel;
     this.helperTimer = EFFECTS.helperIntervalSec;
     this.claw = new Claw(WORLD.pivotX, WORLD.pivotY);
+    const ct = CLAW_TYPES[this.clawType];
+    this.claw.tipRadius = ct.tipRadius;
+    this.claw.extendMult = ct.extendMult * (1 + this.upg.winch * UPGRADES.winch.perLevel);
 
+    this.loadObjects(this.endlessSeed !== null ? endlessWave(this.endlessSeed, 1) : opts.level.objects);
+  }
+
+  /** Replace the field (used at start and for each Endless wave). */
+  private loadObjects(objects: LevelDef['objects']): void {
+    this.entities.length = 0;
+    this.byId.clear();
     let id = 1;
-    for (const o of opts.level.objects) {
+    for (const o of objects) {
       const def = OBJECTS[o.type];
       const weight = def.weightRange ? def.weightRange[0] + (def.weightRange[1] - def.weightRange[0]) * this.rng() : def.weight;
       const e: Entity = {
@@ -110,12 +146,13 @@ export class Session implements ClawHost {
       this.entities.push(e);
       this.byId.set(e.id, e);
     }
+    this.shapesDirty = true;
   }
 
   // ---- ClawHost ----------------------------------------------------------
   sweep(ax: number, ay: number, bx: number, by: number): { id: number; t: number } | null {
     if (this.shapesDirty) this.rebuildShapes();
-    return sweep(this.shapes, ax, ay, bx, by, CLAW.tipRadius);
+    return sweep(this.shapes, ax, ay, bx, by, this.claw.tipRadius);
   }
   weightOf(id: number): number {
     return this.byId.get(id)?.weight ?? 1;
@@ -125,7 +162,7 @@ export class Session implements ClawHost {
     return !!e && OBJECTS[e.type].collectible;
   }
   strength(): number {
-    return baseStrength(this.mods) * this.bagStrength;
+    return baseStrength(this.mods) * this.bagStrength * (1 + this.upg.muscle * UPGRADES.muscle.perLevel) * CLAW_TYPES[this.clawType].strengthMult;
   }
   // -----------------------------------------------------------------------
 
@@ -174,6 +211,7 @@ export class Session implements ClawHost {
     if (!e || !e.alive) return false;
     if (!this.claw.dropHooked()) return false;
     this.blastCaps--;
+    this.stats.blasts++;
     e.alive = false;
     e.hooked = false;
     this.shapesDirty = true;
@@ -204,6 +242,7 @@ export class Session implements ClawHost {
           this.events.push({ type: 'miss' });
           break;
         case 'collected':
+          if (this.claw.deliveredId < 0) this.combo = 0;
           this.onCollected(this.claw.deliveredId);
           break;
         default:
@@ -241,7 +280,9 @@ export class Session implements ClawHost {
     this.shapesDirty = true;
     const value = collectValue(best.type, this.mods, false);
     this.earned += value;
-    this.events.push({ type: 'collect', id: best.id, kind: best.type, value, x: best.x, y: best.y });
+    this.stats.collected++;
+    if (best.type === 'diamond') this.stats.diamonds++;
+    this.events.push({ type: 'collect', id: best.id, kind: best.type, value, x: best.x, y: best.y, combo: this.combo, mult: 1 });
   }
 
   private moveBeetles(dt: number): void {
@@ -280,6 +321,7 @@ export class Session implements ClawHost {
     const r2 = KEG.blastRadius * KEG.blastRadius;
     while (queue.length) {
       const keg = queue.shift() as Entity;
+      this.stats.kegs++;
       this.events.push({ type: 'explode', id: keg.id, x: keg.x, y: keg.y });
       for (const o of this.entities) {
         if (!o.alive || o === keg) continue;
@@ -305,17 +347,38 @@ export class Session implements ClawHost {
     let bag: BagOutcome | undefined;
     if (e.type === 'bag') {
       bag = rollBag(this.rng, this.mods);
-      if (bag.kind === 'money') value = bag.amount;
+      if (bag.kind === 'money') value = Math.round(bag.amount * (1 + this.upg.fortune * UPGRADES.fortune.perLevel));
       else if (bag.kind === 'item') this.blastCaps = Math.min(SHOP.maxBlastCaps, this.blastCaps + bag.blastCaps);
       else this.bagStrength = Math.max(this.bagStrength, BAG.strengthBoost);
     }
-    this.earned += value;
-    this.events.push({ type: 'collect', id, kind: e.type, value, x: e.x, y: e.y, bag });
+    // combo: back to back deliveries worth something raise the multiplier
+    let mult = 1;
+    if (value >= COMBO.minValue) {
+      this.combo++;
+      mult = Math.min(COMBO.max, 1 + COMBO.step * (this.combo - 1));
+      value = Math.round(value * mult);
+      if (this.combo > this.stats.bestCombo) this.stats.bestCombo = this.combo;
+    } else if (value < COMBO.minValue && !(e.type === 'bag' && bag?.kind !== 'money')) {
+      this.combo = 0;
+    }
+    this.stats.collected++;
+    if (e.type === 'diamond' || (e.type === 'beetle' && e.carriesDiamond)) this.stats.diamonds++;
+    if (e.type === 'rockS' || e.type === 'rockL') this.stats.rocks++;
+    if (e.type === 'chest') this.stats.chests++;
+    this.earned = Math.max(0, this.earned + value);
+    this.events.push({ type: 'collect', id, kind: e.type, value, x: e.x, y: e.y, bag, combo: this.combo, mult });
   }
 
   /** Ends the level only when the claw is home: a pull in progress always finishes first. */
   private checkEnd(): void {
     if (this.claw.state !== 'swinging') return;
+    if (this.endlessSeed !== null && this.timeLeft > 0 && this.collectibleCount() === 0) {
+      this.wave++;
+      this.timeLeft += ENDLESS.waveBonusSec;
+      this.loadObjects(endlessWave(this.endlessSeed, this.wave));
+      this.events.push({ type: 'wave', wave: this.wave });
+      return;
+    }
     if (this.timeLeft > 0 && this.collectibleCount() > 0) return;
     this.status = this.earned >= this.level.target ? 'won' : 'lost';
     this.events.push({ type: 'end', won: this.status === 'won' });
