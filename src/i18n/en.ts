@@ -200,6 +200,7 @@ export const en = {
     beetles: 'Catch a beetle',
     noBlast: 'Use no Blast Caps',
   },
+  ranks: ['Apprentice', 'Digger', 'Prospector', 'Miner', 'Foreman', 'Master', 'Legend'],
   worlds: ['The Old Mine', 'Echo Caverns', 'Magma Depths', 'The Frozen Vault', 'The Abyss'],
 } as const;
 

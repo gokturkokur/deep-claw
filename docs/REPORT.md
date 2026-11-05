@@ -32,6 +32,12 @@
 - **Haftalık meydan okuma**: haftaya göre sabit yerleşim, haftada bir kez ödül.
 - **Günlük hediye** (7 günlük seri), **16 başarım** (ödüllü, ilerleme çubuklu).
 
+## Son eklenenler
+
+- **Tam isabet bonusu**: nesnenin tam ortasına vurursan %10 ekstra (yeşil +bonus olarak görünür).
+- **Rütbe**: toplam yıldıza göre 7 unvan (Çırak ... Efsane), ana menüde sol üstte.
+- **GitHub Pages**: `.github/workflows/pages.yml` oyunu web sayfası olarak yayınlar. Bir kez GitHub'da Settings > Pages > Source: "GitHub Actions" seçilmeli. PR `main`'e birleşince oyun `https://gokturkokur.github.io/deep-claw/` adresinde açılır.
+
 ## Ekonomi ayarı (sandık)
 
 Gizemli Sandık 1500. Para çıkarsa çoğunlukla 600, üçte biri 2000-2400 (kâr). Diğer ödüller: 1 Patlatıcı Kapsül (en sık), Zaman Dondurucu, güçlendirme, çok nadir Atlama Bileti (6000). Ortalama değer fiyatın %80'inin altında (testle doğrulanıyor), yani sandık alıp para büyütmek mümkün değil. Açılış animasyonu: siyah ekranda kapı sallanır, açılır, ışıklar çıkar.
@@ -40,7 +46,7 @@ Diğer fiyatlar: Patlatıcı 700 (bölümle 1200'e kadar artar), Paket 1800, Zam
 
 ## Test sonuçları
 
-- Birim testleri (Vitest): **304 test geçti** (kanca, çarpışma, oturum, seri, dondurma, yükseltmeler, dükkân, sandık, kozmetik, günlük hediye, başarımlar, kayıt, hikaye, görevler, 100 bölümün geçerliliği ve dengesi).
+- Birim testleri (Vitest): **306 test geçti** (kanca, çarpışma, oturum, seri, dondurma, yükseltmeler, dükkân, sandık, kozmetik, günlük hediye, başarımlar, kayıt, hikaye, görevler, 100 bölümün geçerliliği ve dengesi).
 - Tarayıcı testleri (Playwright): **29 test geçti** (temel akış, hikaye diyaloğu, sonsuz mod, haftalık, atölye alışverişi, günlük hediye, başarımlar, dünya sayfaları, dondurma, sandık, 5 ekran boyutunda düzen kontrolü, ekran galerisi).
 - Ekran görüntüleri: `docs/screenshots/`.
 

@@ -341,3 +341,29 @@ describe('Magnet Charm and Keg Defuser', () => {
     expect(safe.entities.find((e) => e.type === 'goldS')?.alive).toBe(true);
   });
 });
+
+describe('perfect hit and rank', () => {
+  it('a dead-centre hit pays 10 % extra, an edge hit does not; off by default', () => {
+    const mk = (x: number, perfectBonus: boolean) =>
+      new Session({ level: level([o('goldM', x, 636), o('goldS', 100, 1100)]), perfectBonus, rng: makeRng(1) });
+    const centre = mk(360, true);
+    pull(centre);
+    expect(centre.earned).toBe(275);
+    const off = mk(360, false);
+    pull(off);
+    expect(off.earned).toBe(250);
+    // edge: object is 36 px to the side of the rope line (gold M radius 40, 30 % = 12 px)
+    const edge = mk(396, true);
+    for (let i = 0; i < 4000 && Math.abs(edge.claw.angleDeg - 90) > 0.3; i++) edge.update(1 / 240);
+    edge.launch();
+    for (let t = 0; t < 30 && edge.claw.state !== 'swinging'; t += 1 / 60) edge.update(1 / 60);
+    expect(edge.earned).toBe(250);
+  });
+  it('rank grows with stars', async () => {
+    const { rankIndex, totalStars } = await import('../src/systems/Campaign');
+    expect(rankIndex(0)).toBe(0);
+    expect(rankIndex(15)).toBe(1);
+    expect(rankIndex(299)).toBe(6);
+    expect(totalStars({ a: { stars: 3 }, b: { stars: 2 } })).toBe(5);
+  });
+});

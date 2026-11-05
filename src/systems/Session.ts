@@ -1,5 +1,5 @@
 import { BEETLE, KEG, LEVEL_RULES, CLAW, WORLD } from '../config/game';
-import { COMBO, CLAW_TYPES, ENDLESS, EFFECTS, FREEZE_SEC, UPGRADES, type ClawId, type UpgradeId } from '../config/economy';
+import { COMBO, PERFECT, CLAW_TYPES, ENDLESS, EFFECTS, FREEZE_SEC, UPGRADES, type ClawId, type UpgradeId } from '../config/economy';
 import { endlessWave } from './Fields';
 import { TWIST, twistFor } from './Campaign';
 import { BEETLE_DIAMOND_VALUE, BAG, OBJECTS, SHOP, type ObjType } from '../config/economy';
@@ -19,6 +19,8 @@ export interface Entity {
   /** Currently carried by the claw. */
   hooked: boolean;
   carriesDiamond: boolean;
+  /** The claw hit close to the centre. */
+  perfect: boolean;
   laneMinX: number;
   laneMaxX: number;
   vx: number;
@@ -52,6 +54,8 @@ export interface SessionOptions {
   /** Endless mode: waves of generated fields, no target. */
   endlessSeed?: number;
   freezeCount?: number;
+  /** Pay a bonus for hitting the middle of an object (on in the game, off in simple unit tests). */
+  perfectBonus?: boolean;
 }
 
 export interface RunStats {
@@ -97,6 +101,7 @@ export class Session implements ClawHost {
   readonly stats: RunStats = { slimes: 0, beetles: 0, collected: 0, diamonds: 0, kegs: 0, rocks: 0, blasts: 0, chests: 0, bestCombo: 0 };
   private readonly upg: Record<UpgradeId, number>;
   private readonly clawType: ClawId;
+  private readonly perfectBonus: boolean;
 
   constructor(opts: SessionOptions) {
     this.level = opts.level;
@@ -106,6 +111,7 @@ export class Session implements ClawHost {
     this.rng = opts.rng ?? makeRng(randomSeed());
     this.upg = opts.upgrades ?? { winch: 0, muscle: 0, watch: 0, fortune: 0 };
     this.clawType = opts.clawType ?? 'standard';
+    this.perfectBonus = !!opts.perfectBonus;
     this.endlessSeed = opts.endlessSeed ?? null;
     const base = opts.durationSec ?? (this.endlessSeed !== null ? ENDLESS.startSec : LEVEL_RULES.durationSec);
     this.timeLeft = base + (this.mods.hourglass ? EFFECTS.hourglassSec : 0) + this.upg.watch * UPGRADES.watch.perLevel;
@@ -135,6 +141,7 @@ export class Session implements ClawHost {
         alive: true,
         hooked: false,
         carriesDiamond: !!o.carriesDiamond,
+        perfect: false,
         laneMinX: o.laneMinX ?? o.x,
         laneMaxX: o.laneMaxX ?? o.x,
         vx: 0,
@@ -333,6 +340,10 @@ export class Session implements ClawHost {
       this.explode(e);
       return;
     }
+    // how far the rope line passes from the object's centre
+    const off = Math.abs((e.x - this.claw.pivotX) * this.claw.dirY - (e.y - this.claw.pivotY) * this.claw.dirX);
+    const size = e.shape.kind === 'circle' ? e.shape.r : Math.min(e.shape.hw, e.shape.hh);
+    e.perfect = off <= size * PERFECT.fraction;
     e.hooked = true;
     e.grabX = e.x;
     e.grabY = e.y;
@@ -387,6 +398,7 @@ export class Session implements ClawHost {
     } else if (value < COMBO.minValue && !(e.type === 'bag' && bag?.kind !== 'money')) {
       this.combo = 0;
     }
+    if (this.perfectBonus && e.perfect && baseValue > 0) value = Math.round(value * (1 + PERFECT.bonus));
     this.stats.collected++;
     if (e.type === 'diamond' || (e.type === 'beetle' && e.carriesDiamond)) this.stats.diamonds++;
     if (e.type === 'rockS' || e.type === 'rockL') this.stats.rocks++;

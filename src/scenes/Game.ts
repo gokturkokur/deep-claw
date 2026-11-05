@@ -142,6 +142,7 @@ export class Game extends Phaser.Scene {
       freezeCount: save.data.inventory.freeze,
       upgrades: save.data.upgrades,
       clawType: save.data.claws.equipped,
+      perfectBonus: true,
       endlessSeed: this.mode === 'endless' ? Math.floor(Math.random() * 1e9) : undefined,
     });
     this.lastWave = this.session.wave;

@@ -152,6 +152,12 @@ export const COMBO = {
   minValue: 50,
 } as const;
 
+/** Perfect hit: the claw line passes within `fraction` of the object's size from its centre. */
+export const PERFECT = {
+  fraction: 0.3,
+  bonus: 0.1,
+} as const;
+
 export type UpgradeId = 'winch' | 'muscle' | 'watch' | 'fortune';
 export const UPGRADE_IDS: readonly UpgradeId[] = ['winch', 'muscle', 'watch', 'fortune'];
 

@@ -1,6 +1,8 @@
 import Phaser from 'phaser';
 import { DESIGN } from '../config/game';
-import { itemText, money, t } from '../i18n';
+import { itemText, money, rankName, t } from '../i18n';
+import { RANK_STARS, rankIndex, totalStars } from '../systems/Campaign';
+import { LEVELS } from '../data/levels';
 import { canClaimDaily, claimDaily, dayKey, nextStreak, type DailyResult } from '../systems/Daily';
 import { services } from '../services';
 import { createBackdrop, type Backdrop } from '../ui/Backdrop';
@@ -90,6 +92,14 @@ export class MainMenu extends Phaser.Scene {
     small(2, t('endless'), 0x7a5ad8, 'Game', { mode: 'endless' });
     small(3, t('weekly'), 0x2aa8b8, 'Game', { mode: 'weekly' });
     small(4, t('achievements'), COLORS.green, 'Achievements');
+
+    // rank by total stars
+    const stars = totalStars(save.data.levels);
+    const ri = rankIndex(stars);
+    const rankY = Math.max(layout.top + 48, 0) + 40;
+    txt(this, 24, rankY, rankName(ri), 36, { originX: 0, color: COLORS.textGold, strokeW: 6 }).setDepth(25);
+    const next = RANK_STARS[ri + 1];
+    txt(this, 24, rankY + 40, `${stars} / ${LEVELS.length * 3}` + (next ? `  (${next})` : ''), 26, { originX: 0, color: '#f4dba8', strokeW: 4 }).setDepth(25);
 
     // daily gift
     const today = dayKey(new Date());

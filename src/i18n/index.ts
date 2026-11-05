@@ -67,3 +67,8 @@ export function money(n: number): string {
 export function tipText(id: string): string {
   return (TABLES[current].tips as Record<string, string>)[id] ?? '';
 }
+
+export function rankName(i: number): string {
+  const r = TABLES[current].ranks;
+  return r[Math.min(i, r.length - 1)];
+}

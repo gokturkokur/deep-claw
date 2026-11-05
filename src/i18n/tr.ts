@@ -202,5 +202,6 @@ export const tr: Strings = {
     beetles: 'Bir böcek yakala',
     noBlast: 'Patlatıcı kullanma',
   },
+  ranks: ['Çırak', 'Kazıcı', 'Arayıcı', 'Madenci', 'Ustabaşı', 'Usta', 'Efsane'],
   worlds: ['Eski Maden', 'Yankı Mağaraları', 'Magma Derinlikleri', 'Donmuş Kasa', 'Uçurum'],
 };

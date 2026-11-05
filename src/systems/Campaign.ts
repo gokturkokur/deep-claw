@@ -149,3 +149,16 @@ export function tipFor(level: LevelDef, seen: readonly string[]): string | null 
   for (const [id, applies] of order) if (applies && !seen.includes(id)) return id;
   return null;
 }
+
+/** Miner rank from the total number of stars earned. */
+export const RANK_STARS: readonly number[] = [0, 15, 40, 80, 140, 220, 290];
+
+export function totalStars(levels: Record<string, { stars: number }>): number {
+  return Object.values(levels).reduce((a, l) => a + l.stars, 0);
+}
+
+export function rankIndex(stars: number): number {
+  let r = 0;
+  for (let i = 0; i < RANK_STARS.length; i++) if (stars >= RANK_STARS[i]) r = i;
+  return r;
+}
