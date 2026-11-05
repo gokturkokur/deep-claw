@@ -69,6 +69,7 @@ export const IMAGES = {
   icon_book: { file: 'icon_book.svg', w: 64, h: 64 },
   icon_magnet: { file: 'icon_magnet.svg', w: 64, h: 64 },
   icon_defuse: { file: 'icon_defuse.svg', w: 64, h: 64 },
+  icon_wheel: { file: 'icon_wheel.svg', w: 64, h: 64 },
   icon_lantern: { file: 'icon_lantern.svg', w: 64, h: 64 },
   icon_lock: { file: 'icon_lock.svg', w: 64, h: 64 },
   icon_mute: { file: 'icon_mute.svg', w: 64, h: 64 },

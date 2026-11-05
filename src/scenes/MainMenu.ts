@@ -109,7 +109,7 @@ export class MainMenu extends Phaser.Scene {
     }
 
     // lucky wheel
-    const wheelBtn = new Button(this, DESIGN.width - 100, 455, { round: true, icon: 'icon_trophy', tint: 0x7a5ad8, onClick: () => goTo(this, 'Wheel') }).setDepth(25).setName('wheel');
+    const wheelBtn = new Button(this, DESIGN.width - 100, 455, { round: true, icon: 'icon_wheel', tint: 0x7a5ad8, onClick: () => goTo(this, 'Wheel') }).setDepth(25).setName('wheel');
     if (save.data.spins > 0) {
       this.tweens.add({ targets: wheelBtn, scale: { from: 1, to: 1.1 }, duration: 600, yoyo: true, repeat: -1 });
       txt(this, DESIGN.width - 62, 488, String(save.data.spins), 30, { color: COLORS.textGold, strokeW: 6 }).setDepth(26);

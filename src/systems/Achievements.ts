@@ -36,7 +36,7 @@ export const ACHIEVEMENTS: AchievementDef[] = [
     id: 'upgraded',
     reward: 2000,
     test: (s) => UPGRADE_IDS.some((u) => s.upgrades[u] >= UPGRADES[u].max),
-    progress: (s) => [Math.max(...UPGRADE_IDS.map((u) => s.upgrades[u])), 5],
+    progress: (s) => [Math.max(...UPGRADE_IDS.map((u) => s.upgrades[u])), UPGRADES.winch.max],
   },
 ];
 

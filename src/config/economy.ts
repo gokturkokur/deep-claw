@@ -84,7 +84,7 @@ export interface ItemDef {
 }
 
 export const ITEMS: Record<ItemId, ItemDef> = {
-  blastCap: { id: 'blastCap', kind: 'stack', priceMin: 700, priceMax: 1200, icon: 'icon_blast' },
+  blastCap: { id: 'blastCap', kind: 'stack', priceMin: 700, priceMax: 2500, icon: 'icon_blast' },
   blastPack: { id: 'blastPack', kind: 'pack', priceMin: 1800, priceMax: 1800, icon: 'icon_blast' },
   freeze: { id: 'freeze', kind: 'stack', priceMin: 1000, priceMax: 1000, icon: 'icon_freeze' },
   skip: { id: 'skip', kind: 'stack', priceMin: 6000, priceMax: 6000, icon: 'icon_ticket' },
@@ -112,6 +112,10 @@ export const SHOP = {
   maxFreeze: 5,
   maxSkip: 3,
   blastPackSize: 3,
+  /** Boost deals cost up to this many times more late in the campaign (money piles up otherwise). */
+  dealScaleMax: 2,
+  /** ... reached at this level. */
+  dealScaleLevel: 100,
   /** One deal in the daily-deals tab is this much cheaper. */
   saleDiscount: 0.3,
   /** Reroll cost = base * (rerolls so far + 1). */
@@ -163,10 +167,10 @@ export const UPGRADE_IDS: readonly UpgradeId[] = ['winch', 'muscle', 'watch', 'f
 
 /** Permanent upgrades: price of level n+1 = base * growth^n. */
 export const UPGRADES: Record<UpgradeId, { max: number; base: number; growth: number; perLevel: number; icon: string }> = {
-  winch: { max: 5, base: 900, growth: 1.8, perLevel: 0.1, icon: 'icon_turbo' },
-  muscle: { max: 5, base: 1100, growth: 1.8, perLevel: 0.08, icon: 'icon_crusher' },
-  watch: { max: 5, base: 1500, growth: 1.9, perLevel: 3, icon: 'icon_clock' },
-  fortune: { max: 5, base: 1000, growth: 1.8, perLevel: 0.1, icon: 'icon_lantern' },
+  winch: { max: 8, base: 900, growth: 1.7, perLevel: 0.07, icon: 'icon_turbo' },
+  muscle: { max: 8, base: 1100, growth: 1.7, perLevel: 0.06, icon: 'icon_crusher' },
+  watch: { max: 8, base: 1500, growth: 1.7, perLevel: 2, icon: 'icon_clock' },
+  fortune: { max: 8, base: 1000, growth: 1.7, perLevel: 0.1, icon: 'icon_lantern' },
 };
 
 export type ClawId = 'standard' | 'wide' | 'swift' | 'titan';

@@ -131,7 +131,7 @@ describe('upgrades and claws', () => {
     expect(buyUpgrade(save, 'winch')).toEqual({ ok: false, reason: 'funds' });
     save.wallet = 1e7;
     expect(upgradeCost('winch', 1)).toBeGreaterThan(upgradeCost('winch', 0));
-    for (let i = 0; i < 5; i++) expect(buyUpgrade(save, 'winch').ok).toBe(true);
+    for (let i = 0; i < UPGRADES.winch.max; i++) expect(buyUpgrade(save, 'winch').ok).toBe(true);
     expect(buyUpgrade(save, 'winch')).toEqual({ ok: false, reason: 'max' });
     expect(buyClaw(save, 'wide').ok).toBe(true);
     expect(save.claws.equipped).toBe('wide');
@@ -238,7 +238,7 @@ describe('progress modes', () => {
   });
   it('the save survives the new fields being garbage', () => {
     const s = sanitize({ saveVersion: 2, stats: 5, achievements: 'x', daily: [], upgrades: { winch: 99 }, claws: { owned: ['wide', 'bogus'], equipped: 'bogus' }, cosmetics: { owned: ['outfit_blue', 'x'], equipped: { outfit: 'outfit_green' } }, storySeen: [1, 'a'], endless: null, weekly: 3 });
-    expect(s.upgrades.winch).toBe(5);
+    expect(s.upgrades.winch).toBe(UPGRADES.winch.max);
     expect(s.claws.owned).toEqual(['standard', 'wide']);
     expect(s.claws.equipped).toBe('standard');
     expect(s.cosmetics.owned).toContain('outfit_blue');

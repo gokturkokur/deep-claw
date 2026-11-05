@@ -106,7 +106,7 @@ export class Shop extends Phaser.Scene {
     const shop = services.save.data.shop;
     if (!shop) return;
     const cx = DESIGN.width / 2;
-    const offers = tab === 'supplies' ? supplyOffers(shop.afterLevel) : dealOffers(shop.seed, shop.rerolls);
+    const offers = tab === 'supplies' ? supplyOffers(shop.afterLevel) : dealOffers(shop.seed, shop.rerolls, shop.afterLevel);
     const cardH = 138;
     const step = 146;
     const y0 = this.topY + 346 + cardH / 2;

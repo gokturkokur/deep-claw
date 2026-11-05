@@ -147,9 +147,9 @@ export const tr: Strings = {
     freeze: 'Zaman Dondurucu saati ve böcekleri durdurur. F tuşu veya kar tanesi düğmesi.',
   },
   upgrades: {
-    winch: { name: 'Hızlı Vinç', desc: 'Her seviyede ip %10 daha hızlı iner.' },
-    muscle: { name: 'Güçlü Kollar', desc: 'Her seviyede %8 daha hızlı çekersin.' },
-    watch: { name: 'Cep Saati', desc: 'Her seviyede +3 saniye.' },
+    winch: { name: 'Hızlı Vinç', desc: 'Her seviyede ip %7 daha hızlı iner.' },
+    muscle: { name: 'Güçlü Kollar', desc: 'Her seviyede %6 daha hızlı çekersin.' },
+    watch: { name: 'Cep Saati', desc: 'Her seviyede +2 saniye.' },
     fortune: { name: 'Talih', desc: 'Gizemli Torbalar seviye başına %10 fazla öder.' },
   },
   claws: {

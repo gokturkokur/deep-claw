@@ -21,7 +21,7 @@ export function blastCapPrice(afterLevel: number): number {
 export function supplyOffers(afterLevel: number): ShopOffer[] {
   return [
     { id: 'blastCap', price: blastCapPrice(afterLevel) },
-    { id: 'blastPack', price: ITEMS.blastPack.priceMin },
+    { id: 'blastPack', price: Math.round((blastCapPrice(afterLevel) * SHOP.blastPackSize * 0.85) / 50) * 50 },
     { id: 'freeze', price: ITEMS.freeze.priceMin },
     { id: 'crate', price: ITEMS.crate.priceMin },
     { id: 'skip', price: ITEMS.skip.priceMin },
@@ -32,7 +32,8 @@ export function supplyOffers(afterLevel: number): ShopOffer[] {
  * Daily deals tab: SHOP.boostSlots of the boosts at random prices, one of them on sale.
  * Same seed and reroll count = same deals, so a reload shows the same shop.
  */
-export function dealOffers(seed: number, rerolls = 0): ShopOffer[] {
+export function dealOffers(seed: number, rerolls = 0, afterLevel = 0): ShopOffer[] {
+  const scale = 1 + Math.min(SHOP.dealScaleMax - 1, (afterLevel / SHOP.dealScaleLevel) * (SHOP.dealScaleMax - 1));
   const rng = makeRng(seed + rerolls * 104729);
   const pool: BoostId[] = [...BOOST_IDS];
   for (let i = pool.length - 1; i > 0; i--) {
@@ -43,7 +44,7 @@ export function dealOffers(seed: number, rerolls = 0): ShopOffer[] {
   const saleIndex = Math.floor(rng() * picked.length);
   return picked.map((id, i) => {
     const def = ITEMS[id];
-    const base = round10(def.priceMin + (def.priceMax - def.priceMin) * rng());
+    const base = round10((def.priceMin + (def.priceMax - def.priceMin) * rng()) * scale);
     const sale = i === saleIndex;
     return { id, price: sale ? round10(base * (1 - SHOP.saleDiscount)) : base, sale };
   });

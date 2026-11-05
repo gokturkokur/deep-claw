@@ -32,7 +32,9 @@ describe('shop', () => {
       }
     }
     expect(blastCapPrice(1)).toBe(700);
-    expect(blastCapPrice(100)).toBe(1200);
+    expect(blastCapPrice(100)).toBe(2500);
+    expect(supplyOffers(100).find((o) => o.id === 'blastPack')!.price).toBeLessThan(3 * 2500);
+    expect(dealOffers(1, 0, 100)[0].price).toBeGreaterThan(dealOffers(1, 0, 0)[0].price);
     expect(ITEMS.extraMiner.priceMin).toBeGreaterThanOrEqual(3000);
   });
 

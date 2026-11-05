@@ -145,9 +145,9 @@ export const en = {
     freeze: 'Time Freeze stops the clock and beetles. Press F or the snowflake button.',
   },
   upgrades: {
-    winch: { name: 'Fast Winch', desc: 'The rope drops 10 % faster per level.' },
-    muscle: { name: 'Strong Arms', desc: 'Pull 8 % faster per level.' },
-    watch: { name: 'Pocket Watch', desc: '+3 seconds per level.' },
+    winch: { name: 'Fast Winch', desc: 'The rope drops 7 % faster per level.' },
+    muscle: { name: 'Strong Arms', desc: 'Pull 6 % faster per level.' },
+    watch: { name: 'Pocket Watch', desc: '+2 seconds per level.' },
     fortune: { name: 'Fortune', desc: 'Mystery Bags pay 10 % more per level.' },
   },
   claws: {

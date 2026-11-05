@@ -38,6 +38,14 @@
 - **Rütbe**: toplam yıldıza göre 7 unvan (Çırak ... Efsane), ana menüde sol üstte.
 - **GitHub Pages**: `.github/workflows/pages.yml` oyunu web sayfası olarak yayınlar. Bir kez GitHub'da Settings > Pages > Source: "GitHub Actions" seçilmeli. PR `main`'e birleşince oyun `https://gokturkokur.github.io/deep-claw/` adresinde açılır.
 
+## Ekonomi incelemesi
+
+`npx vite-node tools/economy-report.ts` bir bölümü "%30 payla" geçen oyuncunun toplam gelirini hesaplar: 100 bölümde yaklaşık 525.000. Önceki hâlde kalıcı harcamalar sadece 140.000 idi, yani 40. bölümden sonra para birikiyordu. Düzeltmeler:
+- Yükseltmeler 5 yerine **8 seviye** (daha yumuşak etkiyle: hız %7, güç %6, süre +2 sn, talih %10 seviye başına), toplam yükseltme maliyeti yaklaşık 440.000. Kalıcı harcamaların toplamı (yükseltme, kanca, kıyafet) yaklaşık 475.000, yani gelirin tamamına yakını.
+- Patlatıcı Kapsül fiyatı 700'den başlayıp bölüm 100'de 2500'e kadar çıkıyor, Paket %15 indirimle onun 3 katı.
+- Fırsatlar sekmesindeki güçlendirme fiyatları bölüm ilerledikçe en fazla 2 kat artıyor.
+- Sandık fiyatı sabit; ödül ortalaması fiyatın %80'inin altında.
+
 ## Ekonomi ayarı (sandık)
 
 Gizemli Sandık 1500. Para çıkarsa çoğunlukla 600, üçte biri 2000-2400 (kâr). Diğer ödüller: 1 Patlatıcı Kapsül (en sık), Zaman Dondurucu, güçlendirme, çok nadir Atlama Bileti (6000). Ortalama değer fiyatın %80'inin altında (testle doğrulanıyor), yani sandık alıp para büyütmek mümkün değil. Açılış animasyonu: siyah ekranda kapı sallanır, açılır, ışıklar çıkar.

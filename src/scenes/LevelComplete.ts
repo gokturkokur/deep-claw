@@ -41,15 +41,19 @@ export class LevelComplete extends Phaser.Scene {
     const layout = new Layout(this);
     const audio = services.audio;
     const cx = DESIGN.width / 2;
-    const cy = DESIGN.height / 2;
     const d = this.d;
+    const cy0 = DESIGN.height / 2;
+    const unlockedN = (d.unlocked ?? []).length;
+    const extra = (d.mission ? 1 : 0) + ((d.missionBonus ?? 0) > 0 ? 1 : 0) + ((d.extraBonus ?? 0) > 0 && d.firstClear ? 1 : 0) + (d.spinEarned ? 1 : 0) + unlockedN;
+    // content is laid out from the panel's top edge, so a taller panel grows both up and down
+    const cy = cy0 - extra * 20;
     audio.loop('reel', false);
     audio.sfx('win');
     this.backdrop = createBackdrop(this, layout, { theme: themeOf(d.levelId) });
-    this.add.rectangle(cx, cy, layout.width + 8, layout.height + 8, 0x0a0502, 0.55).setDepth(15);
+    this.add.rectangle(cx, cy0, layout.width + 8, layout.height + 8, 0x0a0502, 0.55).setDepth(15);
 
     const unlocked = d.unlocked ?? [];
-    const p = panel(this, cx, cy, 640, 900 + unlocked.length * 44).setDepth(20);
+    const p = panel(this, cx, cy0, 640, 900 + extra * 40).setDepth(20);
     p.setScale(0.8).setAlpha(0);
     this.tweens.add({ targets: p, scale: 1, alpha: 1, duration: 260, ease: 'Back.Out' });
     txt(this, cx, cy - 370, t('levelComplete'), 62, { color: COLORS.textGold, strokeW: 9 }).setDepth(21);
@@ -127,7 +131,7 @@ export class LevelComplete extends Phaser.Scene {
       txt(this, cx, ay, t('unlocked', { name: achText(id).name }), 28, { color: COLORS.textGold, wrap: 560 }).setDepth(21);
       ay += 40;
     }
-    const by = cy + 335 + unlocked.length * 22;
+    const by = cy + 335 + extra * 40;
     if (d.firstClear) {
       new Button(this, cx, by, { w: 480, label: t('toShop'), fontSize: 50, tint: COLORS.green, key: 'ENTER', onClick: () => goTo(this, 'Shop') }).setDepth(22);
     } else {
