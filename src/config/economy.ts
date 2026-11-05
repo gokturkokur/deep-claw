@@ -165,7 +165,13 @@ export const PERFECT = {
 export type UpgradeId = 'winch' | 'muscle' | 'watch' | 'fortune';
 export const UPGRADE_IDS: readonly UpgradeId[] = ['winch', 'muscle', 'watch', 'fortune'];
 
-/** Permanent upgrades: price of level n+1 = base * growth^n. */
+/**
+ * Every price in the Workshop (upgrades, claws, style) is multiplied by this.
+ * Shop, crate, reroll and other prices are not affected. Set back to 1 for the original prices.
+ */
+export const WORKSHOP_PRICE_MULT = 10;
+
+/** Permanent upgrades: price of level n+1 = base * growth^n (rounded to 50), times WORKSHOP_PRICE_MULT. */
 export const UPGRADES: Record<UpgradeId, { max: number; base: number; growth: number; perLevel: number; icon: string }> = {
   winch: { max: 8, base: 900, growth: 1.7, perLevel: 0.07, icon: 'icon_turbo' },
   muscle: { max: 8, base: 1100, growth: 1.7, perLevel: 0.06, icon: 'icon_crusher' },
@@ -177,12 +183,17 @@ export type ClawId = 'standard' | 'wide' | 'swift' | 'titan';
 export const CLAW_IDS: readonly ClawId[] = ['standard', 'wide', 'swift', 'titan'];
 
 /** Claw types: different hit size, reel speed and pull strength. */
-export const CLAW_TYPES: Record<ClawId, { price: number; tipRadius: number; extendMult: number; strengthMult: number; tint: number }> = {
+type ClawDef = { price: number; tipRadius: number; extendMult: number; strengthMult: number; tint: number };
+/** Base prices; the real price is base * WORKSHOP_PRICE_MULT (see CLAW_TYPES). */
+const CLAW_BASE: Record<ClawId, ClawDef> = {
   standard: { price: 0, tipRadius: 14, extendMult: 1, strengthMult: 1, tint: 0xffffff },
   wide: { price: 2500, tipRadius: 26, extendMult: 0.95, strengthMult: 0.9, tint: 0xffd680 },
   swift: { price: 3500, tipRadius: 14, extendMult: 1.3, strengthMult: 1, tint: 0x9fe0ff },
   titan: { price: 6000, tipRadius: 18, extendMult: 1, strengthMult: 1.3, tint: 0xff9a8a },
 };
+export const CLAW_TYPES = Object.fromEntries(
+  CLAW_IDS.map((id) => [id, { ...CLAW_BASE[id], price: CLAW_BASE[id].price * WORKSHOP_PRICE_MULT }]),
+) as Record<ClawId, ClawDef>;
 
 /** Daily gift, 7 day cycle. */
 export type DailyReward = { kind: 'money'; amount: number } | { kind: 'caps'; amount: number } | { kind: 'boost' };
@@ -220,7 +231,8 @@ export interface CosmeticDef {
   texture?: string;
   tint?: number;
 }
-export const COSMETICS: readonly CosmeticDef[] = [
+/** Base prices; the real price is base * WORKSHOP_PRICE_MULT (see COSMETICS). */
+const COSMETICS_BASE: readonly CosmeticDef[] = [
   { id: 'outfit_orange', slot: 'outfit', price: 0, texture: 'miner' },
   { id: 'outfit_blue', slot: 'outfit', price: 1200, texture: 'miner_blue' },
   { id: 'outfit_green', slot: 'outfit', price: 1200, texture: 'miner_green' },
@@ -236,6 +248,7 @@ export const COSMETICS: readonly CosmeticDef[] = [
   { id: 'rope_neon', slot: 'rope', price: 800, tint: 0x7aff9a },
   { id: 'rope_golden', slot: 'rope', price: 1500, tint: 0xffd24a },
 ];
+export const COSMETICS: readonly CosmeticDef[] = COSMETICS_BASE.map((c) => ({ ...c, price: c.price * WORKSHOP_PRICE_MULT }));
 export const DEFAULT_COSMETICS = { outfit: 'outfit_orange', clawSkin: 'claw_steel', rope: 'rope_brown' } as const;
 
 /** Mystery Crate: weighted rewards. */

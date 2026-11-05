@@ -1,9 +1,9 @@
-import { CLAW_TYPES, UPGRADES, type ClawId, type UpgradeId } from '../config/economy';
+import { CLAW_TYPES, UPGRADES, WORKSHOP_PRICE_MULT, type ClawId, type UpgradeId } from '../config/economy';
 import type { SaveData } from './Save';
 
 export function upgradeCost(id: UpgradeId, level: number): number {
   const u = UPGRADES[id];
-  return Math.round((u.base * Math.pow(u.growth, level)) / 50) * 50;
+  return Math.round((u.base * Math.pow(u.growth, level)) / 50) * 50 * WORKSHOP_PRICE_MULT;
 }
 
 export type BuyResult = { ok: true } | { ok: false; reason: 'funds' | 'max' | 'owned' };

@@ -137,13 +137,13 @@ test.describe('new features', () => {
     expect(Object.values(save.upgrades as Record<string, number>).reduce((a, b) => a + b, 0)).toBe(1);
     await clickButton(page, 'Claws');
     await page.waitForTimeout(300);
-    await clickButton(page, '$2,500');
+    await clickButton(page, '$25,000');
     await page.waitForTimeout(300);
     save = await saveData(page);
     expect(save.claws.owned).toContain('wide');
     await clickButton(page, 'Style');
     await page.waitForTimeout(300);
-    await clickButton(page, '$1,200');
+    await clickButton(page, '$12,000');
     await page.waitForTimeout(300);
     save = await saveData(page);
     expect(save.cosmetics.owned.some((c: string) => c.startsWith('outfit_') && c !== 'outfit_orange')).toBe(true);

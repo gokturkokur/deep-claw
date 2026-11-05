@@ -60,6 +60,12 @@ Bölüm başındaki ipucu (Çakıl) ve ilk Sonsuz/Haftalık açıklaması kapatm
 - Fırsatlar sekmesindeki güçlendirme fiyatları bölüm ilerledikçe en fazla 2 kat artıyor.
 - Sandık fiyatı sabit; ödül ortalaması fiyatın %80'inin altında.
 
+### Atölye fiyatları x10 (2026-11-05)
+
+Kullanıcı isteğiyle Atölye'deki her şeyin fiyatı 10 katına çıktı: yükseltmeler, kancalar ve kıyafetler. Dükkân, sandık, yenileme ve diğer fiyatlar aynı. Ayar tek bir sayıda: `src/config/economy.ts` içindeki `WORKSHOP_PRICE_MULT = 10` (1 yapınca eski fiyatlar döner).
+
+Sonuç: Atölye'nin toplamı yaklaşık 4.755.000, 100 bölümlük kampanyanın toplam geliri ise yaklaşık 525.000. Oyuncu kampanya boyunca Atölye'nin ancak yaklaşık %11'ini alabilir. Başka hiçbir şey almayan oyuncu ilk yükseltmeyi (9.000) yaklaşık 6. bölümde, Geniş Kanca'yı (25.000) 12. bölümde, Titan Kanca'yı (60.000) 22. bölümde alabilir. Bir yükseltmeyi sonuna kadar çıkarmak en az 884.000 tuttuğu için "yükseltmeyi tamamla" başarımı kampanya geliriyle ulaşılamaz hâle geldi (Sonsuz/Haftalık geliri gerekir).
+
 ## Ekonomi ayarı (sandık)
 
 Gizemli Sandık 1500. Para çıkarsa çoğunlukla 600, üçte biri 2000-2400 (kâr). Diğer ödüller: 1 Patlatıcı Kapsül (en sık), Zaman Dondurucu, güçlendirme, çok nadir Atlama Bileti (6000). Ortalama değer fiyatın %80'inin altında (testle doğrulanıyor), yani sandık alıp para büyütmek mümkün değil. Açılış animasyonu: siyah ekranda kapı sallanır, açılır, ışıklar çıkar.

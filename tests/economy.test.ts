@@ -1,10 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { ITEMS, SAVE, SHOP } from '../src/config/economy';
+import { CLAW_TYPES, COSMETICS, ITEMS, SAVE, SHOP, UPGRADES, WORKSHOP_PRICE_MULT } from '../src/config/economy';
 import { LEVELS } from '../src/data/levels';
 import { starsFor, rollBag, bagExpectedValue, NO_MODIFIERS } from '../src/systems/Economy';
 import { commitOutcome, leaveShop } from '../src/systems/Progress';
 import { makeRng } from '../src/systems/Rng';
 import { defaultSave, MemoryStore, migrate, sanitize, SaveManager } from '../src/systems/Save';
+import { upgradeCost } from '../src/systems/Upgrades';
 import { activeModifiers, blastCapPrice, buy, buyCosmetic, dealOffers, equipCosmetic, openCrate, reroll, rerollCost, supplyOffers } from '../src/systems/Shop';
 
 describe('shop', () => {
@@ -130,12 +131,29 @@ describe('shop', () => {
     const save = defaultSave();
     expect(equipCosmetic(save, 'outfit_blue')).toBe(false);
     expect(buyCosmetic(save, 'outfit_blue')).toEqual({ ok: false, reason: 'funds' });
-    save.wallet = 5000;
+    save.wallet = COSMETICS.find((c) => c.id === 'outfit_blue')!.price;
     expect(buyCosmetic(save, 'outfit_blue').ok).toBe(true);
+    expect(save.wallet).toBe(0);
     expect(save.cosmetics.equipped.outfit).toBe('outfit_blue');
     expect(buyCosmetic(save, 'outfit_blue')).toEqual({ ok: false, reason: 'owned' });
     expect(equipCosmetic(save, 'outfit_orange')).toBe(true);
     expect(save.cosmetics.equipped.outfit).toBe('outfit_orange');
+  });
+
+  it('workshop prices are 10x the base prices, shop prices are not', () => {
+    expect(WORKSHOP_PRICE_MULT).toBe(10);
+    expect(upgradeCost('winch', 0)).toBe(UPGRADES.winch.base * 10);
+    expect(upgradeCost('watch', 3)).toBe(Math.round((UPGRADES.watch.base * UPGRADES.watch.growth ** 3) / 50) * 500);
+    expect(CLAW_TYPES.standard.price).toBe(0);
+    expect(CLAW_TYPES.wide.price).toBe(25000);
+    expect(CLAW_TYPES.titan.price).toBe(60000);
+    expect(COSMETICS.find((c) => c.id === 'outfit_blue')!.price).toBe(12000);
+    expect(COSMETICS.find((c) => c.id === 'rope_red')!.price).toBe(5000);
+    expect(COSMETICS.filter((c) => c.price === 0).map((c) => c.id)).toEqual(['outfit_orange', 'claw_steel', 'rope_brown']);
+    // Shop (supplies, deals, crate, reroll) keeps its own prices.
+    expect(ITEMS.crate.priceMin).toBe(1500);
+    expect(ITEMS.freeze.priceMin).toBe(1000);
+    expect(blastCapPrice(1)).toBe(ITEMS.blastCap.priceMin);
   });
 });
 
