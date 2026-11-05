@@ -6,6 +6,7 @@ import { services } from '../services';
 import { buyClaw, buyUpgrade, equipClaw, upgradeCost } from '../systems/Upgrades';
 import { buyCosmetic, equipCosmetic } from '../systems/Shop';
 import { createBackdrop, type Backdrop } from '../ui/Backdrop';
+import { showTutorial } from '../ui/Tutorial';
 import { Button, FloatingTexts, panel } from '../ui/components';
 import { COLORS, Layout, fadeIn, goTo, txt } from '../ui/theme';
 
@@ -61,6 +62,7 @@ export class Workshop extends Phaser.Scene {
     const back = new Button(this, cx, layout.bottom - 100, { w: 360, label: t('back'), fontSize: 44, tint: COLORS.green, key: 'ESC', onClick: () => goTo(this, this.back) }).setDepth(22);
     layout.onChange(() => back.setY(layout.bottom - 100));
     fadeIn(this);
+    this.time.delayedCall(700, () => showTutorial(this, layout, 'unlock_workshop'));
   }
 
   private setTab(tab: Tab): void {

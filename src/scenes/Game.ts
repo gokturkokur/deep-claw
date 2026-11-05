@@ -14,7 +14,8 @@ import { weekId, weeklyLevel } from '../systems/Fields';
 import { checkAchievements, commitEndless, commitOutcome, commitWeekly, mergeStats } from '../systems/Progress';
 import { activeModifiers } from '../systems/Shop';
 import { createBackdrop, type Backdrop } from '../ui/Backdrop';
-import { Button, FloatingTexts } from '../ui/components';
+import { Button, FloatingTexts, dim, panel } from '../ui/components';
+import { showTutorial } from '../ui/Tutorial';
 import { COLORS, Layout, fadeIn, goTo, txt } from '../ui/theme';
 
 const D = { entity: 10, rig: 15, rope: 19, held: 20.5, claw: 21, fx: 30, float: 40, hud: 60, flash: 80 };
@@ -41,6 +42,7 @@ export class Game extends Phaser.Scene {
   private lastCombo = 0;
   private tip?: Phaser.GameObjects.Container;
   private storyPending = false;
+  private introLock = 0;
   private dark!: Phaser.GameObjects.Rectangle;
   private wasRushing = false;
   private twist = { rush: false, blackout: false };
@@ -100,6 +102,7 @@ export class Game extends Phaser.Scene {
     this.missionShown = false;
     this.lastFreeze = -1;
     this.lastWave = 0;
+    this.introLock = 0;
     this.lastCombo = 0;
     this.bonusSum = 0;
     this.missionDoneAt = -1;
@@ -195,11 +198,22 @@ export class Game extends Phaser.Scene {
         this.scene.pause();
         this.scene.launch('Story', { beat: beat.id, from: 'Game' });
       } else {
-        if (isBoss(this.levelId)) this.showBanner(t('boss'));
         const tip = tipFor(this.level, save.data.tipsSeen) ?? (save.data.inventory.freeze > 0 && !save.data.tipsSeen.includes('freeze') ? 'freeze' : null);
         if (tip && !this.skipStory()) this.showTip(tip);
+        else this.afterIntro();
       }
-    } else if (this.mode === 'endless') this.showBanner(t('wave', { n: 1 }));
+    } else {
+      // first Endless / Weekly run explains itself; the clock waits until the card is closed
+      const id = this.mode === 'endless' ? 'unlock_endless' : 'unlock_weekly';
+      this.paused = true;
+      if (!showTutorial(this, this.layout, id, () => {
+        this.paused = false;
+        this.afterIntro();
+      })) {
+        this.paused = false;
+        this.afterIntro();
+      }
+    }
   }
 
   /** One-time tip from Pebble: appears at the start of a level, fades after a few seconds or when the claw launches. */
@@ -208,15 +222,39 @@ export class Game extends Phaser.Scene {
     save.data.tipsSeen.push(id);
     save.save();
     const cx = DESIGN.width / 2;
-    const y = 600;
-    const g = this.add.container(0, 0).setDepth(D.float + 5).setAlpha(0);
-    const bg = this.add.nineslice(cx, y, 'panel', undefined, 640, 190, 56, 56, 56, 56);
-    const face = this.add.image(cx - 250, y, 'char_pebble').setDisplaySize(110, 110);
-    const text = txt(this, cx - 170, y, tipText(id), 28, { originX: 0, align: 'left', wrap: 410, strokeW: 4, shadow: false });
-    g.add([bg, face, text]);
-    this.tweens.add({ targets: g, alpha: 1, duration: 300, delay: 600 });
-    this.tweens.add({ targets: g, alpha: 0, delay: 3500, duration: 400, onComplete: () => g.destroy() });
-    this.tip = g;
+    const cy = 640;
+    this.paused = true; // the level does not run while the tip is open
+    const g = this.add.container(0, 0).setDepth(D.flash + 10).setAlpha(0);
+    const shade = dim(this, this.layout, 0.55);
+    const text = txt(this, cx - 160, cy - 20, tipText(id), 30, { originX: 0, align: 'left', wrap: 400, strokeW: 4, shadow: false });
+    const h = Math.max(300, text.height + 200);
+    const bg = panel(this, cx, cy, 640, h);
+    const face = this.add.image(cx - 245, cy - 20, 'char_pebble').setDisplaySize(120, 120);
+    const ok = new Button(this, cx, cy + h / 2 - 70, {
+      w: 300,
+      label: t('gotIt'),
+      fontSize: 42,
+      tint: COLORS.green,
+      key: 'ENTER',
+      onClick: () => {
+        this.tweens.add({ targets: g, alpha: 0, duration: 160, onComplete: () => g.destroy() });
+        this.paused = false;
+        this.afterIntro();
+      },
+    });
+    g.add([shade, bg, face, text, ok]);
+    this.tweens.add({ targets: g, alpha: 1, duration: 220 });
+  }
+
+  /** Short banner plus a moment to look at the field before the clock starts. */
+  private afterIntro(): void {
+    if (this.mode === 'campaign' && isBoss(this.levelId)) {
+      this.showBanner(t('boss'));
+      this.introLock = 1.3;
+    } else if (this.mode === 'endless') {
+      this.showBanner(t('wave', { n: 1 }));
+      this.introLock = 1.0;
+    }
   }
 
   /** Debug / test switch: ?nostory=1 skips dialogue. */
@@ -491,7 +529,8 @@ export class Game extends Phaser.Scene {
   update(time: number, delta: number): void {
     const dt = Math.min(delta, CLAW.maxDt * 1000) / 1000;
     this.backdrop.update(time, dt);
-    if (!this.ending) this.session.update(dt);
+    if (this.introLock > 0) this.introLock -= dt;
+    if (!this.ending && !this.paused && this.introLock <= 0) this.session.update(dt);
     this.handleEvents();
     this.syncWorld(time, dt);
     this.syncHud(dt);

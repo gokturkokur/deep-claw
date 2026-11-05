@@ -5,6 +5,7 @@ import { itemText, money, t } from '../i18n';
 import { services } from '../services';
 import { spinWheel, type SpinResult } from '../systems/Wheel';
 import { createBackdrop, type Backdrop } from '../ui/Backdrop';
+import { showTutorial } from '../ui/Tutorial';
 import { Button } from '../ui/components';
 import { COLORS, Layout, fadeIn, goTo, txt } from '../ui/theme';
 
@@ -71,6 +72,7 @@ export class Wheel extends Phaser.Scene {
     layout.onChange(() => back.setY(layout.bottom - 100));
     this.refresh();
     fadeIn(this);
+    this.time.delayedCall(700, () => showTutorial(this, layout, 'unlock_wheel'));
   }
 
   private refresh(): void {

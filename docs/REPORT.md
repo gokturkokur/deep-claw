@@ -48,6 +48,10 @@
 
 Bir menü düğmesi ilk kez açıldığında ana ekranda küçük bir kart çıkar ve ne işe yaradığını anlatır (Dükkân, Ödüller, Günlük hediye, Atölye, Çark, Sonsuz, Haftalık). Aynı ziyarette sadece bir kart gösterilir, kapatınca ilgili düğme birkaç kez büyüyüp küçülür. Dükkâna ve bölüm seçimine ilk girişte de birer kart vardır. Ayarlar'daki "İpuçlarını tekrar göster" hepsini sıfırlar. Kartlar `src/data/tutorials.ts` içinde (İngilizce ve Türkçe), testler için `&notut=1` ile kapatılır.
 
+## Bölüm başı kartları artık oyunu durdurur
+
+Bölüm başındaki ipucu (Çakıl) ve ilk Sonsuz/Haftalık açıklaması kapatma düğmesi olan bir karttır; kart açıkken süre ve böcekler çalışmaz, "Anladım" deyince oyun başlar. Patron ve dalga başlıkları için oyun 1-1,3 sn bekler. Atölye, Çark ve Ödüller ekranları ilk girişte kendilerini anlatır (Dükkân'daki Atölye düğmesinden girince de).
+
 ## Ekonomi incelemesi
 
 `npx vite-node tools/economy-report.ts` bir bölümü "%30 payla" geçen oyuncunun toplam gelirini hesaplar: 100 bölümde yaklaşık 525.000. Önceki hâlde kalıcı harcamalar sadece 140.000 idi, yani 40. bölümden sonra para birikiyordu. Düzeltmeler:

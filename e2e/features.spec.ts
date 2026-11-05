@@ -36,8 +36,12 @@ test.describe('new features', () => {
       d.game.scene.getScene('MainMenu').scene.start('Game', { levelId: 5 });
     });
     await waitScene(page, 'Game');
-    await page.waitForTimeout(300);
+    await page.waitForTimeout(1200);
     expect((await saveData(page)).tipsSeen).toContain('keg');
+    // the level does not run while the tip is open
+    expect(await page.evaluate(() => (window as any).__dc.session.timeLeft)).toBe(60);
+    await clickButton(page, 'Got it!');
+    await page.waitForFunction(() => (window as any).__dc.session.timeLeft < 60);
   });
 
   test('tutorial cards: a new menu button explains itself once', async ({ page }) => {
