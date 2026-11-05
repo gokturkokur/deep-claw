@@ -52,6 +52,10 @@ Bir menü düğmesi ilk kez açıldığında ana ekranda küçük bir kart çık
 
 Bölüm başındaki ipucu (Çakıl) ve ilk Sonsuz/Haftalık açıklaması kapatma düğmesi olan bir karttır; kart açıkken süre ve böcekler çalışmaz, "Anladım" deyince oyun başlar. Patron ve dalga başlıkları için oyun 1-1,3 sn bekler. Atölye, Çark ve Ödüller ekranları ilk girişte kendilerini anlatır (Dükkân'daki Atölye düğmesinden girince de).
 
+## Kalıcı Yardımcı Madenci
+
+Atölye > Yükseltmeler sekmesinin son satırı: **Yardımcı Madenci, 100.000**. Bir kez alınır, her bölümde 7 saniyede bir en yakın altını veya elması kendisi toplar (sahnede ikinci bir madenci görünür). Dükkândaki tek bölümlük "Yardımcı Madenci" güçlendirmesiyle birikir: ikisi birden varsa her turda iki nesne toplanır.
+
 ## Ekonomi incelemesi
 
 `npx vite-node tools/economy-report.ts` bir bölümü "%30 payla" geçen oyuncunun toplam gelirini hesaplar: 100 bölümde yaklaşık 525.000. Önceki hâlde kalıcı harcamalar sadece 140.000 idi, yani 40. bölümden sonra para birikiyordu. Düzeltmeler:
@@ -62,7 +66,7 @@ Bölüm başındaki ipucu (Çakıl) ve ilk Sonsuz/Haftalık açıklaması kapatm
 
 ### Atölye fiyatları x10 (2026-11-05)
 
-Kullanıcı isteğiyle Atölye'deki her şeyin fiyatı 10 katına çıktı: yükseltmeler, kancalar ve kıyafetler. Dükkân, sandık, yenileme ve diğer fiyatlar aynı. Ayar tek bir sayıda: `src/config/economy.ts` içindeki `WORKSHOP_PRICE_MULT = 10` (1 yapınca eski fiyatlar döner).
+Kullanıcı isteğiyle Atölye'deki her şeyin fiyatı 10 katına çıktı: yükseltmeler, kancalar ve kıyafetler. Kalıcı Yardımcı Madenci (100.000) bu değişiklikten sonra ayrı fiyatlandırıldı ve çarpılmıyor. Dükkân, sandık, yenileme ve diğer fiyatlar aynı. Ayar tek bir sayıda: `src/config/economy.ts` içindeki `WORKSHOP_PRICE_MULT = 10` (1 yapınca eski fiyatlar döner).
 
 Sonuç: Atölye'nin toplamı yaklaşık 4.755.000, 100 bölümlük kampanyanın toplam geliri ise yaklaşık 525.000. Oyuncu kampanya boyunca Atölye'nin ancak yaklaşık %11'ini alabilir. Başka hiçbir şey almayan oyuncu ilk yükseltmeyi (9.000) yaklaşık 6. bölümde, Geniş Kanca'yı (25.000) 12. bölümde, Titan Kanca'yı (60.000) 22. bölümde alabilir. Bir yükseltmeyi sonuna kadar çıkarmak en az 884.000 tuttuğu için "yükseltmeyi tamamla" başarımı kampanya geliriyle ulaşılamaz hâle geldi (Sonsuz/Haftalık geliri gerekir).
 
@@ -74,7 +78,7 @@ Diğer fiyatlar: Patlatıcı 700 (bölümle 1200'e kadar artar), Paket 1800, Zam
 
 ## Test sonuçları
 
-- Birim testleri (Vitest): **308 test geçti** (kanca, çarpışma, oturum, seri, dondurma, yükseltmeler, dükkân, sandık, kozmetik, günlük hediye, başarımlar, kayıt, hikaye, görevler, 100 bölümün geçerliliği ve dengesi).
+- Birim testleri (Vitest): **309 test geçti** (kanca, çarpışma, oturum, seri, dondurma, yükseltmeler, dükkân, sandık, kozmetik, günlük hediye, başarımlar, kayıt, hikaye, görevler, 100 bölümün geçerliliği ve dengesi).
 - Tarayıcı testleri (Playwright): **30 test geçti** (temel akış, hikaye diyaloğu, sonsuz mod, haftalık, atölye alışverişi, günlük hediye, başarımlar, dünya sayfaları, dondurma, sandık, 5 ekran boyutunda düzen kontrolü, ekran galerisi).
 - Ekran görüntüleri: `docs/screenshots/`.
 

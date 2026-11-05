@@ -63,6 +63,7 @@ export const en = {
   gotIt: 'Got it!',
   showHints: 'Show hints again',
   hintsReset: 'Hints will show again',
+  helper: { name: 'Helper Miner', desc: 'Always on: grabs the nearest gold or diamond every 7 s.' },
   wheelShort: 'Wheel',
   spin: 'SPIN',
   spinsLeft: 'Spins: {n}',

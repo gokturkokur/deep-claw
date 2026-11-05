@@ -56,6 +56,8 @@ export interface SaveData {
   endless: { best: number; bestWaves: number };
   weekly: { week: string; best: number; claimed: boolean };
   spins: number;
+  /** The permanent Helper Miner has been bought. */
+  helper: boolean;
   hasProgress: boolean;
   hintShown: boolean;
   settings: { music: number; sfx: number; vibration: boolean; lang: Lang | null };
@@ -83,6 +85,7 @@ export function defaultSave(): SaveData {
     endless: { best: 0, bestWaves: 0 },
     weekly: { week: '', best: 0, claimed: false },
     spins: 0,
+    helper: false,
     hasProgress: false,
     hintShown: false,
     settings: { music: 0.6, sfx: 0.8, vibration: true, lang: null },
@@ -132,6 +135,7 @@ export function sanitize(raw: unknown): SaveData {
   d.wallet = int(r.wallet, 0, 0, 1e9);
   d.hasProgress = bool(r.hasProgress, false);
   d.spins = int(r.spins, 0, 0, 20);
+  d.helper = bool(r.helper, false);
   d.hintShown = bool(r.hintShown, false);
 
   if (isObj(r.levels)) {

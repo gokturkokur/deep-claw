@@ -146,6 +146,7 @@ export class Game extends Phaser.Scene {
       upgrades: save.data.upgrades,
       clawType: save.data.claws.equipped,
       perfectBonus: true,
+      permanentHelper: save.data.helper,
       endlessSeed: this.mode === 'endless' ? Math.floor(Math.random() * 1e9) : undefined,
     });
     this.lastWave = this.session.wave;
@@ -278,7 +279,7 @@ export class Game extends Phaser.Scene {
       .setOrigin(0.5, 1)
       .setDisplaySize(118, 150)
       .setDepth(D.rig + 1);
-    if (this.session.mods.extraMiner) {
+    if (this.session.helpers > 0) {
       this.add.image(px - 150, WORLD.surfaceY + 4, 'miner').setOrigin(0.5, 1).setDisplaySize(96, 122).setDepth(D.rig + 1).setTint(0xb8d8ff);
     }
     this.rope = this.add.tileSprite(px, py, 10, 4, 'rope').setOrigin(0.5, 0).setDepth(D.rope);

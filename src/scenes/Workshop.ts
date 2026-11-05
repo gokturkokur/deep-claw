@@ -1,9 +1,9 @@
 import Phaser from 'phaser';
-import { CLAW_IDS, CLAW_TYPES, COSMETICS, UPGRADES, UPGRADE_IDS, type ClawId, type CosmeticSlot, type UpgradeId } from '../config/economy';
+import { CLAW_IDS, CLAW_TYPES, COSMETICS, HELPER, UPGRADES, UPGRADE_IDS, type ClawId, type CosmeticSlot, type UpgradeId } from '../config/economy';
 import { DESIGN } from '../config/game';
-import { clawText, cosmeticName, money, t, upgradeText } from '../i18n';
+import { clawText, cosmeticName, helperText, money, t, upgradeText } from '../i18n';
 import { services } from '../services';
-import { buyClaw, buyUpgrade, equipClaw, upgradeCost } from '../systems/Upgrades';
+import { buyClaw, buyHelper, buyUpgrade, equipClaw, upgradeCost } from '../systems/Upgrades';
 import { buyCosmetic, equipCosmetic } from '../systems/Shop';
 import { createBackdrop, type Backdrop } from '../ui/Backdrop';
 import { showTutorial } from '../ui/Tutorial';
@@ -83,7 +83,10 @@ export class Workshop extends Phaser.Scene {
     }
     this.list.removeAll(true);
     this.walletText.setText(money(services.save.data.wallet));
-    if (this.tab === 'upgrades') this.renderUpgrades();
+    if (this.tab === 'upgrades') {
+      this.renderUpgrades();
+      this.renderHelper();
+    }
     else if (this.tab === 'claws') this.renderClaws();
     else this.renderStyle();
   }
@@ -97,7 +100,7 @@ export class Workshop extends Phaser.Scene {
   private row(y: number, iconKey: string, name: string, desc: string, extra: string): Phaser.GameObjects.Container {
     const cx = DESIGN.width / 2;
     const c = this.add.container(0, 0);
-    c.add(panel(this, cx, y, 660, 150));
+    c.add(panel(this, cx, y, 660, 142));
     c.add(this.add.image(cx - 272, y, iconKey).setDisplaySize(86, 86));
     c.add(txt(this, cx - 215, y - 44, name, 32, { originX: 0, color: COLORS.textGold, strokeW: 5, wrap: 300, align: 'left' }));
     c.add(txt(this, cx - 215, y + 6, desc, 20, { originX: 0, strokeW: 3, wrap: 300, align: 'left', shadow: false }));
@@ -115,7 +118,7 @@ export class Workshop extends Phaser.Scene {
     const d = services.save.data;
     const cx = DESIGN.width / 2;
     UPGRADE_IDS.forEach((id: UpgradeId, i) => {
-      const y = this.topY + 400 + i * 160;
+      const y = this.topY + 380 + i * 152;
       const lvl = d.upgrades[id];
       const u = UPGRADES[id];
       const tx = upgradeText(id);
@@ -134,6 +137,26 @@ export class Workshop extends Phaser.Scene {
           }),
         );
     });
+  }
+
+  /** Fifth row of the Upgrades tab: the permanent Helper Miner. */
+  private renderHelper(): void {
+    const d = services.save.data;
+    const cx = DESIGN.width / 2;
+    const y = this.topY + 380 + 4 * 152;
+    const tx = helperText();
+    const c = this.row(y, 'icon_miner', tx.name, tx.desc, '');
+    if (d.helper) c.add(txt(this, cx + 232, y, t('soldOut'), 32, { color: COLORS.textGreen, strokeW: 6 }));
+    else
+      c.add(
+        this.actionButton(cx + 232, y, money(HELPER.price), COLORS.gold, d.wallet >= HELPER.price, () => {
+          const r = buyHelper(d);
+          if (!r.ok) return this.denied(y, r.reason);
+          services.audio.sfx('buy');
+          services.save.save();
+          this.render();
+        }),
+      );
   }
 
   private renderClaws(): void {

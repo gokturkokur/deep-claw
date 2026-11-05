@@ -166,7 +166,8 @@ export type UpgradeId = 'winch' | 'muscle' | 'watch' | 'fortune';
 export const UPGRADE_IDS: readonly UpgradeId[] = ['winch', 'muscle', 'watch', 'fortune'];
 
 /**
- * Every price in the Workshop (upgrades, claws, style) is multiplied by this.
+ * Workshop upgrade, claw and style prices are multiplied by this.
+ * The Helper Miner (HELPER.price) has its own fixed price and is not multiplied.
  * Shop, crate, reroll and other prices are not affected. Set back to 1 for the original prices.
  */
 export const WORKSHOP_PRICE_MULT = 10;
@@ -279,3 +280,8 @@ export const WHEEL: ReadonlyArray<{ prize: WheelPrize; weight: number; color: nu
   { prize: { kind: 'money', amount: 6000 }, weight: 2, color: 0xffd23a },
 ];
 export const MAX_SPINS = 20;
+
+/** Permanent Helper Miner (Workshop): works every level, stacks with the Extra Miner boost. */
+export const HELPER = {
+  price: 100000,
+} as const;

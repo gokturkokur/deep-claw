@@ -393,3 +393,30 @@ describe('tutorial cards', () => {
     expect([...levels].sort((a, b) => a - b)).toEqual(levels);
   });
 });
+
+describe('permanent Helper Miner', () => {
+  it('costs 100000, is bought once, and works in every level alongside the Extra Miner boost', async () => {
+    const { buyHelper } = await import('../src/systems/Upgrades');
+    const { HELPER } = await import('../src/config/economy');
+    expect(HELPER.price).toBe(100000);
+    const save = defaultSave();
+    save.wallet = 99999;
+    expect(buyHelper(save)).toEqual({ ok: false, reason: 'funds' });
+    save.wallet = 150000;
+    expect(buyHelper(save).ok).toBe(true);
+    expect(save.wallet).toBe(50000);
+    expect(buyHelper(save)).toEqual({ ok: false, reason: 'owned' });
+    expect(sanitize({ saveVersion: 2, helper: true }).helper).toBe(true);
+    expect(sanitize({ saveVersion: 2, helper: 'yes' }).helper).toBe(false);
+
+    const objs = [o('goldS', 200, 500), o('goldM', 500, 700), o('goldL', 360, 900), o('rockS', 100, 1100)];
+    const none = new Session({ level: level(objs, 1e6), rng: makeRng(1) });
+    const one = new Session({ level: level(objs, 1e6), permanentHelper: true, rng: makeRng(1) });
+    const two = new Session({ level: level(objs, 1e6), permanentHelper: true, modifiers: { ...NO_MODIFIERS, extraMiner: true }, rng: makeRng(1) });
+    expect([none.helpers, one.helpers, two.helpers]).toEqual([0, 1, 2]);
+    for (const s of [none, one, two]) for (let t = 0; t < 7.2; t += 1 / 60) s.update(1 / 60);
+    expect(none.earned).toBe(0);
+    expect(one.earned).toBe(100); // nearest gold first
+    expect(two.earned).toBe(350); // two helpers: the two nearest
+  });
+});
