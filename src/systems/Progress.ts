@@ -15,6 +15,10 @@ export interface LevelOutcome {
   won: boolean;
   /** Blast Caps left at the end of the attempt. */
   blastCapsLeft: number;
+  freezeLeft?: number;
+  /** Side mission of the level was completed. */
+  missionDone?: boolean;
+  missionReward?: number;
 }
 
 export interface CompletionResult {
@@ -23,6 +27,7 @@ export interface CompletionResult {
   firstClear: boolean;
   newBest: boolean;
   walletGain: number;
+  missionBonus: number;
 }
 
 /**
@@ -34,13 +39,17 @@ export interface CompletionResult {
 export function commitOutcome(save: SaveData, o: LevelOutcome, seed: number = randomSeed()): CompletionResult | null {
   if (!o.won) return null;
   const key = String(o.levelId);
-  const prev = save.levels[key] ?? { stars: 0, best: 0 };
+  const prev = save.levels[key] ?? { stars: 0, best: 0, mission: false };
   const stars = starsFor(o.earned, o.target, LEVEL_RULES.starMultipliers);
   const firstClear = prev.stars === 0;
   const newBest = o.earned > prev.best;
-  save.levels[key] = { stars: Math.max(prev.stars, stars), best: Math.max(prev.best, o.earned) };
+  let missionBonus = 0;
+  if (o.missionDone && !prev.mission) missionBonus = o.missionReward ?? 0;
+  save.levels[key] = { stars: Math.max(prev.stars, stars), best: Math.max(prev.best, o.earned), mission: !!prev.mission || !!o.missionDone };
+  save.wallet += missionBonus;
 
   save.inventory.blastCaps = o.blastCapsLeft;
+  if (o.freezeLeft !== undefined) save.inventory.freeze = o.freezeLeft;
   for (const id of BOOST_IDS) save.boosts[id] = false;
   save.hasProgress = true;
 
@@ -51,10 +60,23 @@ export function commitOutcome(save: SaveData, o: LevelOutcome, seed: number = ra
     save.unlockedLevel = Math.min(LEVELS.length, Math.max(save.unlockedLevel, o.levelId + 1));
     save.currentLevel = Math.min(LEVELS.length, o.levelId + 1);
     save.phase = 'shop';
-    save.shop = { seed, afterLevel: o.levelId, bought: [] };
+    save.shop = { seed, afterLevel: o.levelId, bought: [], rerolls: 0 };
     save.stats.levelsWon++;
   }
-  return { stars, firstClear, newBest, walletGain };
+  return { stars, firstClear, newBest, walletGain, missionBonus };
+}
+
+/** Skip Ticket: counts as a 1 star clear (no money, no shop) and opens the next level. */
+export function skipLevel(save: SaveData, levelId: number): boolean {
+  if (save.inventory.skip <= 0) return false;
+  save.inventory.skip--;
+  const key = String(levelId);
+  const prev = save.levels[key] ?? { stars: 0, best: 0, mission: false };
+  save.levels[key] = { ...prev, stars: Math.max(prev.stars, 1) };
+  save.unlockedLevel = Math.min(LEVELS.length, Math.max(save.unlockedLevel, levelId + 1));
+  save.currentLevel = Math.max(save.currentLevel, Math.min(LEVELS.length, levelId + 1));
+  save.hasProgress = true;
+  return true;
 }
 
 /** Leaving the shop: next level becomes the current one. */

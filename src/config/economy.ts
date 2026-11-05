@@ -68,14 +68,16 @@ export const BAG = {
   itemNotionalValue: 150,
 } as const;
 
-export type ItemId = 'blastCap' | 'turbo' | 'lantern' | 'gemLens' | 'crusher' | 'hourglass' | 'goldRush' | 'extraMiner';
-export type BoostId = Exclude<ItemId, 'blastCap'>;
+export type BoostId = 'turbo' | 'lantern' | 'gemLens' | 'crusher' | 'hourglass' | 'goldRush' | 'extraMiner';
+export type SupplyId = 'blastCap' | 'blastPack' | 'freeze' | 'skip' | 'crate';
+export type ItemId = BoostId | SupplyId;
 
 export const BOOST_IDS: readonly BoostId[] = ['turbo', 'lantern', 'gemLens', 'crusher', 'hourglass', 'goldRush', 'extraMiner'];
 
 export interface ItemDef {
   id: ItemId;
-  kind: 'stack' | 'boost';
+  /** stack = goes into the inventory, pack = several stack items, crate = opens at once, boost = next level only. */
+  kind: 'stack' | 'boost' | 'pack' | 'crate';
   priceMin: number;
   priceMax: number;
   icon: string;
@@ -83,6 +85,10 @@ export interface ItemDef {
 
 export const ITEMS: Record<ItemId, ItemDef> = {
   blastCap: { id: 'blastCap', kind: 'stack', priceMin: 400, priceMax: 900, icon: 'icon_blast' },
+  blastPack: { id: 'blastPack', kind: 'pack', priceMin: 1100, priceMax: 1100, icon: 'icon_blast' },
+  freeze: { id: 'freeze', kind: 'stack', priceMin: 500, priceMax: 500, icon: 'icon_freeze' },
+  skip: { id: 'skip', kind: 'stack', priceMin: 2500, priceMax: 2500, icon: 'icon_ticket' },
+  crate: { id: 'crate', kind: 'crate', priceMin: 700, priceMax: 700, icon: 'icon_crate' },
   turbo: { id: 'turbo', kind: 'boost', priceMin: 900, priceMax: 1500, icon: 'icon_turbo' },
   lantern: { id: 'lantern', kind: 'boost', priceMin: 600, priceMax: 1100, icon: 'icon_lantern' },
   gemLens: { id: 'gemLens', kind: 'boost', priceMin: 1000, priceMax: 1800, icon: 'icon_gem' },
@@ -92,7 +98,8 @@ export const ITEMS: Record<ItemId, ItemDef> = {
   extraMiner: { id: 'extraMiner', kind: 'boost', priceMin: 3000, priceMax: 4500, icon: 'icon_miner' },
 };
 
-export const ITEM_IDS: readonly ItemId[] = ['blastCap', 'turbo', 'lantern', 'gemLens', 'crusher', 'hourglass', 'goldRush', 'extraMiner'];
+export const SUPPLY_IDS: readonly SupplyId[] = ['blastCap', 'blastPack', 'freeze', 'skip', 'crate'];
+export const ITEM_IDS: readonly ItemId[] = ['blastCap', 'blastPack', 'freeze', 'skip', 'crate', 'turbo', 'lantern', 'gemLens', 'crusher', 'hourglass', 'goldRush', 'extraMiner'];
 
 export const SHOP = {
   /** Blast Cap price rises by this much per cleared level, capped at priceMax. */
@@ -100,6 +107,13 @@ export const SHOP = {
   /** Boost items shown per visit (Blast Cap is always shown). */
   boostSlots: 4,
   maxBlastCaps: 9,
+  maxFreeze: 5,
+  maxSkip: 3,
+  blastPackSize: 3,
+  /** One deal in the daily-deals tab is this much cheaper. */
+  saleDiscount: 0.3,
+  /** Reroll cost = base * (rerolls so far + 1). */
+  rerollBase: 250,
   /** Share of a first-clear level's earnings that goes into the wallet (the rest is running costs). */
   walletShare: 0.6,
 } as const;
@@ -175,4 +189,43 @@ export const WEEKLY = {
   /** The target is this share of what the balance estimator thinks is possible. */
   targetShare: 0.6,
   rewardMoney: 1500,
+} as const;
+
+/** How long Time Freeze stops the clock and the beetles (s). */
+export const FREEZE_SEC = 6;
+
+export type CosmeticSlot = 'outfit' | 'clawSkin' | 'rope';
+export interface CosmeticDef {
+  id: string;
+  slot: CosmeticSlot;
+  price: number;
+  /** Outfits swap the miner texture, skins and ropes tint the claw / rope. */
+  texture?: string;
+  tint?: number;
+}
+export const COSMETICS: readonly CosmeticDef[] = [
+  { id: 'outfit_orange', slot: 'outfit', price: 0, texture: 'miner' },
+  { id: 'outfit_blue', slot: 'outfit', price: 1200, texture: 'miner_blue' },
+  { id: 'outfit_green', slot: 'outfit', price: 1200, texture: 'miner_green' },
+  { id: 'outfit_purple', slot: 'outfit', price: 2500, texture: 'miner_purple' },
+  { id: 'outfit_tycoon', slot: 'outfit', price: 6000, texture: 'miner_tycoon' },
+  { id: 'claw_steel', slot: 'clawSkin', price: 0 },
+  { id: 'claw_gold', slot: 'clawSkin', price: 1800, tint: 0xffd24a },
+  { id: 'claw_rose', slot: 'clawSkin', price: 1500, tint: 0xff9ac0 },
+  { id: 'claw_jade', slot: 'clawSkin', price: 1500, tint: 0x7ae0a0 },
+  { id: 'claw_shadow', slot: 'clawSkin', price: 3000, tint: 0x6a6a8a },
+  { id: 'rope_brown', slot: 'rope', price: 0 },
+  { id: 'rope_red', slot: 'rope', price: 500, tint: 0xff7a7a },
+  { id: 'rope_neon', slot: 'rope', price: 800, tint: 0x7aff9a },
+  { id: 'rope_golden', slot: 'rope', price: 1500, tint: 0xffd24a },
+];
+export const DEFAULT_COSMETICS = { outfit: 'outfit_orange', clawSkin: 'claw_steel', rope: 'rope_brown' } as const;
+
+/** Mystery Crate: weighted rewards. */
+export const CRATE = {
+  money: { weight: 40, min: 300, max: 1500 },
+  caps: { weight: 22, min: 1, max: 3 },
+  freeze: { weight: 14 },
+  boost: { weight: 18 },
+  skip: { weight: 6 },
 } as const;

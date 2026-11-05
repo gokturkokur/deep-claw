@@ -1,4 +1,4 @@
-import { BOOST_IDS, CLAW_IDS, SAVE, SHOP, UPGRADE_IDS, UPGRADES, type BoostId, type ClawId, type UpgradeId } from '../config/economy';
+import { BOOST_IDS, CLAW_IDS, COSMETICS, DEFAULT_COSMETICS, SAVE, SHOP, UPGRADE_IDS, UPGRADES, type CosmeticSlot, type BoostId, type ClawId, type UpgradeId } from '../config/economy';
 import { LEVELS } from '../data/levels';
 
 export type Lang = 'en' | 'tr';
@@ -10,6 +10,8 @@ export interface ShopState {
   afterLevel: number;
   /** Boost items already bought in this visit. */
   bought: BoostId[];
+  /** How many times the player rerolled this visit. */
+  rerolls: number;
 }
 
 export interface Stats {
@@ -38,8 +40,10 @@ export interface SaveData {
   /** 'shop' = the player won and has not left the shop yet. */
   phase: 'level' | 'shop';
   wallet: number;
-  levels: Record<string, { stars: number; best: number }>;
-  inventory: { blastCaps: number };
+  levels: Record<string, { stars: number; best: number; mission?: boolean }>;
+  inventory: { blastCaps: number; freeze: number; skip: number };
+  cosmetics: { owned: string[]; equipped: Record<CosmeticSlot, string> };
+  storySeen: string[];
   /** Boosts bought for the next level. */
   boosts: Record<BoostId, boolean>;
   shop: ShopState | null;
@@ -63,7 +67,9 @@ export function defaultSave(): SaveData {
     phase: 'level',
     wallet: 0,
     levels: {},
-    inventory: { blastCaps: 0 },
+    inventory: { blastCaps: 0, freeze: 0, skip: 0 },
+    cosmetics: { owned: COSMETICS.filter((c) => c.price === 0).map((c) => c.id), equipped: { ...DEFAULT_COSMETICS } },
+    storySeen: [],
     boosts: { turbo: false, lantern: false, gemLens: false, crusher: false, hourglass: false, goldRush: false, extraMiner: false },
     shop: null,
     stats: defaultStats(),
@@ -127,10 +133,26 @@ export function sanitize(raw: unknown): SaveData {
     for (const [k, v] of Object.entries(r.levels)) {
       const id = Number(k);
       if (!Number.isInteger(id) || id < 1 || id > maxLevel || !isObj(v)) continue;
-      d.levels[String(id)] = { stars: int(v.stars, 0, 0, 3), best: int(v.best, 0, 0, 1e9) };
+      d.levels[String(id)] = { stars: int(v.stars, 0, 0, 3), best: int(v.best, 0, 0, 1e9), mission: bool(v.mission, false) };
     }
   }
-  if (isObj(r.inventory)) d.inventory.blastCaps = int(r.inventory.blastCaps, 0, 0, SHOP.maxBlastCaps);
+  if (isObj(r.inventory)) {
+    d.inventory.blastCaps = int(r.inventory.blastCaps, 0, 0, SHOP.maxBlastCaps);
+    d.inventory.freeze = int(r.inventory.freeze, 0, 0, SHOP.maxFreeze);
+    d.inventory.skip = int(r.inventory.skip, 0, 0, SHOP.maxSkip);
+  }
+  if (isObj(r.cosmetics)) {
+    const ids = COSMETICS.map((c) => c.id);
+    const owned = Array.isArray(r.cosmetics.owned) ? r.cosmetics.owned.filter((c): c is string => typeof c === 'string' && ids.includes(c)) : [];
+    d.cosmetics.owned = Array.from(new Set([...d.cosmetics.owned, ...owned]));
+    if (isObj(r.cosmetics.equipped)) {
+      for (const slot of ['outfit', 'clawSkin', 'rope'] as CosmeticSlot[]) {
+        const want = r.cosmetics.equipped[slot];
+        if (typeof want === 'string' && d.cosmetics.owned.includes(want) && COSMETICS.find((c) => c.id === want)?.slot === slot) d.cosmetics.equipped[slot] = want;
+      }
+    }
+  }
+  if (Array.isArray(r.storySeen)) d.storySeen = r.storySeen.filter((x): x is string => typeof x === 'string').slice(0, 100);
   if (isObj(r.boosts)) for (const id of BOOST_IDS) d.boosts[id] = bool(r.boosts[id], false);
 
   if (isObj(r.shop) && d.phase === 'shop') {
@@ -139,6 +161,7 @@ export function sanitize(raw: unknown): SaveData {
       seed: int(r.shop.seed, 1, 0, 0xffffffff),
       afterLevel: int(r.shop.afterLevel, Math.max(1, d.currentLevel - 1), 1, maxLevel),
       bought,
+      rerolls: int(r.shop.rerolls, 0, 0, 1000),
     };
   } else {
     d.phase = 'level';

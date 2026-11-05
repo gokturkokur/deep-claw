@@ -5,25 +5,29 @@ import { starsFor, rollBag, bagExpectedValue, NO_MODIFIERS } from '../src/system
 import { commitOutcome, leaveShop } from '../src/systems/Progress';
 import { makeRng } from '../src/systems/Rng';
 import { defaultSave, MemoryStore, migrate, sanitize, SaveManager } from '../src/systems/Save';
-import { activeModifiers, blastCapPrice, buy, rollShop } from '../src/systems/Shop';
+import { activeModifiers, blastCapPrice, buy, buyCosmetic, dealOffers, equipCosmetic, reroll, rerollCost, supplyOffers } from '../src/systems/Shop';
 
 describe('shop', () => {
-  it('always offers Blast Cap plus 3 of the 4 boosts; same seed = same shop', () => {
-    const a = rollShop(42, 3);
-    expect(a.length).toBe(1 + SHOP.boostSlots);
-    expect(a[0].id).toBe('blastCap');
-    expect(rollShop(42, 3)).toEqual(a);
+  it('deals: 4 boosts, one on sale; same seed and reroll count = same shop', () => {
+    const a = dealOffers(42);
+    expect(a.length).toBe(SHOP.boostSlots);
+    expect(a.filter((o) => o.sale).length).toBe(1);
+    expect(dealOffers(42)).toEqual(a);
+    expect(dealOffers(42, 1)).not.toEqual(a);
     const ids = new Set<string>();
-    for (let seed = 0; seed < 200; seed++) rollShop(seed, 1).forEach((o) => ids.add(o.id));
-    expect(ids.size).toBe(8); // every item can show up
+    for (let seed = 0; seed < 200; seed++) dealOffers(seed).forEach((o) => ids.add(o.id));
+    expect(ids.size).toBe(7); // every boost can show up
+  });
+
+  it('supplies: five fixed items', () => {
+    expect(supplyOffers(3).map((o) => o.id)).toEqual(['blastCap', 'blastPack', 'freeze', 'crate', 'skip']);
   });
 
   it('prices stay inside the configured ranges and are expensive', () => {
     for (let seed = 0; seed < 100; seed++) {
-      for (const o of rollShop(seed, 10)) {
+      for (const o of dealOffers(seed)) {
         const def = ITEMS[o.id];
-        if (o.id === 'blastCap') continue;
-        expect(o.price).toBeGreaterThanOrEqual(def.priceMin);
+        expect(o.price).toBeGreaterThanOrEqual(Math.round(def.priceMin * (o.sale ? 1 - SHOP.saleDiscount : 1)) - 10);
         expect(o.price).toBeLessThanOrEqual(def.priceMax);
       }
     }
@@ -58,6 +62,52 @@ describe('shop', () => {
     save.wallet = 99999;
     save.inventory.blastCaps = SHOP.maxBlastCaps;
     expect(buy(save, { id: 'blastCap', price: 150 })).toEqual({ ok: false, reason: 'max' });
+    expect(buy(save, { id: 'blastPack', price: 150 })).toEqual({ ok: false, reason: 'max' });
+  });
+
+  it('pack gives 3 caps, freeze and skip tickets stack with limits', () => {
+    const save = defaultSave();
+    save.wallet = 99999;
+    buy(save, { id: 'blastPack', price: 1100 });
+    expect(save.inventory.blastCaps).toBe(SHOP.blastPackSize);
+    for (let i = 0; i < 10; i++) buy(save, { id: 'freeze', price: 500 });
+    expect(save.inventory.freeze).toBe(SHOP.maxFreeze);
+    for (let i = 0; i < 10; i++) buy(save, { id: 'skip', price: 2500 });
+    expect(save.inventory.skip).toBe(SHOP.maxSkip);
+  });
+
+  it('crate pays out something real and costs money', () => {
+    for (let seed = 1; seed < 60; seed++) {
+      const save = defaultSave();
+      save.wallet = 1000;
+      const r = buy(save, { id: 'crate', price: 700 }, makeRng(seed));
+      expect(r.ok).toBe(true);
+      const gained = save.wallet - 300 + save.inventory.blastCaps + save.inventory.freeze + save.inventory.skip + Object.values(save.boosts).filter(Boolean).length;
+      expect(gained).toBeGreaterThan(0);
+    }
+  });
+
+  it('reroll costs more each time and changes the deals', () => {
+    const save = defaultSave();
+    save.wallet = 5000;
+    save.shop = { seed: 9, afterLevel: 1, bought: [], rerolls: 0 };
+    expect(reroll(save)).toBe(true);
+    expect(save.wallet).toBe(5000 - rerollCost(0));
+    expect(rerollCost(1)).toBeGreaterThan(rerollCost(0));
+    save.wallet = 10;
+    expect(reroll(save)).toBe(false);
+  });
+
+  it('cosmetics: buy once, equip, cannot equip what you do not own', () => {
+    const save = defaultSave();
+    expect(equipCosmetic(save, 'outfit_blue')).toBe(false);
+    expect(buyCosmetic(save, 'outfit_blue')).toEqual({ ok: false, reason: 'funds' });
+    save.wallet = 5000;
+    expect(buyCosmetic(save, 'outfit_blue').ok).toBe(true);
+    expect(save.cosmetics.equipped.outfit).toBe('outfit_blue');
+    expect(buyCosmetic(save, 'outfit_blue')).toEqual({ ok: false, reason: 'owned' });
+    expect(equipCosmetic(save, 'outfit_orange')).toBe(true);
+    expect(save.cosmetics.equipped.outfit).toBe('outfit_orange');
   });
 });
 
@@ -142,7 +192,7 @@ describe('save', () => {
     m.data.unlockedLevel = 5;
     m.data.currentLevel = 5;
     m.data.inventory.blastCaps = 3;
-    m.data.levels['2'] = { stars: 3, best: 2222 };
+    m.data.levels['2'] = { stars: 3, best: 2222, mission: false };
     m.data.settings.lang = 'tr';
     m.save();
     const again = new SaveManager(store);
@@ -174,7 +224,7 @@ describe('save', () => {
     expect(s.unlockedLevel).toBe(LEVELS.length);
     expect(s.currentLevel).toBe(1);
     expect(s.wallet).toBe(0);
-    expect(s.levels['1']).toEqual({ stars: 3, best: 0 });
+    expect(s.levels['1']).toMatchObject({ stars: 3, best: 0 });
     expect(s.levels['199']).toBeUndefined();
     expect(s.inventory.blastCaps).toBe(SHOP.maxBlastCaps);
     expect(s.settings.music).toBe(1);
@@ -191,7 +241,7 @@ describe('save', () => {
     expect(s.currentLevel).toBe(4);
     expect(s.wallet).toBe(800);
     expect(s.inventory.blastCaps).toBe(2);
-    expect(s.levels['2']).toEqual({ stars: 2, best: 1200 });
+    expect(s.levels['2']).toMatchObject({ stars: 2, best: 1200 });
     expect(s.hasProgress).toBe(true);
     expect(migrate('nope')).toEqual({});
   });

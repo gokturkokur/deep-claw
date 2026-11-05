@@ -1,5 +1,5 @@
 import { BEETLE, KEG, LEVEL_RULES, CLAW, WORLD } from '../config/game';
-import { COMBO, CLAW_TYPES, ENDLESS, EFFECTS, UPGRADES, type ClawId, type UpgradeId } from '../config/economy';
+import { COMBO, CLAW_TYPES, ENDLESS, EFFECTS, FREEZE_SEC, UPGRADES, type ClawId, type UpgradeId } from '../config/economy';
 import { endlessWave } from './Fields';
 import { BEETLE_DIAMOND_VALUE, BAG, OBJECTS, SHOP, type ObjType } from '../config/economy';
 import type { LevelDef } from '../data/levels';
@@ -33,6 +33,7 @@ export type SessionEvent =
   | { type: 'miss' }
   | { type: 'collect'; id: number; kind: ObjType; value: number; x: number; y: number; bag?: BagOutcome; combo: number; mult: number }
   | { type: 'wave'; wave: number }
+  | { type: 'freeze'; seconds: number }
   | { type: 'explode'; id: number; x: number; y: number }
   | { type: 'destroyed'; id: number; x: number; y: number }
   | { type: 'blast'; id: number; x: number; y: number }
@@ -49,9 +50,12 @@ export interface SessionOptions {
   clawType?: ClawId;
   /** Endless mode: waves of generated fields, no target. */
   endlessSeed?: number;
+  freezeCount?: number;
 }
 
 export interface RunStats {
+  slimes: number;
+  beetles: number;
   collected: number;
   diamonds: number;
   kegs: number;
@@ -83,8 +87,11 @@ export class Session implements ClawHost {
   private helperTimer = 0;
   combo = 0;
   wave = 1;
+  freezeCount: number;
+  /** Seconds of Time Freeze left. */
+  freezeLeft = 0;
   readonly endlessSeed: number | null;
-  readonly stats: RunStats = { collected: 0, diamonds: 0, kegs: 0, rocks: 0, blasts: 0, chests: 0, bestCombo: 0 };
+  readonly stats: RunStats = { slimes: 0, beetles: 0, collected: 0, diamonds: 0, kegs: 0, rocks: 0, blasts: 0, chests: 0, bestCombo: 0 };
   private readonly upg: Record<UpgradeId, number>;
   private readonly clawType: ClawId;
 
@@ -92,6 +99,7 @@ export class Session implements ClawHost {
     this.level = opts.level;
     this.mods = opts.modifiers ?? NO_MODIFIERS;
     this.blastCaps = opts.blastCaps ?? 0;
+    this.freezeCount = opts.freezeCount ?? 0;
     this.rng = opts.rng ?? makeRng(randomSeed());
     this.upg = opts.upgrades ?? { winch: 0, muscle: 0, watch: 0, fortune: 0 };
     this.clawType = opts.clawType ?? 'standard';
@@ -219,17 +227,27 @@ export class Session implements ClawHost {
     return true;
   }
 
+  /** Time Freeze: the clock and the beetles stop for FREEZE_SEC. */
+  useFreeze(): boolean {
+    if (this.status !== 'playing' || this.freezeCount <= 0 || this.freezeLeft > 0 || this.timeLeft <= 0) return false;
+    this.freezeCount--;
+    this.freezeLeft = FREEZE_SEC;
+    this.events.push({ type: 'freeze', seconds: FREEZE_SEC });
+    return true;
+  }
+
   update(dtRaw: number): void {
     const dt = Math.min(Math.max(dtRaw, 0), CLAW.maxDt);
     if (this.status !== 'playing') return;
     this.elapsed += dt;
 
-    if (this.timeLeft > 0) {
+    if (this.freezeLeft > 0) this.freezeLeft = Math.max(0, this.freezeLeft - dt);
+    if (this.timeLeft > 0 && this.freezeLeft <= 0) {
       this.timeLeft = Math.max(0, this.timeLeft - dt);
       if (this.timeLeft === 0) this.events.push({ type: 'timeUp' });
     }
 
-    this.moveBeetles(dt);
+    if (this.freezeLeft <= 0) this.moveBeetles(dt);
     if (this.mods.extraMiner) this.runHelper(dt);
 
     this.claw.update(dt, this, this.level.swingMult ?? 1);
@@ -365,6 +383,8 @@ export class Session implements ClawHost {
     if (e.type === 'diamond' || (e.type === 'beetle' && e.carriesDiamond)) this.stats.diamonds++;
     if (e.type === 'rockS' || e.type === 'rockL') this.stats.rocks++;
     if (e.type === 'chest') this.stats.chests++;
+    if (e.type === 'slime') this.stats.slimes++;
+    if (e.type === 'beetle') this.stats.beetles++;
     this.earned = Math.max(0, this.earned + value);
     this.events.push({ type: 'collect', id, kind: e.type, value, x: e.x, y: e.y, bag, combo: this.combo, mult });
   }
