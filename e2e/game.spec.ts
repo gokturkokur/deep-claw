@@ -59,11 +59,11 @@ test.describe('Deep Claw', () => {
     expect((await sessionState(page)).state).toBe('retracting');
     await stepUntil(page, 'swinging');
     const st = await sessionState(page);
-    expect(st.earned).toBe(250);
+    expect(st.earned).toBe(275); // 250 + 10 % perfect hit
     // the HUD counts up to the new amount
     await expect
       .poll(() => page.evaluate(() => (window as any).__game.scene.getScene('Game').moneyText.text), { timeout: 40_000 })
-      .toBe('$250');
+      .toBe('$275');
     expect(errors).toEqual([]);
   });
 
