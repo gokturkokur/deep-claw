@@ -9,7 +9,7 @@ import { missionText, money, t } from '../i18n';
 import { services } from '../services';
 import { Session, type SessionEvent } from '../systems/Session';
 import { estimateLevel } from '../systems/Balance';
-import { isBoss, missionDone, missionFor, missionGoal, missionIsRestriction, missionProgress, themeOf, worldOf, type Mission, type ThemeId } from '../systems/Campaign';
+import { TWIST, twistFor, isBoss, missionDone, missionFor, missionGoal, missionIsRestriction, missionProgress, themeOf, worldOf, type Mission, type ThemeId } from '../systems/Campaign';
 import { weekId, weeklyLevel } from '../systems/Fields';
 import { checkAchievements, commitEndless, commitOutcome, commitWeekly, mergeStats } from '../systems/Progress';
 import { activeModifiers } from '../systems/Shop';
@@ -33,6 +33,9 @@ export class Game extends Phaser.Scene {
   private lastFreeze = -1;
   private lastWave = 0;
   private lastMission = '';
+  private dark!: Phaser.GameObjects.Rectangle;
+  private wasRushing = false;
+  private twist = { rush: false, blackout: false };
   private levelId = 1;
   private level!: LevelDef;
   private session!: Session;
@@ -131,6 +134,8 @@ export class Game extends Phaser.Scene {
       endlessSeed: this.mode === 'endless' ? Math.floor(Math.random() * 1e9) : undefined,
     });
     this.lastWave = this.session.wave;
+    this.twist = this.mode === 'campaign' ? twistFor(this.levelId) : { rush: false, blackout: false };
+    this.wasRushing = false;
     this.theme = this.mode === 'campaign' ? themeOf(this.levelId) : this.mode === 'weekly' ? 'ice' : 'abyss';
 
     audio.playMusic('music_game');
@@ -140,6 +145,7 @@ export class Game extends Phaser.Scene {
     this.createEffects();
     this.createHud();
     this.createInput();
+    this.dark = this.add.rectangle(DESIGN.width / 2, DESIGN.height / 2, this.layout.width + 8, this.layout.height + 8, 0x000000, 0).setDepth(D.hud - 5);
 
     this.floats = new FloatingTexts(this, FX.floatTextPool, D.float);
     for (let i = 0; i < 6; i++) this.glintPool.push(this.add.image(0, 0, 'spark').setDepth(D.fx).setVisible(false).setBlendMode(Phaser.BlendModes.ADD));
@@ -439,6 +445,7 @@ export class Game extends Phaser.Scene {
     this.handleEvents();
     this.syncWorld(time, dt);
     this.syncHud(dt);
+    this.syncTwist();
   }
 
   private handleEvents(): void {
@@ -731,6 +738,24 @@ export class Game extends Phaser.Scene {
 
   private isShiny(t0: ObjType): boolean {
     return t0 === 'goldS' || t0 === 'goldM' || t0 === 'goldL' || t0 === 'diamond';
+  }
+
+  /** Boss twists: warn when the rush starts, darken the field during blackouts. */
+  private syncTwist(): void {
+    if (this.twist.rush) {
+      const r = this.session.rushing;
+      if (r && !this.wasRushing) {
+        this.showBanner(t('rush'));
+        this.cameras.main.shake(200, 0.006);
+      }
+      this.wasRushing = r;
+    }
+    if (this.twist.blackout) {
+      const c = this.session.elapsed % TWIST.blackoutCycle;
+      const into = c - TWIST.blackoutStart;
+      const a = into < 0 || into > TWIST.blackoutSec ? 0 : Math.min(0.82, Math.sin((into / TWIST.blackoutSec) * Math.PI) * 1.2);
+      this.dark.setAlpha(a);
+    }
   }
 
   private syncHud(dt: number): void {

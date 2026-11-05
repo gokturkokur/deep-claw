@@ -248,3 +248,29 @@ describe('progress modes', () => {
   });
   void NO_MODIFIERS;
 });
+
+describe('boss twists', () => {
+  it('only boss levels have twists', async () => {
+    const { twistFor } = await import('../src/systems/Campaign');
+    expect(twistFor(5)).toEqual({ rush: false, blackout: false });
+    expect(twistFor(20).rush).toBe(true);
+    expect(twistFor(40).blackout).toBe(true);
+    expect(twistFor(100).rush && twistFor(100).blackout).toBe(true);
+  });
+  it('a rush makes the swing faster in the last seconds of each cycle', () => {
+    const lvl: LevelDef = { id: 20, name: 'b', target: 1e9, objects: [o('goldS', 100, 1100)] };
+    const s = new Session({ level: lvl, rng: makeRng(1) });
+    let calm = 0;
+    let rush = 0;
+    let prev = s.claw.phase;
+    for (let t = 0; t < 12; t += 1 / 60) {
+      s.update(1 / 60);
+      const step = Math.abs(s.claw.phase - prev);
+      prev = s.claw.phase;
+      if (step > 0.5) continue; // wrap
+      if (s.rushing) rush = Math.max(rush, step);
+      else calm = Math.max(calm, step);
+    }
+    expect(rush).toBeGreaterThan(calm * 1.3);
+  });
+});

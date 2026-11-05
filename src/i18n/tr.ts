@@ -56,6 +56,7 @@ export const tr: Strings = {
   bagItem: '+{n} Patlatıcı!',
   bagStrength: 'Güçlü çekiş!',
   blastUsed: 'Güm!',
+  rush: 'ATAK!',
   story: 'Hikâye',
   endless: 'Sonsuz',
   weekly: 'Haftalık',

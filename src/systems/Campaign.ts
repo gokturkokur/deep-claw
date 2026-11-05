@@ -110,3 +110,25 @@ export function missionIsRestriction(m: Mission): boolean {
 export function missionDone(m: Mission, s: MissionStats): boolean {
   return missionProgress(m, s) >= missionGoal(m);
 }
+
+/** Boss levels have a twist: the swing speeds up in pulses (rush) and / or the lights go out (blackout). */
+export interface Twist {
+  rush: boolean;
+  blackout: boolean;
+}
+
+export function twistFor(levelId: number): Twist {
+  if (!isBoss(levelId)) return { rush: false, blackout: false };
+  const w = worldOf(levelId);
+  return { rush: w === 1 || w === 3 || w === 4 || w === 5, blackout: w === 2 || w === 3 || w === 5 };
+}
+
+export const TWIST = {
+  /** Cycle length (s); the last `rushSec` seconds of each cycle are fast. */
+  rushCycle: 12,
+  rushSec: 4,
+  rushMult: 1.45,
+  blackoutCycle: 10,
+  blackoutStart: 6.5,
+  blackoutSec: 3,
+} as const;

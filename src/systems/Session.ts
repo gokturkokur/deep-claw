@@ -1,6 +1,7 @@
 import { BEETLE, KEG, LEVEL_RULES, CLAW, WORLD } from '../config/game';
 import { COMBO, CLAW_TYPES, ENDLESS, EFFECTS, FREEZE_SEC, UPGRADES, type ClawId, type UpgradeId } from '../config/economy';
 import { endlessWave } from './Fields';
+import { TWIST, twistFor } from './Campaign';
 import { BEETLE_DIAMOND_VALUE, BAG, OBJECTS, SHOP, type ObjType } from '../config/economy';
 import type { LevelDef } from '../data/levels';
 import { Claw, type ClawHost } from './Claw';
@@ -87,6 +88,8 @@ export class Session implements ClawHost {
   private helperTimer = 0;
   combo = 0;
   wave = 1;
+  /** Boss twist: the swing is currently fast. */
+  rushing = false;
   freezeCount: number;
   /** Seconds of Time Freeze left. */
   freezeLeft = 0;
@@ -250,7 +253,8 @@ export class Session implements ClawHost {
     if (this.freezeLeft <= 0) this.moveBeetles(dt);
     if (this.mods.extraMiner) this.runHelper(dt);
 
-    this.claw.update(dt, this, this.level.swingMult ?? 1);
+    this.rushing = twistFor(this.level.id).rush && this.elapsed % TWIST.rushCycle > TWIST.rushCycle - TWIST.rushSec;
+    this.claw.update(dt, this, (this.level.swingMult ?? 1) * (this.rushing ? TWIST.rushMult : 1));
     for (const ev of this.claw.events) {
       switch (ev) {
         case 'hit':

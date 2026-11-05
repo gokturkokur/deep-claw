@@ -54,6 +54,7 @@ export const en = {
   bagItem: '+{n} Blast Cap!',
   bagStrength: 'Strong pull!',
   blastUsed: 'Boom!',
+  rush: 'RUSH!',
   story: 'Story',
   endless: 'Endless',
   weekly: 'Weekly',
