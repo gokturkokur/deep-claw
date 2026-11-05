@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import { IMAGES, type SoundKey } from '../assets/manifest';
 import { COSMETICS, OBJECTS, WEEKLY, type ObjType } from '../config/economy';
-import { CLAW, DESIGN, FX, LEVEL_RULES, WORLD } from '../config/game';
+import { CLAW, DESIGN, FX, LEVEL_RULES, MEGA_BLAST, WORLD } from '../config/game';
 import { CLAW_TYPES, COMBO } from '../config/economy';
 import { LEVELS, type LevelDef } from '../data/levels';
 import { storyBeatFor } from '../data/story';
@@ -566,6 +566,9 @@ export class Game extends Phaser.Scene {
       case 'explode':
         this.onExplode(ev.id, ev.x, ev.y);
         break;
+      case 'megaBlast':
+        this.onMegaBlast(ev.x, ev.y);
+        break;
       case 'destroyed': {
         const s = this.sprites.get(ev.id);
         if (s) this.popAway(ev.id, s);
@@ -596,7 +599,7 @@ export class Game extends Phaser.Scene {
         break;
       }
       case 'end':
-        this.onEnd(ev.won);
+        this.onEnd(ev.won, ev.reason);
         break;
       default:
         break;
@@ -685,6 +688,34 @@ export class Game extends Phaser.Scene {
     if (keg) this.popAway(id, keg);
   }
 
+  /** Easter egg: Blast Cap on a carried keg. Chain of explosions over the whole mine. */
+  private onMegaBlast(x: number, y: number): void {
+    const audio = services.audio;
+    this.onExplode(-1, x, y);
+    audio.sfx('explosion', 1, 0.55);
+    audio.vibrate(500);
+    const cam = this.cameras.main;
+    cam.shake(MEGA_BLAST.endDelayMs - 300, 0.03, true);
+    cam.flash(600, 255, 236, 190, true);
+    const glow = this.add.rectangle(DESIGN.width / 2, DESIGN.height / 2, this.layout.width + 8, this.layout.height + 8, 0xff6a1a, 0).setDepth(D.flash - 1);
+    this.tweens.add({ targets: glow, alpha: 0.45, duration: 500, yoyo: true, hold: 900 });
+    for (let i = 1; i <= MEGA_BLAST.extraBursts; i++) {
+      this.time.delayedCall(i * MEGA_BLAST.burstGapMs, () => {
+        const bx = Phaser.Math.Between(WORLD.fieldMinX, WORLD.fieldMaxX);
+        const by = Phaser.Math.Between(WORLD.fieldMinY, WORLD.fieldMaxY);
+        audio.sfx(i % 2 ? 'blast' : 'explosion', 0.8, 0.7 + 0.1 * (i % 3));
+        this.debris.explode(14, bx, by);
+        this.sparks.explode(14, bx, by);
+        this.smoke.explode(5, bx, by);
+        const ring = this.add.circle(bx, by, 20, 0xffe07a, 0).setStrokeStyle(12, 0xff8a2a).setDepth(D.fx);
+        this.tweens.add({ targets: ring, scale: 12, alpha: 0, duration: 520, ease: 'Quad.Out', onComplete: () => ring.destroy() });
+      });
+    }
+    const b = txt(this, DESIGN.width / 2, 600, t('megaBlast'), 112, { color: COLORS.textRed, strokeW: 16 }).setDepth(D.float + 5).setScale(0.2).setAngle(-6);
+    this.tweens.add({ targets: b, scale: 1, duration: 420, ease: 'Back.Out' });
+    this.tweens.add({ targets: b, angle: 6, duration: 90, yoyo: true, repeat: 8, delay: 420 });
+  }
+
   private popAway(id: number, s: Phaser.GameObjects.Image): void {
     this.sprites.delete(id);
     this.tweens.add({ targets: s, scaleX: 0, scaleY: 0, angle: 90, alpha: 0, duration: 200, ease: 'Back.In', onComplete: () => s.destroy() });
@@ -709,14 +740,14 @@ export class Game extends Phaser.Scene {
     this.targetText.setText(t('wave', { n: wave }));
   }
 
-  private onEnd(won: boolean): void {
+  private onEnd(won: boolean, reason?: 'megaBlast'): void {
     if (this.ending) return;
     this.ending = true;
     const audio = services.audio;
     audio.loop('reel', false);
     this.reelOn = false;
     const s = this.session;
-    this.time.delayedCall(won ? 700 : 900, () => {
+    this.time.delayedCall(reason === 'megaBlast' ? MEGA_BLAST.endDelayMs : won ? 700 : 900, () => {
       const save = services.save;
       const data = save.data;
       const run = s.stats;
@@ -753,7 +784,7 @@ export class Game extends Phaser.Scene {
       const fresh = checkAchievements(data).map((a) => a.id);
       save.save();
       if (won && result) goTo(this, 'LevelComplete', { ...outcome, ...result, unlocked: fresh, mission: this.mission, missionOk });
-      else goTo(this, 'GameOver', { ...outcome, unlocked: fresh, mission: this.mission, missionOk: false });
+      else goTo(this, 'GameOver', { ...outcome, unlocked: fresh, mission: this.mission, missionOk: false, kaboom: reason === 'megaBlast' });
     });
   }
 

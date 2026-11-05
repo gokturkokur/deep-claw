@@ -100,6 +100,54 @@ describe('powder keg', () => {
   });
 });
 
+describe('mega blast easter egg', () => {
+  /** Defused keg straight below, gold far away; launch and wait until the keg is on the claw. */
+  const carryKeg = (caps: number) => {
+    const s = new Session({
+      level: level([below('keg', 400), o('goldS', 100, 1100), o('goldL', 620, 1150)], 100),
+      modifiers: { ...NO_MODIFIERS, defuser: true, magnet: true },
+      blastCaps: caps,
+      rng: makeRng(1),
+    });
+    for (let i = 0; i < 2000 && Math.abs(s.claw.angleDeg - 90) > 0.4; i++) s.update(1 / 240);
+    s.launch();
+    for (let i = 0; i < 600 && s.claw.state !== 'retracting'; i++) s.update(1 / 60);
+    return s;
+  };
+
+  it('Blast Cap on a carried keg destroys the whole mine and loses the level', () => {
+    const s = carryKeg(2);
+    expect(s.claw.state).toBe('retracting');
+    expect(s.get(s.claw.hookedId)?.type).toBe('keg');
+    s.events.length = 0;
+    expect(s.useBlastCap()).toBe(true);
+    expect(s.blastCaps).toBe(1);
+    expect(s.status).toBe('lost');
+    expect(s.entities.every((e) => !e.alive)).toBe(true);
+    const types = s.events.map((e) => e.type);
+    expect(types).toContain('megaBlast');
+    expect(types).not.toContain('blast');
+    expect(s.events.find((e) => e.type === 'end')).toEqual({ type: 'end', won: false, reason: 'megaBlast' });
+    // nothing moves or scores after the end
+    s.update(1);
+    expect(s.earned).toBe(0);
+  });
+
+  it('a lost level stays lost even if the target was already reached', () => {
+    const s = carryKeg(1);
+    s.earned = 500;
+    s.useBlastCap();
+    expect(s.status).toBe('lost');
+  });
+
+  it('pulling the defused keg up without a Blast Cap is still safe', () => {
+    const s = carryKeg(0);
+    for (let i = 0; i < 1200 && s.claw.state !== 'swinging'; i++) s.update(1 / 60);
+    expect(s.status).toBe('playing');
+    expect(s.earned).toBeGreaterThan(0);
+  });
+});
+
 describe('Blast Cap', () => {
   it('destroys the carried object and the claw returns empty, faster', () => {
     const mk = (caps: number) => new Session({ level: level([below('rockL', 700), o('goldS', 100, 1100)]), blastCaps: caps, rng: makeRng(1) });

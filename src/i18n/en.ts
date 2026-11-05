@@ -54,6 +54,8 @@ export const en = {
   bagItem: '+{n} Blast Cap!',
   bagStrength: 'Strong pull!',
   blastUsed: 'Boom!',
+  megaBlast: 'KABOOOM!',
+  megaBlastText: 'Never blast a powder keg. The whole mine went up!',
   rush: 'RUSH!',
   wheel: 'Lucky Wheel',
   unlocksAt: 'Unlocks at level {n}',

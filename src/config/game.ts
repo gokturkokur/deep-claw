@@ -65,6 +65,19 @@ export const KEG = {
   blastRadius: 175,
 } as const;
 
+/**
+ * Easter egg: using a Blast Cap on a powder keg you are carrying (only possible with the
+ * Keg Defuser) sets off a mega blast. The whole mine is destroyed and the level is lost.
+ */
+export const MEGA_BLAST = {
+  enabled: true,
+  /** How long the explosion plays before the Game Over screen (ms). */
+  endDelayMs: 2600,
+  /** Extra explosions spread over the screen after the first one. */
+  extraBursts: 7,
+  burstGapMs: 140,
+} as const;
+
 export const FX = {
   fadeMs: 240,
   moneyTickSec: 0.45,

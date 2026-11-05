@@ -56,6 +56,8 @@ export const tr: Strings = {
   bagItem: '+{n} Patlatıcı!',
   bagStrength: 'Güçlü çekiş!',
   blastUsed: 'Güm!',
+  megaBlast: 'KABUUUM!',
+  megaBlastText: 'Fıçıya patlatıcı atılmaz. Bütün maden havaya uçtu!',
   rush: 'ATAK!',
   wheel: 'Şans Çarkı',
   unlocksAt: '{n}. bölümde açılır',

@@ -15,6 +15,8 @@ interface Data {
   target: number;
   unlocked?: string[];
   mission?: Mission | null;
+  /** Lost to the mega blast easter egg. */
+  kaboom?: boolean;
 }
 
 export class GameOver extends Phaser.Scene {
@@ -47,7 +49,7 @@ export class GameOver extends Phaser.Scene {
     const p = panel(this, cx, cy, 640, h).setDepth(20);
     p.setScale(0.8).setAlpha(0);
     this.tweens.add({ targets: p, scale: 1, alpha: 1, duration: 260, ease: 'Back.Out' });
-    txt(this, cx, top + 85, t('outOfTime'), 76, { color: COLORS.textRed, strokeW: 11 }).setDepth(21);
+    txt(this, cx, top + 85, d.kaboom ? t('megaBlast') : t('outOfTime'), 76, { color: COLORS.textRed, strokeW: 11 }).setDepth(21);
     txt(this, cx, top + 160, t('level', { n: d.levelId }), 38, { color: '#f4dba8' }).setDepth(21);
 
     // progress toward the target + "so close" message
@@ -63,12 +65,15 @@ export class GameOver extends Phaser.Scene {
     txt(this, cx - 270, top + 385, t('targetLabel'), 40, { originX: 0, color: '#f4dba8' }).setDepth(21);
     txt(this, cx + 270, top + 385, money(d.target), 48, { originX: 1, color: COLORS.textRed }).setDepth(21);
     let y = top + 450;
-    if (frac >= 0.7) {
+    if (d.kaboom) {
+      txt(this, cx, y + 10, t('megaBlastText'), 32, { color: COLORS.textGold, wrap: 560 }).setDepth(21);
+      y += 30;
+    } else if (frac >= 0.7) {
       const near = txt(this, cx, y, t('nearMiss', { n: money(d.target - d.earned) }), 34, { color: COLORS.textGold, wrap: 560 }).setDepth(21);
       this.tweens.add({ targets: near, scale: { from: 1, to: 1.06 }, duration: 500, yoyo: true, repeat: -1 });
     }
     y += 52;
-    if (d.mission && !missionIsRestriction(d.mission)) {
+    if (d.mission && !missionIsRestriction(d.mission) && !d.kaboom) {
       txt(this, cx, y, t('missionLabel', { text: missionText(d.mission.kind, d.mission.goal) }), 26, { color: '#d9c49a', wrap: 560, strokeW: 4 }).setDepth(21);
       y += 40;
     }
@@ -77,7 +82,8 @@ export class GameOver extends Phaser.Scene {
       y += 46;
     }
 
-    let by = top + h - 330;
+    // the skip button takes the slot under Retry; without it the buttons sit lower so the text above has room
+    let by = top + h - 330 + (canSkip ? 0 : 120);
     new Button(this, cx, by, { w: 480, label: t('retry'), fontSize: 52, tint: COLORS.green, key: 'ENTER', onClick: () => goTo(this, 'Game', { levelId: d.levelId }) }).setDepth(22);
     by += 120;
     if (canSkip) {

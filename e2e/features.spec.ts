@@ -240,4 +240,36 @@ test.describe('new features', () => {
     save = await saveData(page);
     expect(save.shop.rerolls).toBe(1);
   });
+
+  test('easter egg: Blast Cap on a carried keg blows up the mine and loses the level', async ({ page }) => {
+    await open(page);
+    await page.evaluate(() => {
+      const d = (window as any).__dc;
+      d.services.save.data.boosts.defuser = true;
+      d.services.save.data.boosts.magnet = true;
+      d.services.save.data.inventory.blastCaps = 2;
+      d.game.scene.getScene('MainMenu').scene.start('Game', { levelId: 5 });
+    });
+    await waitScene(page, 'Game');
+    // level 5 has a powder keg straight below the winch: aim down, launch, wait until it is on the claw
+    const hooked = await page.evaluate(() => {
+      const s = (window as any).__dc.session;
+      for (let i = 0; i < 4000 && Math.abs(s.claw.angleDeg - 90) > 0.4; i++) s.update(1 / 240);
+      s.launch();
+      for (let i = 0; i < 600 && s.claw.state !== 'retracting'; i++) s.update(1 / 60);
+      return s.get(s.claw.hookedId)?.type;
+    });
+    expect(hooked).toBe('keg');
+    await page.keyboard.press('d');
+    await expect.poll(() => page.evaluate(() => (window as any).__dc.session.status)).toBe('lost');
+    expect(await page.evaluate(() => (window as any).__dc.session.entities.filter((e: any) => e.alive).length)).toBe(0);
+    await waitScene(page, 'GameOver');
+    const texts = await page.evaluate(() => {
+      const sc = (window as any).__game.scene.getScene('GameOver');
+      return sc.children.list.filter((o: any) => o.type === 'Text').map((o: any) => o.text);
+    });
+    expect(texts).toContain('KABOOOM!');
+    // like any lost level, nothing used in it is taken from the saved inventory
+    expect((await saveData(page)).inventory.blastCaps).toBe(2);
+  });
 });

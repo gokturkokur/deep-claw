@@ -1,4 +1,4 @@
-import { BEETLE, KEG, LEVEL_RULES, CLAW, WORLD } from '../config/game';
+import { BEETLE, KEG, LEVEL_RULES, CLAW, MEGA_BLAST, WORLD } from '../config/game';
 import { COMBO, PERFECT, CLAW_TYPES, ENDLESS, EFFECTS, FREEZE_SEC, UPGRADES, type ClawId, type UpgradeId } from '../config/economy';
 import { endlessWave } from './Fields';
 import { TWIST, twistFor } from './Campaign';
@@ -40,8 +40,9 @@ export type SessionEvent =
   | { type: 'explode'; id: number; x: number; y: number }
   | { type: 'destroyed'; id: number; x: number; y: number }
   | { type: 'blast'; id: number; x: number; y: number }
+  | { type: 'megaBlast'; x: number; y: number }
   | { type: 'timeUp' }
-  | { type: 'end'; won: boolean };
+  | { type: 'end'; won: boolean; reason?: 'megaBlast' };
 
 export interface SessionOptions {
   level: LevelDef;
@@ -241,8 +242,27 @@ export class Session implements ClawHost {
     e.alive = false;
     e.hooked = false;
     this.shapesDirty = true;
+    if (e.type === 'keg' && MEGA_BLAST.enabled) {
+      this.megaBlast(e);
+      return true;
+    }
     this.events.push({ type: 'blast', id, x: e.x, y: e.y });
     return true;
+  }
+
+  /** Easter egg: a Blast Cap on a carried powder keg. Everything goes, the level is lost. */
+  private megaBlast(keg: Entity): void {
+    this.stats.kegs++;
+    this.events.push({ type: 'megaBlast', x: keg.x, y: keg.y });
+    for (const o of this.entities) {
+      if (!o.alive) continue;
+      o.alive = false;
+      o.hooked = false;
+      this.events.push({ type: 'destroyed', id: o.id, x: o.x, y: o.y });
+    }
+    this.shapesDirty = true;
+    this.status = 'lost';
+    this.events.push({ type: 'end', won: false, reason: 'megaBlast' });
   }
 
   /** Time Freeze: the clock and the beetles stop for FREEZE_SEC. */

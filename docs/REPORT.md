@@ -56,6 +56,12 @@ Bölüm başındaki ipucu (Çakıl) ve ilk Sonsuz/Haftalık açıklaması kapatm
 
 Atölye > Yükseltmeler sekmesinin son satırı: **Yardımcı Madenci, 100.000**. Bir kez alınır, her bölümde 7 saniyede bir en yakın altını veya elması kendisi toplar (sahnede ikinci bir madenci görünür). Dükkândaki tek bölümlük "Yardımcı Madenci" güçlendirmesiyle birikir: ikisi birden varsa her turda iki nesne toplanır.
 
+## Gizli sürpriz: dev patlama
+
+Fıçı Etkisizleştirici açıkken barut fıçısı kancayla çekilebilir. Fıçı kancadayken Patlatıcı Kapsül kullanılırsa (düğme veya D tuşu) normal "Güm!" yerine **dev patlama** olur: ekran sarsılır, madenin her yerinde art arda patlamalar çıkar, ortada "KABOOOM!" yazar ve sahadaki her şey yok olur. Bölüm o anda kaybedilir. Yenilgi ekranının başlığı "KABUUUM!" (İngilizcede "KABOOOM!") olur ve altında "Fıçıya patlatıcı atılmaz. Bütün maden havaya uçtu!" yazar. Mıknatıs Tılsımı şart değil; tetikleyen şey kancadaki fıçı ve patlatıcıdır. Kaybedilen her bölümde olduğu gibi harcanan kapsül envantere geri döner. Ayar: `src/config/game.ts` içindeki `MEGA_BLAST` (`enabled: false` ile kapatılır).
+
+Aynı değişiklikte yenilgi ekranındaki eski bir düzen hatası da düzeltildi: "Az kaldı" ve görev yazısı "Tekrar" düğmesinin altında kalıyordu, düğmeler artık aşağıda.
+
 ## Ekonomi incelemesi
 
 `npx vite-node tools/economy-report.ts` bir bölümü "%30 payla" geçen oyuncunun toplam gelirini hesaplar: 100 bölümde yaklaşık 525.000. Önceki hâlde kalıcı harcamalar sadece 140.000 idi, yani 40. bölümden sonra para birikiyordu. Düzeltmeler:
@@ -78,8 +84,8 @@ Diğer fiyatlar: Patlatıcı 700 (bölümle 1200'e kadar artar), Paket 1800, Zam
 
 ## Test sonuçları
 
-- Birim testleri (Vitest): **309 test geçti** (kanca, çarpışma, oturum, seri, dondurma, yükseltmeler, dükkân, sandık, kozmetik, günlük hediye, başarımlar, kayıt, hikaye, görevler, 100 bölümün geçerliliği ve dengesi).
-- Tarayıcı testleri (Playwright): **30 test geçti** (temel akış, hikaye diyaloğu, sonsuz mod, haftalık, atölye alışverişi, günlük hediye, başarımlar, dünya sayfaları, dondurma, sandık, 5 ekran boyutunda düzen kontrolü, ekran galerisi).
+- Birim testleri (Vitest): **313 test geçti** (kanca, çarpışma, oturum, seri, dondurma, yükseltmeler, dükkân, sandık, kozmetik, günlük hediye, başarımlar, kayıt, hikaye, görevler, 100 bölümün geçerliliği ve dengesi).
+- Tarayıcı testleri (Playwright): **31 test geçti** (temel akış, dev patlama sürprizi, hikaye diyaloğu, sonsuz mod, haftalık, atölye alışverişi, günlük hediye, başarımlar, dünya sayfaları, dondurma, sandık, 5 ekran boyutunda düzen kontrolü, ekran galerisi).
 - Ekran görüntüleri: `docs/screenshots/`.
 
 ## Bilinen eksikler ve dürüst notlar
