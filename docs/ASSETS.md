@@ -69,6 +69,8 @@ Fonts: the game uses **Lilita One** (SIL Open Font License, bundled in `src/font
 | `icon_shop` | `public/assets/images/icon_shop.svg` | 64 x 64 | center | 1 | Shop |
 | `icon_wrench` | `public/assets/images/icon_wrench.svg` | 64 x 64 | center | 1 | Workshop |
 | `icon_book` | `public/assets/images/icon_book.svg` | 64 x 64 | center | 1 | Story |
+| `icon_magnet` | `public/assets/images/icon_magnet.svg` | 64 x 64 | center | 1 | Magnet Charm |
+| `icon_defuse` | `public/assets/images/icon_defuse.svg` | 64 x 64 | center | 1 | Keg Defuser |
 | `icon_lantern` | `public/assets/images/icon_lantern.svg` | 64 x 64 | center | 1 | Lucky Lantern icon |
 | `icon_lock` | `public/assets/images/icon_lock.svg` | 64 x 64 | center | 1 | Locked level icon |
 | `icon_mute` | `public/assets/images/icon_mute.svg` | 64 x 64 | center | 1 | Sound off icon |

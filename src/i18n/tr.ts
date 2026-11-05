@@ -129,6 +129,8 @@ export const tr: Strings = {
     freeze: { name: 'Zaman Dondurucu', desc: 'Saati ve böcekleri 6 sn durdurur. Düğme veya F tuşu.' },
     skip: { name: 'Atlama Bileti', desc: 'Geçemediğin bir bölümü atla.' },
     crate: { name: 'Gizemli Sandık', desc: 'Hemen açılır: para, kapsül, güçlendirme veya bilet.' },
+    magnet: { name: 'Mıknatıs Tılsımı', desc: 'Sonraki bölüm: kanca daha uzaktan yakalar.' },
+    defuser: { name: 'Fıçı Etkisizleştirici', desc: 'Sonraki bölüm: barut fıçıları bomba yerine 150 değerinde ganimet olur.' },
     hourglass: { name: 'Kum Saati', desc: 'Sonraki bölüm: +15 saniye.' },
     goldRush: { name: 'Altın Ateşi', desc: 'Sonraki bölüm: altınlar x1,5 değerinde.' },
     extraMiner: { name: 'Yardımcı Madenci', desc: 'Sonraki bölüm: yardımcı 7 sn\'de bir en yakın altını alır.' },

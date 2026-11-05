@@ -18,9 +18,12 @@
 - Yakın kaybetme ekranı ("Ramak kaldı, sadece X eksik"), tek dokunuşla tekrar dene.
 - Zaman Dondurucu (süre ve böcekler 6 sn durur), Atlama Bileti (geçemediğin bölümü atla).
 - Elmas/sandık/büyük altında sarsıntı ve parlama, balçık çekersen para kaybedersin.
+- **Patron bölümlerinin tuzakları**: ATAK (sallanma hızı aralıklı artar) ve KARARMA (ışıklar söner). Her dünya ve patron için ayrı müzik.
+- Yeni oyuncu için **tek seferlik ipuçları** (fıçı, torba, böcek, balçık, sandık, seri, görev).
+- **Şans Çarkı**: bir bölümü ilk kez 3 yıldızla geçince bir çevirme hakkı kazanılır (para, kapsül, dondurucu, güçlendirme, bilet, jackpot).
 
 **Para harcama yerleri (dükkân tek yer değil)**
-- **Dükkân** (bölüm sonrası ve menüden): Malzeme sekmesi (Patlatıcı, Patlatıcı Paketi, Zaman Dondurucu, Gizemli Sandık, Atlama Bileti) ve Fırsatlar sekmesi (7 güçlendirmeden 4'ü, biri indirimli, ücretle yenilenir).
+- **Dükkân** (bölüm sonrası ve menüden): Malzeme sekmesi (Patlatıcı, Patlatıcı Paketi, Zaman Dondurucu, Gizemli Sandık, Atlama Bileti) ve Fırsatlar sekmesi (9 güçlendirmeden 4'ü (Turbo, Fener, Mercek, Ezici, Kum Saati, Altın Ateşi, Yardımcı Madenci, Mıknatıs, Fıçı Etkisizleştirici), biri indirimli, ücretle yenilenir).
 - **Atölye** (menüden): kalıcı **Yükseltmeler** (Hızlı Vinç, Güçlü Kollar, Cep Saati, Talih, her biri 5 seviye), **Kancalar** (Geniş, Hızlı, Titan), **Stil** (4 madenci kıyafeti, 4 kanca kaplaması, 3 ip rengi).
 - Ekonomi sıkı: ilk geçişte kazancın %60'ı cüzdana girer, fiyatlar 300-6000 arası.
 
@@ -31,8 +34,8 @@
 
 ## Test sonuçları
 
-- Birim testleri (Vitest): **296 test geçti** (kanca, çarpışma, oturum, seri, dondurma, yükseltmeler, dükkân, sandık, kozmetik, günlük hediye, başarımlar, kayıt, hikaye, görevler, 100 bölümün geçerliliği ve dengesi).
-- Tarayıcı testleri (Playwright): **27 test geçti** (temel akış, hikaye diyaloğu, sonsuz mod, haftalık, atölye alışverişi, günlük hediye, başarımlar, dünya sayfaları, dondurma, sandık, 5 ekran boyutunda düzen kontrolü, ekran galerisi).
+- Birim testleri (Vitest): **303 test geçti** (kanca, çarpışma, oturum, seri, dondurma, yükseltmeler, dükkân, sandık, kozmetik, günlük hediye, başarımlar, kayıt, hikaye, görevler, 100 bölümün geçerliliği ve dengesi).
+- Tarayıcı testleri (Playwright): **28 test geçti** (temel akış, hikaye diyaloğu, sonsuz mod, haftalık, atölye alışverişi, günlük hediye, başarımlar, dünya sayfaları, dondurma, sandık, 5 ekran boyutunda düzen kontrolü, ekran galerisi).
 - Ekran görüntüleri: `docs/screenshots/`.
 
 ## Bilinen eksikler ve dürüst notlar
@@ -49,3 +52,7 @@
 ## Sonraki fikirler
 
 Yeni dünyalar ve bölüm paketleri, patron bölümlerine özel mekanikler, sezon/etkinlik bölümleri, çevrimiçi skor tablosu, evcil hayvan yardımcılar, daha fazla kıyafet, gerçek ses ve çizimler.
+
+## Denge aracı (bot)
+
+`npx vite-node tools/bot-report.ts` her bölümü "mükemmel nişan alan" bir botla oynatır ve hedefle karşılaştırır. Bot genelde tahmin modelinin 1,0-1,4 katı kazanır; gerçek oyuncu botun yaklaşık %60-80'ini yapar. Bot bazı fıçılı bölümlerde (13, 92) düşük kalıyor çünkü fıçıyı bilerek patlatmayı planlamıyor; o bölümler insan için daha kolay olabilir.

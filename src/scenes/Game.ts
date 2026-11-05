@@ -332,7 +332,7 @@ export class Game extends Phaser.Scene {
 
     // active one-level boosts
     const mods = this.session.mods;
-    const icons: Array<[boolean, 'icon_turbo' | 'icon_lantern' | 'icon_gem' | 'icon_crusher' | 'icon_hourglass' | 'icon_goldrush' | 'icon_miner']> = [
+    const icons: Array<[boolean, 'icon_turbo' | 'icon_lantern' | 'icon_gem' | 'icon_crusher' | 'icon_hourglass' | 'icon_goldrush' | 'icon_miner' | 'icon_magnet' | 'icon_defuse']> = [
       [mods.turbo, 'icon_turbo'],
       [mods.lantern, 'icon_lantern'],
       [mods.gemLens, 'icon_gem'],
@@ -340,6 +340,8 @@ export class Game extends Phaser.Scene {
       [mods.hourglass, 'icon_hourglass'],
       [mods.goldRush, 'icon_goldrush'],
       [mods.extraMiner, 'icon_miner'],
+      [mods.magnet, 'icon_magnet'],
+      [mods.defuser, 'icon_defuse'],
     ];
     let bx = E.left + 24 + 26;
     for (const [on, key] of icons) {

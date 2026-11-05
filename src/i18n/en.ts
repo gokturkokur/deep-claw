@@ -127,6 +127,8 @@ export const en = {
     freeze: { name: 'Time Freeze', desc: 'Stops the clock and beetles for 6 s. Button or F key.' },
     skip: { name: 'Skip Ticket', desc: 'Skip a level you cannot beat.' },
     crate: { name: 'Mystery Crate', desc: 'Opens now: coins, caps, boosts or a ticket.' },
+    magnet: { name: 'Magnet Charm', desc: 'Next level: the claw grabs from further away.' },
+    defuser: { name: 'Keg Defuser', desc: 'Next level: powder kegs become $150 loot instead of bombs.' },
     hourglass: { name: 'Hourglass', desc: 'Next level: +15 seconds.' },
     goldRush: { name: 'Gold Fever', desc: 'Next level: gold nuggets worth x1.5.' },
     extraMiner: { name: 'Extra Miner', desc: 'Next level: a helper grabs the nearest gold every 7 s.' },

@@ -68,11 +68,11 @@ export const BAG = {
   itemNotionalValue: 150,
 } as const;
 
-export type BoostId = 'turbo' | 'lantern' | 'gemLens' | 'crusher' | 'hourglass' | 'goldRush' | 'extraMiner';
+export type BoostId = 'turbo' | 'lantern' | 'gemLens' | 'crusher' | 'hourglass' | 'goldRush' | 'extraMiner' | 'magnet' | 'defuser';
 export type SupplyId = 'blastCap' | 'blastPack' | 'freeze' | 'skip' | 'crate';
 export type ItemId = BoostId | SupplyId;
 
-export const BOOST_IDS: readonly BoostId[] = ['turbo', 'lantern', 'gemLens', 'crusher', 'hourglass', 'goldRush', 'extraMiner'];
+export const BOOST_IDS: readonly BoostId[] = ['turbo', 'lantern', 'gemLens', 'crusher', 'hourglass', 'goldRush', 'extraMiner', 'magnet', 'defuser'];
 
 export interface ItemDef {
   id: ItemId;
@@ -96,10 +96,12 @@ export const ITEMS: Record<ItemId, ItemDef> = {
   hourglass: { id: 'hourglass', kind: 'boost', priceMin: 1200, priceMax: 2000, icon: 'icon_hourglass' },
   goldRush: { id: 'goldRush', kind: 'boost', priceMin: 1500, priceMax: 2500, icon: 'icon_goldrush' },
   extraMiner: { id: 'extraMiner', kind: 'boost', priceMin: 3000, priceMax: 4500, icon: 'icon_miner' },
+  magnet: { id: 'magnet', kind: 'boost', priceMin: 700, priceMax: 1200, icon: 'icon_magnet' },
+  defuser: { id: 'defuser', kind: 'boost', priceMin: 800, priceMax: 1400, icon: 'icon_defuse' },
 };
 
 export const SUPPLY_IDS: readonly SupplyId[] = ['blastCap', 'blastPack', 'freeze', 'skip', 'crate'];
-export const ITEM_IDS: readonly ItemId[] = ['blastCap', 'blastPack', 'freeze', 'skip', 'crate', 'turbo', 'lantern', 'gemLens', 'crusher', 'hourglass', 'goldRush', 'extraMiner'];
+export const ITEM_IDS: readonly ItemId[] = ['blastCap', 'blastPack', 'freeze', 'skip', 'crate', 'turbo', 'lantern', 'gemLens', 'crusher', 'hourglass', 'goldRush', 'extraMiner', 'magnet', 'defuser'];
 
 export const SHOP = {
   /** Blast Cap price rises by this much per cleared level, capped at priceMax. */
@@ -131,6 +133,11 @@ export const EFFECTS = {
   goldRushMult: 1.5,
   /** Extra Miner: the helper pulls up the nearest gold or diamond this often (s). */
   helperIntervalSec: 7,
+  /** Magnet Charm: extra claw hit radius. */
+  magnetRadius: 12,
+  /** Keg Defuser: a defused keg is pulled up like a heavy object and pays this. */
+  defusedKegValue: 150,
+  defusedKegWeight: 3,
 } as const;
 
 export const SAVE = {

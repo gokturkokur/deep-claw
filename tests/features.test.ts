@@ -323,3 +323,21 @@ describe('lucky wheel', () => {
     expect(full.wallet).toBeGreaterThan(0);
   });
 });
+
+describe('Magnet Charm and Keg Defuser', () => {
+  it('magnet widens the claw hit area', () => {
+    const a = new Session({ level: level([o('goldS', 100, 1100)]), rng: makeRng(1) });
+    const b = new Session({ level: level([o('goldS', 100, 1100)]), modifiers: { ...NO_MODIFIERS, magnet: true }, rng: makeRng(1) });
+    expect(b.claw.tipRadius).toBeGreaterThan(a.claw.tipRadius);
+  });
+  it('defused kegs are pulled up as loot instead of exploding', () => {
+    const lvl = level([below('keg', 400), o('goldS', 460, 640), o('goldL', 80, 1150)], 1e6);
+    const bomb = new Session({ level: lvl, rng: makeRng(1) });
+    pull(bomb);
+    expect(bomb.entities.find((e) => e.type === 'goldS')?.alive).toBe(false); // destroyed by the blast
+    const safe = new Session({ level: lvl, modifiers: { ...NO_MODIFIERS, defuser: true }, rng: makeRng(1) });
+    pull(safe);
+    expect(safe.earned).toBe(150);
+    expect(safe.entities.find((e) => e.type === 'goldS')?.alive).toBe(true);
+  });
+});

@@ -112,7 +112,7 @@ export class Session implements ClawHost {
     this.helperTimer = EFFECTS.helperIntervalSec;
     this.claw = new Claw(WORLD.pivotX, WORLD.pivotY);
     const ct = CLAW_TYPES[this.clawType];
-    this.claw.tipRadius = ct.tipRadius;
+    this.claw.tipRadius = ct.tipRadius + (this.mods.magnet ? EFFECTS.magnetRadius : 0);
     this.claw.extendMult = ct.extendMult * (1 + this.upg.winch * UPGRADES.winch.perLevel);
 
     this.loadObjects(this.endlessSeed !== null ? endlessWave(this.endlessSeed, 1) : opts.level.objects);
@@ -166,11 +166,14 @@ export class Session implements ClawHost {
     return sweep(this.shapes, ax, ay, bx, by, this.claw.tipRadius);
   }
   weightOf(id: number): number {
-    return this.byId.get(id)?.weight ?? 1;
+    const e = this.byId.get(id);
+    if (e?.type === 'keg') return EFFECTS.defusedKegWeight;
+    return e?.weight ?? 1;
   }
   hookable(id: number): boolean {
     const e = this.byId.get(id);
-    return !!e && OBJECTS[e.type].collectible;
+    if (!e) return false;
+    return OBJECTS[e.type].collectible || (e.type === 'keg' && this.mods.defuser);
   }
   strength(): number {
     return baseStrength(this.mods) * this.bagStrength * (1 + this.upg.muscle * UPGRADES.muscle.perLevel) * CLAW_TYPES[this.clawType].strengthMult;
@@ -326,7 +329,7 @@ export class Session implements ClawHost {
     const e = this.byId.get(id);
     if (!e) return;
     this.events.push({ type: 'hit', id });
-    if (e.type === 'keg') {
+    if (e.type === 'keg' && !this.mods.defuser) {
       this.explode(e);
       return;
     }

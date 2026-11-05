@@ -10,9 +10,11 @@ export interface Modifiers {
   hourglass: boolean;
   goldRush: boolean;
   extraMiner: boolean;
+  magnet: boolean;
+  defuser: boolean;
 }
 
-export const NO_MODIFIERS: Modifiers = { turbo: false, lantern: false, gemLens: false, crusher: false, hourglass: false, goldRush: false, extraMiner: false };
+export const NO_MODIFIERS: Modifiers = { turbo: false, lantern: false, gemLens: false, crusher: false, hourglass: false, goldRush: false, extraMiner: false, magnet: false, defuser: false };
 
 /** Money paid when a plain (non bag) object reaches the surface. */
 export function collectValue(type: ObjType, mods: Modifiers, carriesDiamond = false): number {
@@ -28,8 +30,9 @@ export function collectValue(type: ObjType, mods: Modifiers, carriesDiamond = fa
       const gem = BEETLE_DIAMOND_VALUE - def.value;
       return def.value + Math.round(gem * (mods.gemLens ? EFFECTS.gemLensMult : 1));
     }
-    case 'bag':
     case 'keg':
+      return mods.defuser ? EFFECTS.defusedKegValue : 0;
+    case 'bag':
       return 0;
     case 'slime':
     case 'chest':

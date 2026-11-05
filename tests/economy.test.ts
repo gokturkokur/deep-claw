@@ -16,7 +16,7 @@ describe('shop', () => {
     expect(dealOffers(42, 1)).not.toEqual(a);
     const ids = new Set<string>();
     for (let seed = 0; seed < 200; seed++) dealOffers(seed).forEach((o) => ids.add(o.id));
-    expect(ids.size).toBe(7); // every boost can show up
+    expect(ids.size).toBe(9); // every boost can show up
   });
 
   it('supplies: five fixed items', () => {

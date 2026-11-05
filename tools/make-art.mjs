@@ -442,4 +442,7 @@ put('icon_shop.svg', iconBase(`<path d="M8 24 L14 8 H50 L56 24 Z" fill="#e5483a"
 put('icon_wrench.svg', iconBase(`<path d="M44 6 a14 14 0 0 0 -14 18 L8 46 a6 6 0 0 0 10 10 L40 34 a14 14 0 0 0 18 -14 l-10 8 l-8 -2 l-2 -8 Z" fill="url(#g)" ${stroke(3.5)}/>`, lg('g', ['#e0e4e8', '#8a929a'])));
 put('icon_book.svg', iconBase(`<path d="M8 10 H30 a4 4 0 0 1 2 1 a4 4 0 0 1 2 -1 H56 V52 H34 a4 4 0 0 0 -2 1 a4 4 0 0 0 -2 -1 H8 Z" fill="#fff6dc" ${stroke(3.5)}/><path d="M32 11 V53" stroke="${INK}" stroke-width="3"/><path d="M14 20 H26 M14 28 H26 M38 20 H50 M38 28 H50" stroke="#a87a4a" stroke-width="3" stroke-linecap="round"/>`));
 
+put('icon_magnet.svg', iconBase(`<path d="M12 8 V34 a20 20 0 0 0 40 0 V8 H38 V34 a6 6 0 0 1 -12 0 V8 Z" fill="#e5483a" ${stroke(3.5)}/><rect x="12" y="8" width="14" height="14" fill="#e8e8e8" ${stroke(3.5)}/><rect x="38" y="8" width="14" height="14" fill="#e8e8e8" ${stroke(3.5)}/><path d="M6 2 l4 8 M32 0 v8 M58 2 l-4 8" stroke="#ffd23a" stroke-width="4" stroke-linecap="round"/>`));
+put('icon_defuse.svg', iconBase(`<path d="M32 6 L54 14 V32 C54 46 44 54 32 58 C20 54 10 46 10 32 V14 Z" fill="url(#g)" ${stroke(3.5)}/><path d="M22 32 l8 8 l14 -16" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>`, lg('g', ['#7fd0ff', '#2a86d6'])));
+
 console.log('art written to', OUT_DIR);

@@ -73,7 +73,7 @@ export function defaultSave(): SaveData {
     cosmetics: { owned: COSMETICS.filter((c) => c.price === 0).map((c) => c.id), equipped: { ...DEFAULT_COSMETICS } },
     storySeen: [],
     tipsSeen: [],
-    boosts: { turbo: false, lantern: false, gemLens: false, crusher: false, hourglass: false, goldRush: false, extraMiner: false },
+    boosts: { turbo: false, lantern: false, gemLens: false, crusher: false, hourglass: false, goldRush: false, extraMiner: false, magnet: false, defuser: false },
     shop: null,
     stats: defaultStats(),
     achievements: [],
