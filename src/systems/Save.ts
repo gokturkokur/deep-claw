@@ -58,6 +58,8 @@ export interface SaveData {
   spins: number;
   /** The permanent Helper Miner has been bought. */
   helper: boolean;
+  /** Easter eggs: which ones were found, the mystery bag streak, last day the shooting star paid out. */
+  eggs: { found: string[]; bagKind: string; bagCount: number; starDay: string };
   hasProgress: boolean;
   hintShown: boolean;
   settings: { music: number; sfx: number; vibration: boolean; lang: Lang | null };
@@ -86,6 +88,7 @@ export function defaultSave(): SaveData {
     weekly: { week: '', best: 0, claimed: false },
     spins: 0,
     helper: false,
+    eggs: { found: [], bagKind: '', bagCount: 0, starDay: '' },
     hasProgress: false,
     hintShown: false,
     settings: { music: 0.6, sfx: 0.8, vibration: true, lang: null },
@@ -188,6 +191,15 @@ export function sanitize(raw: unknown): SaveData {
     d.claws.equipped = d.claws.owned.includes(r.claws.equipped as ClawId) ? (r.claws.equipped as ClawId) : 'standard';
   }
   if (isObj(r.endless)) d.endless = { best: int(r.endless.best, 0, 0, 1e12), bestWaves: int(r.endless.bestWaves, 0, 0, 1e6) };
+  if (isObj(r.eggs)) {
+    const found = Array.isArray(r.eggs.found) ? r.eggs.found.filter((x): x is string => typeof x === 'string').slice(0, 20) : [];
+    d.eggs = {
+      found: Array.from(new Set(found)),
+      bagKind: typeof r.eggs.bagKind === 'string' ? r.eggs.bagKind.slice(0, 12) : '',
+      bagCount: int(r.eggs.bagCount, 0, 0, 100),
+      starDay: typeof r.eggs.starDay === 'string' ? r.eggs.starDay.slice(0, 10) : '',
+    };
+  }
   if (isObj(r.weekly)) d.weekly = { week: typeof r.weekly.week === 'string' ? r.weekly.week.slice(0, 10) : '', best: int(r.weekly.best, 0, 0, 1e12), claimed: bool(r.weekly.claimed, false) };
 
   if (isObj(r.settings)) {

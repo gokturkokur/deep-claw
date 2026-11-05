@@ -95,6 +95,13 @@ export function isFinalLevel(levelId: number): boolean {
 }
 
 /** Add the counters of one finished run (win or lose) to the lifetime stats. */
+/** Easter eggs found in a run and the mystery bag streak go into the save. */
+export function recordEggs(save: SaveData, found: readonly string[], bag: { kind: string; count: number }): void {
+  for (const id of found) if (!save.eggs.found.includes(id)) save.eggs.found.push(id);
+  save.eggs.bagKind = bag.kind;
+  save.eggs.bagCount = bag.count;
+}
+
 export function mergeStats(save: SaveData, run: RunStats, earned: number): void {
   const st = save.stats;
   st.collected += run.collected;

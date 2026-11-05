@@ -69,6 +69,22 @@ export const KEG = {
  * Easter egg: using a Blast Cap on a powder keg you are carrying (only possible with the
  * Keg Defuser) sets off a mega blast. The whole mine is destroyed and the level is lost.
  */
+/** Hidden easter eggs. Each one also unlocks a hidden achievement the first time. */
+export const EGGS = {
+  /** A diamond beetle gives up after this many near misses: it stops, waves, and drops the diamond on the next throw. */
+  beetle: { missesToGiveUp: 3, nearPx: 95 },
+  /** No throw at all for this long after the level starts: Dusty throws by himself, that pull pays a bonus. */
+  idle: { afterSec: 30, bonus: 0.1 },
+  /** This many kegs in one chain explosion = fireworks. */
+  fireworks: { minKegs: 4 },
+  /** Boss level: pull up every rock (at least minRocks) before any gold and Baron's vault appears. */
+  vault: { minRocks: 2, value: 3000 },
+  /** Main menu: this many taps on the sky = shooting star (+1 wheel spin, once a day). */
+  star: { taps: 10 },
+  /** Mystery bags: the same kind of prize this many times in a row makes the next bag a jackpot. */
+  bag: { streak: 3, jackpot: 2000 },
+} as const;
+
 export const MEGA_BLAST = {
   enabled: true,
   /** How long the explosion plays before the Game Over screen (ms). */

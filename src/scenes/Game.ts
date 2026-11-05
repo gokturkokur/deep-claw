@@ -11,7 +11,7 @@ import { Session, type SessionEvent } from '../systems/Session';
 import { estimateLevel } from '../systems/Balance';
 import { TWIST, twistFor, isBoss, missionDone, missionFor, missionGoal, missionIsRestriction, missionProgress, themeOf, tipFor, worldOf, type Mission, type ThemeId } from '../systems/Campaign';
 import { weekId, weeklyLevel } from '../systems/Fields';
-import { checkAchievements, commitEndless, commitOutcome, commitWeekly, mergeStats } from '../systems/Progress';
+import { checkAchievements, commitEndless, commitOutcome, commitWeekly, mergeStats, recordEggs } from '../systems/Progress';
 import { activeModifiers } from '../systems/Shop';
 import { createBackdrop, type Backdrop } from '../ui/Backdrop';
 import { Button, FloatingTexts, dim, panel } from '../ui/components';
@@ -66,6 +66,7 @@ export class Game extends Phaser.Scene {
   private glintTimer = 0;
   private fuseTimer = 0;
   private beetleFrame = 0;
+  private beetleGems = new Map<number, Phaser.GameObjects.Image>();
   private reelOn = false;
   private lastSwingSide = 0;
 
@@ -108,6 +109,7 @@ export class Game extends Phaser.Scene {
     this.missionDoneAt = -1;
     this.lastMission = '';
     this.sprites = new Map();
+    this.beetleGems = new Map();
     this.boostIcons = [];
     this.glintPool = [];
     this.ending = false;
@@ -147,6 +149,8 @@ export class Game extends Phaser.Scene {
       clawType: save.data.claws.equipped,
       perfectBonus: true,
       permanentHelper: save.data.helper,
+      boss: this.mode === 'campaign' && isBoss(this.levelId),
+      bagStreak: { kind: save.data.eggs.bagKind, count: save.data.eggs.bagCount },
       endlessSeed: this.mode === 'endless' ? Math.floor(Math.random() * 1e9) : undefined,
     });
     this.lastWave = this.session.wave;
@@ -294,22 +298,27 @@ export class Game extends Phaser.Scene {
 
   private createEntities(): void {
     let i = 0;
-    for (const e of this.session.entities) {
-      const def = OBJECTS[e.type];
-      const a = IMAGES[def.texture as keyof typeof IMAGES];
-      const s = this.add.image(e.x, e.y, def.texture).setDisplaySize(a.w, a.h).setDepth(D.entity + e.y / 10000);
-      const base = s.scaleX;
-      // while a dialogue is about to pause the scene the field must already be visible
-      if (!this.storyPending) {
-        s.setScale(0);
-        this.tweens.add({ targets: s, scaleX: base, scaleY: base, duration: 260, delay: 80 + i * 22, ease: 'Back.Out' });
-      }
-      if (e.type === 'bag') {
-        this.tweens.add({ targets: s, angle: { from: -5, to: 5 }, duration: 700 + (i % 3) * 120, yoyo: true, repeat: -1, ease: 'Sine.InOut' });
-      }
-      this.sprites.set(e.id, s);
-      i++;
+    for (const e of this.session.entities) this.createEntitySprite(e.id, i++);
+  }
+
+  private createEntitySprite(id: number, i = 0): Phaser.GameObjects.Image | null {
+    const e = this.session.get(id);
+    if (!e) return null;
+    const def = OBJECTS[e.type];
+    const a = IMAGES[def.texture as keyof typeof IMAGES];
+    const s = this.add.image(e.x, e.y, def.texture).setDisplaySize(a.w, a.h).setDepth(D.entity + e.y / 10000);
+    const base = s.scaleX;
+    // while a dialogue is about to pause the scene the field must already be visible
+    if (!this.storyPending) {
+      s.setScale(0);
+      this.tweens.add({ targets: s, scaleX: base, scaleY: base, duration: 260, delay: 80 + i * 22, ease: 'Back.Out' });
     }
+    if (e.type === 'bag') {
+      this.tweens.add({ targets: s, angle: { from: -5, to: 5 }, duration: 700 + (i % 3) * 120, yoyo: true, repeat: -1, ease: 'Sine.InOut' });
+    }
+    if (e.valueOverride) s.setTint(0xffe27a); // Baron's vault: a golden chest
+    this.sprites.set(e.id, s);
+    return s;
   }
 
   private createEffects(): void {
@@ -569,6 +578,12 @@ export class Game extends Phaser.Scene {
       case 'megaBlast':
         this.onMegaBlast(ev.x, ev.y);
         break;
+      case 'spawn':
+        this.createEntitySprite(ev.id);
+        break;
+      case 'egg':
+        this.onEgg(ev);
+        break;
       case 'destroyed': {
         const s = this.sprites.get(ev.id);
         if (s) this.popAway(ev.id, s);
@@ -688,6 +703,93 @@ export class Game extends Phaser.Scene {
     if (keg) this.popAway(id, keg);
   }
 
+  /** A small diamond rides on every beetle that carries one, so players can see which beetles are worth it. */
+  private syncBeetleGems(): void {
+    for (const e of this.session.entities) {
+      if (e.type !== 'beetle') continue;
+      const s = this.sprites.get(e.id);
+      let gem = this.beetleGems.get(e.id);
+      if (!e.alive || !e.carriesDiamond || !s) {
+        if (gem) {
+          gem.destroy();
+          this.beetleGems.delete(e.id);
+        }
+        continue;
+      }
+      if (!gem) {
+        gem = this.add.image(s.x, s.y, 'diamond').setDisplaySize(30, 26);
+        this.beetleGems.set(e.id, gem);
+      }
+      gem.setPosition(s.x + (s.flipX ? 6 : -6), s.y - 26).setDepth(s.depth + 0.001).setAngle(s.angle);
+    }
+  }
+
+  /** Easter egg moments inside a level. */
+  private onEgg(ev: Extract<SessionEvent, { type: 'egg' }>): void {
+    const audio = services.audio;
+    switch (ev.egg) {
+      case 'beetleWave':
+        audio.sfx('deny', 0.7, 1.4);
+        this.floats.show(this, ev.x, ev.y - 60, t('eggBeetleWave'), COLORS.textGold, 40);
+        break;
+      case 'beetleDrop':
+        audio.sfx('diamond');
+        this.sparks.explode(12, ev.x, ev.y);
+        this.floats.show(this, ev.x, ev.y - 60, t('eggBeetleDrop'), COLORS.textGreen, 40);
+        break;
+      case 'idle':
+        audio.sfx('launch', 1, 0.8);
+        this.tweens.add({ targets: this.miner, y: this.miner.y - 26, duration: 150, yoyo: true, repeat: 1, ease: 'Quad.Out' });
+        this.floats.show(this, WORLD.pivotX, WORLD.surfaceY + 70, t('eggIdle'), COLORS.textGold, 40);
+        break;
+      case 'fireworks':
+        this.fireworks(ev.n ?? 4);
+        break;
+      case 'vault': {
+        audio.sfx('win');
+        this.cameras.main.flash(300, 255, 226, 120, true);
+        this.showBanner(t('eggVault'), COLORS.textGold);
+        this.sparks.explode(24, ev.x, ev.y);
+        const s = ev.id !== undefined ? this.sprites.get(ev.id) : undefined;
+        if (s) this.tweens.add({ targets: s, angle: { from: -6, to: 6 }, duration: 160, yoyo: true, repeat: 5, onComplete: () => s.setAngle(0) });
+        break;
+      }
+      case 'jackpot':
+        audio.sfx('win');
+        audio.sfx('diamond', 1, 1.2);
+        this.cameras.main.flash(250, 255, 236, 120, true);
+        this.showBanner(t('eggJackpot'), COLORS.textGold);
+        this.sparks.explode(30, ev.x, ev.y);
+        break;
+      default:
+        break;
+    }
+  }
+
+  /** Easter egg: big keg chain. Coloured bursts rise over the mine. */
+  private fireworks(n: number): void {
+    const audio = services.audio;
+    this.showBanner(t('eggFireworks'), COLORS.textGold);
+    const colors = [0xff5a5a, 0x5ad1ff, 0xffd23a, 0x7aff9a, 0xd07aff];
+    const bursts = 4 + n;
+    for (let i = 0; i < bursts; i++) {
+      this.time.delayedCall(250 + i * 180, () => {
+        const x = Phaser.Math.Between(WORLD.fieldMinX + 40, WORLD.fieldMaxX - 40);
+        const y = Phaser.Math.Between(WORLD.fieldMinY, WORLD.fieldMinY + 420);
+        const c = colors[i % colors.length];
+        audio.sfx('blast', 0.45, 1.3 + 0.1 * (i % 4));
+        this.sparks.explode(8, x, y);
+        const flash = this.add.circle(x, y, 26, 0xffffff, 0.9).setDepth(D.fx + 1);
+        this.tweens.add({ targets: flash, scale: 2.2, alpha: 0, duration: 260, onComplete: () => flash.destroy() });
+        for (let k = 0; k < 16; k++) {
+          const a = (k / 16) * Math.PI * 2;
+          const dot = this.add.circle(x, y, 11, c).setStrokeStyle(3, 0xffffff, 0.8).setDepth(D.fx + 1);
+          this.tweens.add({ targets: dot, x: x + Math.cos(a) * 150, y: y + Math.sin(a) * 150 + 40, alpha: 0, scale: 0.4, duration: 950, ease: 'Quad.Out', onComplete: () => dot.destroy() });
+        }
+      });
+    }
+  }
+
   /** Easter egg: Blast Cap on a carried keg. Chain of explosions over the whole mine. */
   private onMegaBlast(x: number, y: number): void {
     const audio = services.audio;
@@ -725,15 +827,19 @@ export class Game extends Phaser.Scene {
     this.smoke.explode(n, x, y);
   }
 
-  private showBanner(text: string): void {
-    const b = txt(this, DESIGN.width / 2, 560, text, 100, { color: COLORS.textRed, strokeW: 14 }).setDepth(D.float).setScale(0.3);
-    this.tweens.add({ targets: b, scale: 1, duration: 260, ease: 'Back.Out' });
+  private showBanner(text: string, color: string = COLORS.textRed): void {
+    const b = txt(this, DESIGN.width / 2, 560, text, 100, { color, strokeW: 14 }).setDepth(D.float);
+    const fit = Math.min(1, (DESIGN.width - 40) / Math.max(1, b.width));
+    b.setScale(0.3 * fit);
+    this.tweens.add({ targets: b, scale: fit, duration: 260, ease: 'Back.Out' });
     this.tweens.add({ targets: b, alpha: 0, delay: 900, duration: 300, onComplete: () => b.destroy() });
   }
 
   private onWave(wave: number): void {
     for (const spr of this.sprites.values()) spr.destroy();
     this.sprites.clear();
+    for (const g of this.beetleGems.values()) g.destroy();
+    this.beetleGems.clear();
     this.createEntities();
     this.showBanner(t('wave', { n: wave }));
     services.audio.sfx('win', 0.5);
@@ -753,6 +859,7 @@ export class Game extends Phaser.Scene {
       const run = s.stats;
       const missionOk = !!this.mission && missionDone(this.mission, { ...run, slimes: run.slimes, beetles: run.beetles });
       mergeStats(data, run, s.earned);
+      recordEggs(data, s.eggsFound, s.bagStreak);
 
       if (this.mode === 'endless') {
         const res = commitEndless(data, s.earned, s.wave);
@@ -833,13 +940,17 @@ export class Game extends Phaser.Scene {
       if (!s) continue;
       if (e.type === 'beetle') {
         s.setPosition(e.x, e.y);
-        if (!e.hooked && s.texture.key !== frame) s.setTexture(frame);
+        if (!e.hooked && !e.waving && s.texture.key !== frame) s.setTexture(frame);
         s.setFlipX(e.vx < 0);
+        // easter egg: a beetle that gave up wiggles and waves
+        if (!e.hooked) s.setAngle(e.waving ? Math.sin(this.time.now / 80) * 14 : 0);
       } else if (e.hooked) {
         s.setPosition(e.x, e.y).setRotation(rot);
       }
       if (e.hooked && s.depth !== D.held) s.setDepth(D.held);
     }
+
+    this.syncBeetleGems();
 
     // ambient glints on treasure + fuse sparks on kegs
     this.glintTimer -= dt;

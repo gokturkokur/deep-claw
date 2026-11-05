@@ -37,7 +37,9 @@ export class Achievements extends Phaser.Scene {
       const y = viewTop + 60 + i * ROW;
       const has = save.achievements.includes(a.id);
       const [cur, goal] = a.progress(save);
-      const tx = achText(a.id);
+      const secret = !!a.hidden && !has;
+      const raw = achText(a.id);
+      const tx = secret ? { name: '??? (' + t('secret') + ')', desc: raw.hint ?? '' } : raw;
       const c = this.add.container(0, 0);
       c.add(panel(this, cx, y, 660, ROW - 12));
       const icon = this.add.image(cx - 272, y, 'icon_trophy').setDisplaySize(72, 72);
@@ -47,8 +49,8 @@ export class Achievements extends Phaser.Scene {
       c.add(txt(this, cx - 215, y + 6, tx.desc, 21, { originX: 0, strokeW: 3, wrap: 330, align: 'left', shadow: false }));
       const bar = this.add.rectangle(cx - 215, y + 38, 280, 14, 0x1a0e06).setOrigin(0, 0.5).setStrokeStyle(2, 0x2b1608);
       c.add(bar);
-      if (cur > 0) c.add(this.add.rectangle(cx - 215, y + 38, Math.max(6, 280 * Math.min(1, cur / goal)), 10, has ? 0x58c24a : 0xffc21a).setOrigin(0, 0.5));
-      c.add(txt(this, cx + 290, y - 22, has ? 'OK' : `${Math.min(cur, goal).toLocaleString()}/${goal.toLocaleString()}`, 24, { originX: 1, color: has ? COLORS.textGreen : '#f4dba8', strokeW: 4 }));
+      if (cur > 0 && !secret) c.add(this.add.rectangle(cx - 215, y + 38, Math.max(6, 280 * Math.min(1, cur / goal)), 10, has ? 0x58c24a : 0xffc21a).setOrigin(0, 0.5));
+      c.add(txt(this, cx + 290, y - 22, has ? 'OK' : secret ? '?' : `${Math.min(cur, goal).toLocaleString()}/${goal.toLocaleString()}`, 24, { originX: 1, color: has ? COLORS.textGreen : '#f4dba8', strokeW: 4 }));
       c.add(txt(this, cx + 290, y + 20, '+' + money(a.reward), 28, { originX: 1, color: COLORS.textGold, strokeW: 5 }));
       list.add(c);
     });

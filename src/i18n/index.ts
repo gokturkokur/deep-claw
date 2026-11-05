@@ -49,8 +49,8 @@ export function clawText(id: keyof Strings['claws']): { name: string; desc: stri
 export function cosmeticName(id: string): string {
   return (TABLES[current].cosmetics as Record<string, string>)[id] ?? id;
 }
-export function achText(id: string): { name: string; desc: string } {
-  return (TABLES[current].ach as Record<string, { name: string; desc: string }>)[id] ?? { name: id, desc: '' };
+export function achText(id: string): { name: string; desc: string; hint?: string } {
+  return (TABLES[current].ach as Record<string, { name: string; desc: string; hint?: string }>)[id] ?? { name: id, desc: '' };
 }
 export function missionText(kind: string, n = 0): string {
   return (TABLES[current].missions as Record<string, string>)[kind].replace('{n}', String(n));

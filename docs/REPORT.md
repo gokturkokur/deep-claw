@@ -62,6 +62,24 @@ Fıçı Etkisizleştirici açıkken barut fıçısı kancayla çekilebilir. Fı�
 
 Aynı değişiklikte yenilgi ekranındaki eski bir düzen hatası da düzeltildi: "Az kaldı" ve görev yazısı "Tekrar" düğmesinin altında kalıyordu, düğmeler artık aşağıda.
 
+## Gizli sürprizler (easter egg)
+
+Dev patlamaya ek olarak altı gizli sürpriz var. Hepsinin ayarı tek yerde: `src/config/game.ts` içindeki `EGGS`. Her biri ilk bulunduğunda **gizli bir başarım** açar (Ödüller ekranında bulunana kadar "??? (Gizli)" ve bir bilmece görünür, bulununca adı ve ödülü açılır). Bulunanlar ve torba serisi kayıtta tutulur (`eggs`).
+
+| Sürpriz | Nasıl bulunur | Ne olur | Başarım ödülü |
+|---|---|---|---|
+| Böcek barışı | Elmas taşıyan böceğin 95 px yakınından 3 kez boş kanca geçir | Böcek durur, kıpırdanır, "Tamam tamam!" der. Sonraki atışta elmasını bırakıp yoluna devam eder | 800 |
+| Sabırlı madenci | Bölüm başında 30 saniye hiç kanca atma | Dusty "Of, sıkıldım!" deyip kancayı kendisi atar, o çekiş %10 fazla öder | 500 |
+| Havai fişek | Tek patlamada en az 4 fıçı zincirle | "HAVAİ FİŞEK!" yazısı ve renkli patlamalar | 1.500 |
+| Baron'un Kasası | Patron bölümünde (her dünyanın 20. bölümü) hiç altın çekmeden bütün taşları çek (en az 2 taş) | Altın renkli bir sandık çıkar, değeri 3.000 | 1.500 |
+| Kayan yıldız | Ana menüde gökyüzüne art arda 10 kez dokun (her dokunuşta küçük bir pırıltı çıkar) | Yıldız geçer, Pebble "Kayan yıldız! +1 çark hakkı" der. Ödül günde bir kez | 500 |
+| Şanslı torba | Gizemli torbadan art arda 3 kez aynı tür ödül çıksın (bölümler arası sayılır) | 4. torba garanti "BÜYÜK İKRAMİYE!": 2.000 (Talih yükseltmesiyle artar) | 1.000 |
+| Kabuuum | Kancadaki fıçıya patlatıcı at (yukarıda) | Dev patlama, bölüm kaybedilir | 500 |
+
+Ek olarak: elmas taşıyan böceklerin sırtında artık küçük bir elmas görünüyor. Önceden normal böcekle aynı görünüyordu, oyuncu hangisinin değerli olduğunu anlayamıyordu.
+
+Notlar: Böcek, sabır, kasa ve torba sürprizleri oyunu etkilediği için `Session` seçeneği `eggs: false` ile kapatılabilir (testlerde kullanılır). Sabırlı madenci yeni oyuncuya da yardım eder: hiç dokunmayan oyuncu kancanın kendiliğinden gittiğini görür. Havai fişek ve kasa olayları birim testlerinde gerçek akışla doğrulandı; tarayıcıda görüntüleri ekran görüntüsüyle kontrol edildi, gerçek bir patron bölümünde baştan sona oynanarak denenmedi.
+
 ## Ekonomi incelemesi
 
 `npx vite-node tools/economy-report.ts` bir bölümü "%30 payla" geçen oyuncunun toplam gelirini hesaplar: 100 bölümde yaklaşık 525.000. Önceki hâlde kalıcı harcamalar sadece 140.000 idi, yani 40. bölümden sonra para birikiyordu. Düzeltmeler:
@@ -84,8 +102,8 @@ Diğer fiyatlar: Patlatıcı 700 (bölümle 1200'e kadar artar), Paket 1800, Zam
 
 ## Test sonuçları
 
-- Birim testleri (Vitest): **313 test geçti** (kanca, çarpışma, oturum, seri, dondurma, yükseltmeler, dükkân, sandık, kozmetik, günlük hediye, başarımlar, kayıt, hikaye, görevler, 100 bölümün geçerliliği ve dengesi).
-- Tarayıcı testleri (Playwright): **31 test geçti** (temel akış, dev patlama sürprizi, hikaye diyaloğu, sonsuz mod, haftalık, atölye alışverişi, günlük hediye, başarımlar, dünya sayfaları, dondurma, sandık, 5 ekran boyutunda düzen kontrolü, ekran galerisi).
+- Birim testleri (Vitest): **328 test geçti** (gizli sürprizler, kanca, çarpışma, oturum, seri, dondurma, yükseltmeler, dükkân, sandık, kozmetik, günlük hediye, başarımlar, kayıt, hikaye, görevler, 100 bölümün geçerliliği ve dengesi).
+- Tarayıcı testleri (Playwright): **33 test geçti** (temel akış, dev patlama, kayan yıldız ve sabırlı madenci sürprizleri, hikaye diyaloğu, sonsuz mod, haftalık, atölye alışverişi, günlük hediye, başarımlar, dünya sayfaları, dondurma, sandık, 5 ekran boyutunda düzen kontrolü, ekran galerisi).
 - Ekran görüntüleri: `docs/screenshots/`.
 
 ## Bilinen eksikler ve dürüst notlar

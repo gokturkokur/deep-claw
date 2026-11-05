@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { clickButton, open, saveData, stepSession, waitScene } from './helpers';
+import { clickButton, designPoint, open, saveData, stepSession, waitScene } from './helpers';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 test.setTimeout(240_000);
@@ -271,5 +271,37 @@ test.describe('new features', () => {
     expect(texts).toContain('KABOOOM!');
     // like any lost level, nothing used in it is taken from the saved inventory
     expect((await saveData(page)).inventory.blastCaps).toBe(2);
+  });
+
+  test('easter egg: 10 taps on the menu sky = shooting star, one spin a day, secret award', async ({ page }) => {
+    await open(page);
+    const sky = await designPoint(page, 450, 140);
+    for (let i = 0; i < 10; i++) await page.mouse.click(sky.x, sky.y);
+    await expect.poll(async () => (await saveData(page)).spins).toBe(1);
+    let save = await saveData(page);
+    expect(save.eggs.found).toContain('star');
+    expect(save.achievements).toContain('egg_star');
+    // a second wish the same day gives nothing
+    for (let i = 0; i < 10; i++) await page.mouse.click(sky.x, sky.y);
+    await page.waitForTimeout(500);
+    save = await saveData(page);
+    expect(save.spins).toBe(1);
+  });
+
+  test('easter egg: Dusty throws by himself after 30 idle seconds and it is saved', async ({ page }) => {
+    await open(page);
+    await page.evaluate(() => (window as any).__dc.game.scene.getScene('MainMenu').scene.start('Game', { levelId: 1 }));
+    await waitScene(page, 'Game');
+    expect(await page.evaluate(() => (window as any).__dc.session.claw.state)).toBe('swinging');
+    await stepSession(page, 31);
+    expect(await page.evaluate(() => (window as any).__dc.session.eggsFound)).toContain('idle');
+    // finish the level fast and check the save
+    await page.evaluate(() => {
+      const s = (window as any).__dc.session;
+      s.timeLeft = 0.01;
+    });
+    await stepSession(page, 20);
+    await expect.poll(async () => (await saveData(page)).eggs.found).toContain('idle');
+    expect((await saveData(page)).achievements).toContain('egg_idle');
   });
 });

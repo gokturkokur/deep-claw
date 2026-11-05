@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { DESIGN } from '../config/game';
+import { DESIGN, EGGS } from '../config/game';
 import { itemText, money, quips, rankName, t } from '../i18n';
 import { MENU_UNLOCK, rankIndex, totalStars, type MenuFeature } from '../systems/Campaign';
 import { COSMETICS } from '../config/economy';
@@ -8,6 +8,8 @@ import { showTutorial } from '../ui/Tutorial';
 import { LEVELS } from '../data/levels';
 import { canClaimDaily, claimDaily, dayKey, nextStreak, type DailyResult } from '../systems/Daily';
 import { services } from '../services';
+import { wishOnStar } from '../systems/Eggs';
+import { checkAchievements } from '../systems/Progress';
 import { createBackdrop, type Backdrop } from '../ui/Backdrop';
 import { Button, createConfirm, dim, panel } from '../ui/components';
 import { COLORS, Layout, fadeIn, goTo, txt } from '../ui/theme';
@@ -20,6 +22,8 @@ export class MainMenu extends Phaser.Scene {
   private pebbleBase = 1;
   private bubble!: Phaser.GameObjects.Container;
   private quipIndex = 0;
+  /** Random chatter waits until this time so an important line stays readable. */
+  private quietUntil = 0;
   private dockButtons: Record<string, Phaser.GameObjects.Container> = {};
 
   constructor() {
@@ -27,6 +31,7 @@ export class MainMenu extends Phaser.Scene {
   }
 
   create(): void {
+    this.quietUntil = 0;
     const layout = new Layout(this);
     const save = services.save;
     const audio = services.audio;
@@ -113,6 +118,7 @@ export class MainMenu extends Phaser.Scene {
       this.sayRandom();
     });
     this.bubble = this.add.container(0, 0).setDepth(30).setAlpha(0);
+    this.createSkyEgg(layout, ground);
     this.time.delayedCall(1200, () => this.sayRandom());
     this.time.addEvent({ delay: 7000, loop: true, callback: () => this.sayRandom() });
 
@@ -216,6 +222,55 @@ export class MainMenu extends Phaser.Scene {
     }
   }
 
+  /** Easter egg: tap the sky EGGS.star.taps times in a row and a shooting star crosses it. */
+  private createSkyEgg(layout: Layout, ground: number): void {
+    let taps = 0;
+    let lastTap = 0;
+    const skyTop = layout.top;
+    const skyH = ground - 150 - skyTop;
+    const zone = this.add.zone(DESIGN.width / 2, skyTop + skyH / 2, DESIGN.width, skyH).setInteractive().setDepth(1);
+    layout.onChange(() => {
+      const h = ground - 150 - layout.top;
+      zone.setPosition(DESIGN.width / 2, layout.top + h / 2).setSize(DESIGN.width, h);
+    });
+    zone.on('pointerdown', (p: Phaser.Input.Pointer) => {
+      const now = this.time.now;
+      taps = now - lastTap < 2500 ? taps + 1 : 1;
+      lastTap = now;
+      // a tiny twinkle where you tapped, the only clue that the sky reacts
+      const tw = this.add.image(p.worldX, p.worldY, 'spark').setDisplaySize(26, 26).setDepth(2).setAlpha(0.9);
+      this.tweens.add({ targets: tw, scale: 0, alpha: 0, angle: 90, duration: 500, onComplete: () => tw.destroy() });
+      if (taps < EGGS.star.taps) return;
+      taps = 0;
+      this.shootingStar(layout);
+    });
+  }
+
+  private shootingStar(layout: Layout): void {
+    const save = services.save;
+    const top = layout.top;
+    const star = this.add.image(DESIGN.width + 40, top + 70, 'spark').setDisplaySize(54, 54).setDepth(3);
+    services.audio.sfx('diamond', 1, 1.3);
+    this.tweens.add({
+      targets: star,
+      x: -60,
+      y: top + 250,
+      angle: 360,
+      duration: 1300,
+      ease: 'Sine.In',
+      onUpdate: () => {
+        const tr = this.add.image(star.x, star.y, 'spark').setDisplaySize(22, 22).setDepth(2).setAlpha(0.8);
+        this.tweens.add({ targets: tr, alpha: 0, scale: 0, duration: 450, onComplete: () => tr.destroy() });
+      },
+      onComplete: () => star.destroy(),
+    });
+    const result = wishOnStar(save.data, dayKey(new Date()));
+    checkAchievements(save.data);
+    save.save();
+    this.quietUntil = this.time.now + 5000;
+    this.time.delayedCall(700, () => this.say(result === 'spin' ? t('eggStar') : t('eggStarAgain'), 'pebble'));
+  }
+
   /** A short speech bubble above Dusty or Pebble. */
   private say(text: string, who: 'dusty' | 'pebble' = 'pebble'): void {
     const src = who === 'dusty' ? this.dusty : this.pebble;
@@ -234,6 +289,7 @@ export class MainMenu extends Phaser.Scene {
   }
 
   private sayRandom(): void {
+    if (this.time.now < this.quietUntil) return;
     const save = services.save.data;
     const list: string[] = [...quips()];
     if (canClaimDaily(save, dayKey(new Date()))) list.push(t('quipGift'), t('quipGift'));

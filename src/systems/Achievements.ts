@@ -7,7 +7,18 @@ export interface AchievementDef {
   test: (s: SaveData) => boolean;
   /** Progress shown in the list: [current, goal]. */
   progress: (s: SaveData) => [number, number];
+  /** Secret: shown as "???" with a riddle until found. */
+  hidden?: boolean;
 }
+
+/** Hidden achievement for an easter egg (see EGG_IDS in Session). */
+const egg = (id: string, reward: number): AchievementDef => ({
+  id: 'egg_' + id,
+  reward,
+  hidden: true,
+  test: (s) => s.eggs.found.includes(id),
+  progress: (s) => [s.eggs.found.includes(id) ? 1 : 0, 1],
+});
 
 const stat = (key: keyof SaveData['stats'], goal: number, reward: number, id: string): AchievementDef => ({
   id,
@@ -38,6 +49,13 @@ export const ACHIEVEMENTS: AchievementDef[] = [
     test: (s) => UPGRADE_IDS.some((u) => s.upgrades[u] >= UPGRADES[u].max),
     progress: (s) => [Math.max(...UPGRADE_IDS.map((u) => s.upgrades[u])), UPGRADES.winch.max],
   },
+  egg('kaboom', 500),
+  egg('beetle', 800),
+  egg('idle', 500),
+  egg('fireworks', 1500),
+  egg('vault', 1500),
+  egg('star', 500),
+  egg('bag', 1000),
 ];
 
 /** Unlock everything that is newly reached, pay the rewards, return the new ones. */
