@@ -57,6 +57,18 @@ Fonts: the game uses **Lilita One** (SIL Open Font License, bundled in `src/font
 | `icon_infinity` | `public/assets/images/icon_infinity.svg` | 64 x 64 | center | 1 | Endless mode |
 | `icon_calendar` | `public/assets/images/icon_calendar.svg` | 64 x 64 | center | 1 | Weekly challenge |
 | `icon_arrowup` | `public/assets/images/icon_arrowup.svg` | 64 x 64 | center | 1 | Upgrades |
+| `miner_blue` | `public/assets/images/miner_blue.svg` | 150 x 190 | center | 1 | Miner outfit: blue (Style shop) |
+| `miner_green` | `public/assets/images/miner_green.svg` | 150 x 190 | center | 1 | Miner outfit: green |
+| `miner_purple` | `public/assets/images/miner_purple.svg` | 150 x 190 | center | 1 | Miner outfit: purple |
+| `miner_tycoon` | `public/assets/images/miner_tycoon.svg` | 150 x 190 | center | 1 | Miner outfit: tycoon |
+| `char_pebble` | `public/assets/images/char_pebble.svg` | 160 x 160 | center | 1 | Story portrait: Pebble the mole |
+| `char_baron` | `public/assets/images/char_baron.svg` | 160 x 160 | center | 1 | Story portrait: Baron Gizmo |
+| `icon_freeze` | `public/assets/images/icon_freeze.svg` | 64 x 64 | center | 1 | Time Freeze |
+| `icon_ticket` | `public/assets/images/icon_ticket.svg` | 64 x 64 | center | 1 | Skip Ticket |
+| `icon_crate` | `public/assets/images/icon_crate.svg` | 64 x 64 | center | 1 | Mystery Crate |
+| `icon_shop` | `public/assets/images/icon_shop.svg` | 64 x 64 | center | 1 | Shop |
+| `icon_wrench` | `public/assets/images/icon_wrench.svg` | 64 x 64 | center | 1 | Workshop |
+| `icon_book` | `public/assets/images/icon_book.svg` | 64 x 64 | center | 1 | Story |
 | `icon_lantern` | `public/assets/images/icon_lantern.svg` | 64 x 64 | center | 1 | Lucky Lantern icon |
 | `icon_lock` | `public/assets/images/icon_lock.svg` | 64 x 64 | center | 1 | Locked level icon |
 | `icon_mute` | `public/assets/images/icon_mute.svg` | 64 x 64 | center | 1 | Sound off icon |

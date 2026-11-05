@@ -1,9 +1,10 @@
 import Phaser from 'phaser';
 import { DESIGN } from '../config/game';
-import { t } from '../i18n';
+import { itemText, money, t } from '../i18n';
+import { canClaimDaily, claimDaily, dayKey, nextStreak, type DailyResult } from '../systems/Daily';
 import { services } from '../services';
 import { createBackdrop, type Backdrop } from '../ui/Backdrop';
-import { Button, createConfirm } from '../ui/components';
+import { Button, createConfirm, dim, panel } from '../ui/components';
 import { COLORS, Layout, fadeIn, goTo, txt } from '../ui/theme';
 
 export class MainMenu extends Phaser.Scene {
@@ -44,7 +45,7 @@ export class MainMenu extends Phaser.Scene {
       goTo(this, 'Game', { levelId: 1 });
     };
 
-    const play = new Button(this, cx, 760, {
+    const play = new Button(this, cx, 690, {
       w: 460,
       h: 118,
       label: t('play'),
@@ -60,7 +61,7 @@ export class MainMenu extends Phaser.Scene {
     this.tweens.add({ targets: play, scale: { from: 1, to: 1.04 }, duration: 900, yoyo: true, repeat: -1, ease: 'Sine.InOut' });
 
     const hasSave = save.data.hasProgress;
-    new Button(this, cx, 900, {
+    new Button(this, cx, 805, {
       w: 460,
       label: t('continue'),
       fontSize: 46,
@@ -73,13 +74,29 @@ export class MainMenu extends Phaser.Scene {
       .setEnabled(hasSave)
       .setDepth(20);
 
-    new Button(this, cx, 1030, {
+    new Button(this, cx, 910, {
       w: 460,
       label: t('levelSelect'),
       fontSize: 46,
       tint: COLORS.green,
       onClick: () => goTo(this, 'LevelSelect'),
     }).setDepth(20);
+
+    // second row: shop, workshop and the extra modes
+    const small = (i: number, label: string, tint: number, scene: string, data?: object) =>
+      new Button(this, cx + (i - 2) * 142, 1030, { w: 134, h: 104, label, fontSize: 25, tint, onClick: () => goTo(this, scene, data) }).setDepth(20);
+    small(0, t('shopBtn'), COLORS.gold, 'Shop');
+    small(1, t('workshop'), COLORS.blue, 'Workshop', { back: 'MainMenu' });
+    small(2, t('endless'), 0x7a5ad8, 'Game', { mode: 'endless' });
+    small(3, t('weekly'), 0x2aa8b8, 'Game', { mode: 'weekly' });
+    small(4, t('achievements'), COLORS.green, 'Achievements');
+
+    // daily gift
+    const today = dayKey(new Date());
+    if (canClaimDaily(save.data, today)) {
+      const gift = new Button(this, DESIGN.width - 100, 330, { round: true, icon: 'icon_gift', tint: COLORS.red, onClick: () => this.openGift(layout, today) }).setDepth(25).setName('gift');
+      this.tweens.add({ targets: gift, scale: { from: 1, to: 1.12 }, angle: { from: -6, to: 6 }, duration: 500, yoyo: true, repeat: -1 });
+    }
 
     // bottom corners: sound toggle and settings
     const muted = () => save.data.settings.music <= 0.001 && save.data.settings.sfx <= 0.001;
@@ -110,6 +127,47 @@ export class MainMenu extends Phaser.Scene {
 
     this.events.on('resume', () => services.audio.playMusic('music_menu'));
     fadeIn(this);
+  }
+
+  private openGift(layout: Layout, today: string): void {
+    const save = services.save;
+    const cx = DESIGN.width / 2;
+    const cy = DESIGN.height / 2;
+    const g = this.add.container(0, 0).setDepth(400);
+    const streak = nextStreak(save.data, today);
+    const shade = dim(this, layout, 0.7);
+    const p = panel(this, cx, cy, 600, 560);
+    const icon = this.add.image(cx, cy - 150, 'icon_gift').setDisplaySize(150, 150);
+    const title = txt(this, cx, cy - 20, t('dailyGift'), 50, { color: COLORS.textGold, strokeW: 8 });
+    const sub = txt(this, cx, cy + 40, t('giftDay', { n: streak }), 32, { color: '#f4dba8' });
+    const resultText = txt(this, cx, cy + 100, '', 38, { wrap: 520, color: COLORS.textGreen });
+    const close = new Button(this, cx + 250, cy - 250, { w: 96, h: 96, label: 'X', fontSize: 40, tint: COLORS.brown, key: 'ESC', onClick: () => g.destroy() });
+    const claim: Button = new Button(this, cx, cy + 200, {
+      w: 360,
+      label: t('claimGift'),
+      fontSize: 46,
+      tint: COLORS.green,
+      key: 'ENTER',
+      onClick: () => {
+        const r = claimDaily(save.data, today);
+        if (!r) return;
+        save.save();
+        services.audio.sfx('buy');
+        resultText.setText(this.describe(r));
+        claim.destroy();
+        close.destroy();
+        const ok = new Button(this, cx, cy + 200, { w: 300, label: 'OK', fontSize: 44, tint: COLORS.green, key: 'ENTER', onClick: () => goTo(this, 'MainMenu') });
+        g.add(ok);
+        this.tweens.add({ targets: icon, angle: { from: -15, to: 15 }, yoyo: true, duration: 150, repeat: 3 });
+      },
+    });
+    g.add([shade, p, icon, title, sub, resultText, claim, close]);
+  }
+
+  private describe(r: DailyResult): string {
+    if (r.reward.kind === 'money') return t('giftMoney', { n: money(r.reward.amount).replace('$', '') });
+    if (r.reward.kind === 'caps') return t('giftCaps', { n: r.reward.amount });
+    return t('giftBoost', { name: r.boost ? itemText(r.boost).name : '' });
   }
 
   update(time: number, delta: number): void {

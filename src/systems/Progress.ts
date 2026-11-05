@@ -19,6 +19,8 @@ export interface LevelOutcome {
   /** Side mission of the level was completed. */
   missionDone?: boolean;
   missionReward?: number;
+  /** Extra money on the first clear (boss reward). */
+  extraBonus?: number;
 }
 
 export interface CompletionResult {
@@ -55,7 +57,7 @@ export function commitOutcome(save: SaveData, o: LevelOutcome, seed: number = ra
 
   let walletGain = 0;
   if (firstClear) {
-    walletGain = Math.round(o.earned * SHOP.walletShare);
+    walletGain = Math.round(o.earned * SHOP.walletShare) + (o.extraBonus ?? 0);
     save.wallet += walletGain;
     save.unlockedLevel = Math.min(LEVELS.length, Math.max(save.unlockedLevel, o.levelId + 1));
     save.currentLevel = Math.min(LEVELS.length, o.levelId + 1);

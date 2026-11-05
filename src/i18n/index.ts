@@ -27,7 +27,7 @@ export function getLang(): Lang {
   return current;
 }
 
-type Key = Exclude<keyof Strings, 'items'>;
+type Key = { [K in keyof Strings]: Strings[K] extends string ? K : never }[keyof Strings];
 
 /** Look up a UI string; `{n}` style placeholders are replaced from `params`. */
 export function t(key: Key, params?: Record<string, string | number>): string {
@@ -38,6 +38,25 @@ export function t(key: Key, params?: Record<string, string | number>): string {
 
 export function itemText(id: keyof Strings['items']): { name: string; desc: string } {
   return TABLES[current].items[id];
+}
+
+export function upgradeText(id: keyof Strings['upgrades']): { name: string; desc: string } {
+  return TABLES[current].upgrades[id];
+}
+export function clawText(id: keyof Strings['claws']): { name: string; desc: string } {
+  return TABLES[current].claws[id];
+}
+export function cosmeticName(id: string): string {
+  return (TABLES[current].cosmetics as Record<string, string>)[id] ?? id;
+}
+export function achText(id: string): { name: string; desc: string } {
+  return (TABLES[current].ach as Record<string, { name: string; desc: string }>)[id] ?? { name: id, desc: '' };
+}
+export function missionText(kind: string, n = 0): string {
+  return (TABLES[current].missions as Record<string, string>)[kind].replace('{n}', String(n));
+}
+export function worldName(world: number): string {
+  return TABLES[current].worlds[(world - 1) % TABLES[current].worlds.length];
 }
 
 /** Format money with thousands separators using the active language. */

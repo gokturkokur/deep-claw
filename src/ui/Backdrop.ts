@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { IMAGES } from '../assets/manifest';
 import { DESIGN, WORLD } from '../config/game';
+import { THEMES, type ThemeId } from '../systems/Campaign';
 import { img, type Layout } from './theme';
 
 const WIDE = 5200; // wide enough for ultra-wide screens
@@ -16,14 +17,15 @@ export interface Backdrop {
  * fossils / roots, lantern glow, drifting dust motes and the odd water drip.
  * Everything is oversized so tall and wide screens show decoration instead of black bars.
  */
-export function createBackdrop(scene: Phaser.Scene, layout: Layout, opts: { surface?: boolean } = {}): Backdrop {
+export function createBackdrop(scene: Phaser.Scene, layout: Layout, opts: { surface?: boolean; theme?: ThemeId } = {}): Backdrop {
+  const th = THEMES[opts.theme ?? 'mine'];
   const cx = DESIGN.width / 2;
   const surface = WORLD.surfaceY;
   const sky = IMAGES.bg_sky;
 
   // sky: solid colour above the image, tiled image from y = surface - 300
-  scene.add.rectangle(cx, surface - sky.h - TALL / 2, WIDE, TALL, 0x3a2a5c).setDepth(0);
-  scene.add.tileSprite(cx, surface - sky.h / 2, WIDE, sky.h, 'bg_sky').setDepth(0);
+  scene.add.rectangle(cx, surface - sky.h - TALL / 2, WIDE, TALL, th.skyBase).setDepth(0);
+  scene.add.tileSprite(cx, surface - sky.h / 2, WIDE, sky.h, 'bg_sky').setDepth(0).setTint(th.sky);
   scene.add.image(560, surface - 150, 'deco_sun').setDepth(1).setDisplaySize(IMAGES.deco_sun.w, IMAGES.deco_sun.h);
   const clouds = [
     img(scene, 'deco_cloud', 140, surface - 240).setDepth(1),
@@ -31,12 +33,12 @@ export function createBackdrop(scene: Phaser.Scene, layout: Layout, opts: { surf
   ];
 
   // soil
-  scene.add.tileSprite(cx, surface + TALL / 2, WIDE, TALL, 'soil_tile').setOrigin(0.5, 0.5).setDepth(2);
+  scene.add.tileSprite(cx, surface + TALL / 2, WIDE, TALL, 'soil_tile').setOrigin(0.5, 0.5).setDepth(2).setTint(th.soil);
   scene.add
     .image(cx, surface + 700, 'soil_shade')
     .setDisplaySize(WIDE, 1400)
     .setDepth(3);
-  scene.add.tileSprite(cx, surface - 4, WIDE, IMAGES.ground_top.h, 'ground_top').setOrigin(0.5, 0.5).setTileScale(1, 1).setDepth(4).setY(surface - 14 + 0);
+  scene.add.tileSprite(cx, surface - 4, WIDE, IMAGES.ground_top.h, 'ground_top').setOrigin(0.5, 0.5).setTileScale(1, 1).setDepth(4).setY(surface - 14 + 0).setTint(th.ground);
 
   // decorations in the soil (faint, not part of gameplay)
   const deco: Array<[string, number, number, number]> = [
@@ -54,7 +56,8 @@ export function createBackdrop(scene: Phaser.Scene, layout: Layout, opts: { surf
     .image(WORLD.pivotX, WORLD.pivotY + 40, 'glow')
     .setDisplaySize(620, 620)
     .setBlendMode(Phaser.BlendModes.ADD)
-    .setAlpha(opts.surface ? 0.0 : 0.35)
+    .setAlpha(opts.surface ? 0.0 : th.glowAlpha)
+    .setTint(th.glow)
     .setDepth(6);
 
   // dust motes
@@ -83,7 +86,7 @@ export function createBackdrop(scene: Phaser.Scene, layout: Layout, opts: { surf
 
   return {
     update(time, dt) {
-      glow.setAlpha((opts.surface ? 0.0 : 0.3) + Math.sin(time / 260) * 0.03 + Math.sin(time / 97) * 0.015);
+      glow.setAlpha((opts.surface ? 0.0 : th.glowAlpha - 0.04) + Math.sin(time / 260) * 0.03 + Math.sin(time / 97) * 0.015);
       for (let i = 0; i < clouds.length; i++) {
         clouds[i].x += (6 + i * 3) * dt;
         if (clouds[i].x > layout.right + 160) clouds[i].x = layout.left - 160;

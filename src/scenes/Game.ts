@@ -1,12 +1,17 @@
 import Phaser from 'phaser';
 import { IMAGES } from '../assets/manifest';
-import { OBJECTS, type ObjType } from '../config/economy';
+import { COSMETICS, OBJECTS, WEEKLY, type ObjType } from '../config/economy';
 import { CLAW, DESIGN, FX, LEVEL_RULES, WORLD } from '../config/game';
+import { CLAW_TYPES } from '../config/economy';
 import { LEVELS, type LevelDef } from '../data/levels';
-import { money, t } from '../i18n';
+import { storyBeatFor } from '../data/story';
+import { missionText, money, t } from '../i18n';
 import { services } from '../services';
 import { Session, type SessionEvent } from '../systems/Session';
-import { commitOutcome } from '../systems/Progress';
+import { estimateLevel } from '../systems/Balance';
+import { isBoss, missionDone, missionFor, missionGoal, missionIsRestriction, missionProgress, themeOf, worldOf, type Mission, type ThemeId } from '../systems/Campaign';
+import { weekId, weeklyLevel } from '../systems/Fields';
+import { checkAchievements, commitEndless, commitOutcome, commitWeekly, mergeStats } from '../systems/Progress';
 import { activeModifiers } from '../systems/Shop';
 import { createBackdrop, type Backdrop } from '../ui/Backdrop';
 import { Button, FloatingTexts } from '../ui/components';
@@ -14,7 +19,20 @@ import { COLORS, Layout, fadeIn, goTo, txt } from '../ui/theme';
 
 const D = { entity: 10, rig: 15, rope: 19, held: 20.5, claw: 21, fx: 30, float: 40, hud: 60, flash: 80 };
 
+export type GameMode = 'campaign' | 'weekly' | 'endless';
+
 export class Game extends Phaser.Scene {
+  private mode: GameMode = 'campaign';
+  private theme: ThemeId = 'mine';
+  private weekKey = '';
+  private mission: Mission | null = null;
+  private missionShown = false;
+  private missionText!: Phaser.GameObjects.Text;
+  private freezeBtn!: Button;
+  private freezeCount!: Phaser.GameObjects.Text;
+  private lastFreeze = -1;
+  private lastWave = 0;
+  private lastMission = '';
   private levelId = 1;
   private level!: LevelDef;
   private session!: Session;
@@ -65,8 +83,13 @@ export class Game extends Phaser.Scene {
     super('Game');
   }
 
-  init(data: { levelId?: number }): void {
-    this.levelId = Math.min(LEVELS.length, Math.max(1, data?.levelId ?? 1));
+  init(data: { levelId?: number; mode?: GameMode }): void {
+    this.mode = data?.mode ?? 'campaign';
+    this.levelId = this.mode === 'campaign' ? Math.min(LEVELS.length, Math.max(1, data?.levelId ?? 1)) : 0;
+    this.missionShown = false;
+    this.lastFreeze = -1;
+    this.lastWave = 0;
+    this.lastMission = '';
     this.sprites = new Map();
     this.boostIcons = [];
     this.glintPool = [];
@@ -90,15 +113,28 @@ export class Game extends Phaser.Scene {
     const save = services.save;
     const audio = services.audio;
     this.layout = new Layout(this);
-    this.level = LEVELS[this.levelId - 1];
+    if (this.mode === 'campaign') this.level = LEVELS[this.levelId - 1];
+    else if (this.mode === 'weekly') {
+      this.weekKey = weekId(new Date());
+      const probe = weeklyLevel(this.weekKey, 1);
+      const target = Math.max(500, Math.round((estimateLevel(probe).estimate * WEEKLY.targetShare) / 50) * 50);
+      this.level = weeklyLevel(this.weekKey, target);
+    } else this.level = { id: 0, name: 'Endless', target: 0, objects: [] };
+    this.mission = this.mode === 'campaign' ? missionFor(this.level) : null;
     this.session = new Session({
       level: this.level,
       modifiers: activeModifiers(save.data),
       blastCaps: save.data.inventory.blastCaps,
+      freezeCount: save.data.inventory.freeze,
+      upgrades: save.data.upgrades,
+      clawType: save.data.claws.equipped,
+      endlessSeed: this.mode === 'endless' ? Math.floor(Math.random() * 1e9) : undefined,
     });
+    this.lastWave = this.session.wave;
+    this.theme = this.mode === 'campaign' ? themeOf(this.levelId) : this.mode === 'weekly' ? 'ice' : 'abyss';
 
     audio.playMusic('music_game');
-    this.backdrop = createBackdrop(this, this.layout);
+    this.backdrop = createBackdrop(this, this.layout, { theme: this.theme });
     this.createRig();
     this.createEntities();
     this.createEffects();
@@ -128,6 +164,21 @@ export class Game extends Phaser.Scene {
       dbg.gameScene = this;
     }
     fadeIn(this);
+
+    // story beat before the level (once), boss banner
+    if (this.mode === 'campaign') {
+      const beat = storyBeatFor(this.levelId);
+      if (beat && !save.data.storySeen.includes(beat.id) && !this.skipStory()) {
+        this.paused = true;
+        this.scene.pause();
+        this.scene.launch('Story', { beat: beat.id, from: 'Game' });
+      } else if (isBoss(this.levelId)) this.showBanner(t('boss'));
+    } else if (this.mode === 'endless') this.showBanner(t('wave', { n: 1 }));
+  }
+
+  /** Debug / test switch: ?nostory=1 skips dialogue. */
+  private skipStory(): boolean {
+    return new URLSearchParams(location.search).get('nostory') === '1';
   }
 
   // ------------------------------------------------------------------ build
@@ -139,8 +190,10 @@ export class Game extends Phaser.Scene {
       .setOrigin(0.5, 0)
       .setDisplaySize(204, 144)
       .setDepth(D.rig);
+    const eq = services.save.data.cosmetics.equipped;
+    const outfit = COSMETICS.find((c) => c.id === eq.outfit)?.texture ?? 'miner';
     this.miner = this.add
-      .image(px + 158, WORLD.surfaceY + 4, 'miner').setFlipX(true)
+      .image(px + 158, WORLD.surfaceY + 4, outfit).setFlipX(true)
       .setOrigin(0.5, 1)
       .setDisplaySize(118, 150)
       .setDepth(D.rig + 1);
@@ -150,6 +203,10 @@ export class Game extends Phaser.Scene {
     this.rope = this.add.tileSprite(px, py, 10, 4, 'rope').setOrigin(0.5, 0).setDepth(D.rope);
     this.drum = this.add.image(px, py, 'winch_drum').setDisplaySize(70, 70).setDepth(D.rope + 0.2);
     this.clawImg = this.add.image(px, py, 'claw_open').setOrigin(0.5, 0).setDisplaySize(90, 72).setDepth(D.claw);
+    const skin = COSMETICS.find((c) => c.id === eq.clawSkin);
+    const ropeSkin = COSMETICS.find((c) => c.id === eq.rope);
+    this.clawImg.setTint(skin?.tint ?? CLAW_TYPES[services.save.data.claws.equipped].tint);
+    if (ropeSkin?.tint) this.rope.setTint(ropeSkin.tint);
     this.tweens.add({ targets: this.miner, scaleY: this.miner.scaleY * 1.025, duration: 900, yoyo: true, repeat: -1, ease: 'Sine.InOut' });
   }
 
@@ -259,11 +316,16 @@ export class Game extends Phaser.Scene {
       bx += 58;
     }
 
-    L.onChange(() => {
-      const dy = L.top - top;
-      void dy;
-      this.relayoutHud();
-    });
+    this.missionText = txt(this, E.left + 24, top + 352, '', 26, { originX: 0, color: '#f4dba8', strokeW: 5 }).setDepth(D.hud + 1);
+    this.freezeBtn = new Button(this, E.right - 70, top + 380, {
+      round: true,
+      icon: 'icon_freeze',
+      tint: COLORS.blue,
+      onClick: () => this.useFreeze(),
+    }).setDepth(D.hud + 2).setName('freeze');
+    this.freezeCount = txt(this, E.right - 70 + 34, top + 380 + 34, 'x0', 34, { strokeW: 6, color: COLORS.textGold }).setDepth(D.hud + 3);
+
+    L.onChange(() => this.relayoutHud());
     this.refreshLabels();
 
     if (!services.save.data.hintShown) {
@@ -292,6 +354,9 @@ export class Game extends Phaser.Scene {
     this.targetText.setPosition(E.left + 24, top + 246);
     this.blastBtn.setPosition(E.right - 70, top + 262);
     this.blastCount.setPosition(E.right - 70 + 34, top + 262 + 34);
+    this.missionText.setPosition(E.left + 24, top + 352);
+    this.freezeBtn.setPosition(E.right - 70, top + 380);
+    this.freezeCount.setPosition(E.right - 70 + 34, top + 380 + 34);
     let bx = E.left + 24 + 26;
     for (const i of this.boostIcons) {
       i.setPosition(bx, top + 300);
@@ -300,10 +365,19 @@ export class Game extends Phaser.Scene {
   }
 
   private refreshLabels(): void {
-    this.levelText.setText(t('levelShort', { n: this.levelId }));
-    this.targetText.setText(t('target', { n: money(this.level.target) }));
+    if (this.mode === 'campaign') {
+      this.levelText.setText(t('levelShort', { n: this.levelId }) + (isBoss(this.levelId) ? '  - ' + t('boss') : ''));
+      this.targetText.setText(t('target', { n: money(this.level.target) }));
+    } else if (this.mode === 'weekly') {
+      this.levelText.setText(t('weeklyTitle'));
+      this.targetText.setText(t('target', { n: money(this.level.target) }));
+    } else {
+      this.levelText.setText(t('endless').toUpperCase());
+      this.targetText.setText(t('wave', { n: this.session.wave }));
+    }
     this.lastTargetOk = !this.lastTargetOk; // force colour refresh
     this.lastMoneyTxt = '';
+    this.lastMission = '';
   }
 
   private createInput(): void {
@@ -315,6 +389,7 @@ export class Game extends Phaser.Scene {
     kb.on('keydown-SPACE', () => this.tryLaunch());
     kb.on('keydown-DOWN', () => this.tryLaunch());
     kb.on('keydown-D', () => this.useBlast());
+    kb.on('keydown-F', () => this.useFreeze());
     kb.on('keydown-P', () => this.openPause());
     kb.on('keydown-ESC', () => this.openPause());
   }
@@ -334,6 +409,11 @@ export class Game extends Phaser.Scene {
         this.hint = undefined;
       }
     }
+  }
+
+  private useFreeze(): void {
+    if (this.paused || this.ending) return;
+    if (!this.session.useFreeze()) services.audio.sfx('deny', 0.6);
   }
 
   private useBlast(): void {
@@ -408,6 +488,16 @@ export class Game extends Phaser.Scene {
       case 'timeUp':
         this.showBanner(t('timeUp'));
         break;
+      case 'wave':
+        this.onWave(ev.wave);
+        break;
+      case 'freeze': {
+        audio.sfx('blast', 0.6, 0.6);
+        const ice = this.add.rectangle(DESIGN.width / 2, DESIGN.height / 2, this.layout.width + 8, this.layout.height + 8, 0x9fe0ff, 0.22).setDepth(D.flash - 5);
+        this.tweens.add({ targets: ice, alpha: { from: 0.3, to: 0 }, delay: ev.seconds * 1000 - 600, duration: 600, onComplete: () => ice.destroy() });
+        this.showBanner(t('frozen'));
+        break;
+      }
       case 'end':
         this.onEnd(ev.won);
         break;
@@ -451,7 +541,19 @@ export class Game extends Phaser.Scene {
       audio.vibrate(30);
       return;
     }
+    if (ev.value < 0) {
+      audio.sfx('deny');
+      this.cameras.main.shake(180, 0.008);
+      this.floats.show(this, px, py - 30, money(ev.value), COLORS.textRed, 56);
+      return;
+    }
+    if (ev.combo >= 2 && ev.mult > 1) this.floats.show(this, px + 90, py + 40, t('combo', { m: ev.mult.toFixed(1) }), COLORS.textGreen, 36);
+    if (ev.kind === 'diamond' || ev.kind === 'chest') {
+      this.cameras.main.flash(110, 255, 255, 255, true);
+      this.cameras.main.shake(140, 0.004);
+    } else if (ev.kind === 'goldL') this.cameras.main.shake(120, 0.004);
     if (ev.kind === 'diamond' || (ev.kind === 'beetle' && ev.value > 100)) audio.sfx('diamond');
+    else if (ev.kind === 'chest') audio.sfx('bag');
     else if (ev.kind === 'rockS' || ev.kind === 'rockL') audio.sfx('rock');
     else audio.sfx('gold');
     if (ev.value > 0) this.floats.show(this, px, py - 30, '+' + money(ev.value), COLORS.textGold, ev.value >= 500 ? 64 : 52);
@@ -489,6 +591,15 @@ export class Game extends Phaser.Scene {
     this.tweens.add({ targets: b, alpha: 0, delay: 900, duration: 300, onComplete: () => b.destroy() });
   }
 
+  private onWave(wave: number): void {
+    for (const spr of this.sprites.values()) spr.destroy();
+    this.sprites.clear();
+    this.createEntities();
+    this.showBanner(t('wave', { n: wave }));
+    services.audio.sfx('win', 0.5);
+    this.targetText.setText(t('wave', { n: wave }));
+  }
+
   private onEnd(won: boolean): void {
     if (this.ending) return;
     this.ending = true;
@@ -498,14 +609,42 @@ export class Game extends Phaser.Scene {
     const s = this.session;
     this.time.delayedCall(won ? 700 : 900, () => {
       const save = services.save;
-      const outcome = { levelId: this.levelId, earned: s.earned, target: this.level.target, won, blastCapsLeft: s.blastCaps };
-      const result = commitOutcome(save.data, outcome);
-      save.save();
-      if (won && result) {
-        goTo(this, 'LevelComplete', { ...outcome, ...result });
-      } else {
-        goTo(this, 'GameOver', outcome);
+      const data = save.data;
+      const run = s.stats;
+      const missionOk = !!this.mission && missionDone(this.mission, { ...run, slimes: run.slimes, beetles: run.beetles });
+      mergeStats(data, run, s.earned);
+
+      if (this.mode === 'endless') {
+        const res = commitEndless(data, s.earned, s.wave);
+        const fresh = checkAchievements(data).map((a) => a.id);
+        save.save();
+        goTo(this, 'Results', { kind: 'endless', score: s.earned, waves: s.wave, newBest: res.newBest, walletGain: res.walletGain, best: data.endless.best, bestWaves: data.endless.bestWaves, unlocked: fresh });
+        return;
       }
+      if (this.mode === 'weekly') {
+        const res = commitWeekly(data, this.weekKey, s.earned, this.level.target);
+        const fresh = checkAchievements(data).map((a) => a.id);
+        save.save();
+        goTo(this, 'Results', { kind: 'weekly', score: s.earned, target: this.level.target, won: res.won, newBest: res.newBest, reward: res.reward, best: data.weekly.best, unlocked: fresh });
+        return;
+      }
+      const bossBonus = won && isBoss(this.levelId) ? 1500 * worldOf(this.levelId) : 0;
+      const outcome = {
+        levelId: this.levelId,
+        earned: s.earned,
+        target: this.level.target,
+        won,
+        blastCapsLeft: s.blastCaps,
+        freezeLeft: s.freezeCount,
+        missionDone: missionOk,
+        missionReward: this.mission?.reward ?? 0,
+        extraBonus: bossBonus,
+      };
+      const result = commitOutcome(data, outcome);
+      const fresh = checkAchievements(data).map((a) => a.id);
+      save.save();
+      if (won && result) goTo(this, 'LevelComplete', { ...outcome, ...result, unlocked: fresh, mission: this.mission, missionOk });
+      else goTo(this, 'GameOver', { ...outcome, unlocked: fresh, mission: this.mission, missionOk: false });
     });
   }
 
@@ -627,6 +766,31 @@ export class Game extends Phaser.Scene {
         this.warnPulse = secs;
         this.tweens.add({ targets: this.timerText, scale: { from: 1.35, to: 1 }, duration: 380, ease: 'Quad.Out' });
       }
+    }
+    // mission line
+    if (this.mission) {
+      const m = this.mission;
+      const st = s.stats;
+      const done = !missionIsRestriction(m) && missionDone(m, st);
+      const failed = missionIsRestriction(m) && !missionDone(m, st);
+      const prog = missionIsRestriction(m) ? '' : ` ${Math.min(missionProgress(m, st), missionGoal(m))}/${missionGoal(m)}`;
+      const line = t('missionLabel', { text: missionText(m.kind, m.goal) }) + prog + (done ? '  OK' : failed ? '  X' : '');
+      if (line !== this.lastMission) {
+        this.lastMission = line;
+        this.missionText.setText(line).setColor(done ? COLORS.textGreen : failed ? COLORS.textRed : '#f4dba8');
+        if (done && !this.missionShown) {
+          this.missionShown = true;
+          this.floats.show(this, DESIGN.width / 2, 520, t('missionDone', { n: m.reward }), COLORS.textGreen, 44);
+        }
+      }
+    } else if (this.missionText.text !== '') this.missionText.setText('');
+    if (this.mode === 'endless' && s.wave !== this.lastWave) this.lastWave = s.wave;
+    // freeze button
+    if (s.freezeCount !== this.lastFreeze) {
+      this.lastFreeze = s.freezeCount;
+      this.freezeCount.setText('x' + s.freezeCount);
+      this.freezeBtn.setVisible(s.freezeCount > 0).setActive(s.freezeCount > 0);
+      this.freezeCount.setVisible(s.freezeCount > 0);
     }
     // blast cap button
     if (s.blastCaps !== this.lastCaps) {

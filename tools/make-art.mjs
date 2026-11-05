@@ -232,8 +232,9 @@ put(
   ),
 );
 
-put(
-  'miner.svg',
+function miner(name, o1, o2, o3, h1, h2, belt) {
+  put(
+  name,
   svg(
     150,
     190,
@@ -242,7 +243,7 @@ put(
 <rect x="30" y="170" width="40" height="14" rx="6" fill="#4a3220" ${stroke(4)}/><rect x="78" y="170" width="40" height="14" rx="6" fill="#4a3220" ${stroke(4)}/>
 <path d="M30 80 C22 110 26 140 38 150 L112 150 C124 140 128 110 120 80 C110 66 40 66 30 80 Z" fill="url(#o)" ${stroke(4.5)}/>
 <path d="M44 82 L44 148 M106 82 L106 148" stroke="#7a3a10" stroke-width="5" opacity=".55"/>
-<rect x="30" y="108" width="90" height="12" fill="#ffd23a" opacity=".85"/><rect x="30" y="108" width="90" height="12" fill="none" ${stroke(0)}/>
+<rect x="30" y="108" width="90" height="12" fill="${belt}" opacity=".85"/><rect x="30" y="108" width="90" height="12" fill="none" ${stroke(0)}/>
 <circle cx="75" cy="114" r="7" fill="#ffd23a" ${stroke(3.5)}/>
 <path d="M118 90 C134 96 140 110 134 122" fill="none" stroke="#e9a050" stroke-width="16" stroke-linecap="round"/>
 <path d="M118 90 C134 96 140 110 134 122" fill="none" stroke="${INK}" stroke-width="3" stroke-linecap="round" opacity=".5"/>
@@ -258,9 +259,15 @@ put(
 <rect x="30" y="32" width="90" height="10" rx="5" fill="#d9a020" ${stroke(4)}/>
 <rect x="60" y="8" width="30" height="20" rx="8" fill="#fff3a8" ${stroke(3.5)}/>
 <circle cx="75" cy="18" r="6" fill="#ffd23a"/>`,
-    lg('o', ['#ff9a3c', '#e0661a', '#a8420f']) + lg('h', ['#ffd23a', '#e0a010']),
+    lg('o', [o1, o2, o3]) + lg('h', [h1, h2]),
   ),
 );
+}
+miner('miner.svg', '#ff9a3c', '#e0661a', '#a8420f', '#ffd23a', '#e0a010', '#ffd23a');
+miner('miner_blue.svg', '#5aa8ff', '#2f6fd0', '#1c438f', '#ff6a5a', '#c8402a', '#ffffff');
+miner('miner_green.svg', '#6fd070', '#3a9a45', '#216a2c', '#fff3a8', '#e0c050', '#ffd23a');
+miner('miner_purple.svg', '#b07aff', '#7a45d0', '#4a2a90', '#ffffff', '#c8c8d8', '#ffd23a');
+miner('miner_tycoon.svg', '#2a2a36', '#17171f', '#0c0c12', '#ffd23a', '#c98a22', '#ffd23a');
 
 // ---------------------------------------------------------------- backgrounds
 put(
@@ -403,5 +410,36 @@ put('icon_trophy.svg', iconBase(`<path d="M16 8 H48 V26 C48 38 40 44 32 44 C24 4
 put('icon_infinity.svg', iconBase(`<path d="M32 32 C24 18 8 18 8 32 C8 46 24 46 32 32 C40 18 56 18 56 32 C56 46 40 46 32 32 Z" fill="none" stroke="${INK}" stroke-width="12" stroke-linejoin="round"/><path d="M32 32 C24 18 8 18 8 32 C8 46 24 46 32 32 C40 18 56 18 56 32 C56 46 40 46 32 32 Z" fill="none" stroke="#7fd4ff" stroke-width="6" stroke-linejoin="round"/>`));
 put('icon_calendar.svg', iconBase(`<rect x="8" y="12" width="48" height="46" rx="6" fill="#fff" ${stroke(3.5)}/><rect x="8" y="12" width="48" height="14" rx="6" fill="#e5483a" ${stroke(3.5)}/><rect x="18" y="6" width="6" height="12" rx="3" fill="${INK}"/><rect x="40" y="6" width="6" height="12" rx="3" fill="${INK}"/><path d="M20 38 l8 8 l16 -16" fill="none" stroke="#3aa84a" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>`));
 put('icon_arrowup.svg', iconBase(`<path d="M32 6 L56 32 H42 V58 H22 V32 H8 Z" fill="url(#g)" ${stroke(3.5)}/>`, lg('g', ['#9aff7a', '#3aa84a'])));
+
+
+function portrait(name, body, defs = '') { put(name, svg(160, 160, body, defs)); }
+portrait('char_pebble.svg', `<ellipse cx="80" cy="150" rx="46" ry="7" fill="#000" opacity=".25"/>
+<ellipse cx="80" cy="100" rx="52" ry="48" fill="url(#f)" ${stroke(4.5)}/>
+<ellipse cx="80" cy="116" rx="30" ry="26" fill="#d9b48a" opacity=".6"/>
+<circle cx="34" cy="64" r="14" fill="#8a6a50" ${stroke(4)}/><circle cx="126" cy="64" r="14" fill="#8a6a50" ${stroke(4)}/>
+<ellipse cx="80" cy="76" rx="40" ry="36" fill="url(#f)" ${stroke(4.5)}/>
+<circle cx="64" cy="72" r="7" fill="#fff" ${stroke(2.5)}/><circle cx="96" cy="72" r="7" fill="#fff" ${stroke(2.5)}/>
+<circle cx="66" cy="73" r="3.4" fill="${INK}"/><circle cx="94" cy="73" r="3.4" fill="${INK}"/>
+<ellipse cx="80" cy="90" rx="11" ry="8" fill="#ff9aa8" ${stroke(3)}/>
+<path d="M68 100 Q80 108 92 100" stroke="${INK}" stroke-width="3" fill="none" stroke-linecap="round"/>
+<path d="M44 90 l-20 -4 M44 96 l-20 4 M116 90 l20 -4 M116 96 l20 4" stroke="${INK}" stroke-width="2.5" stroke-linecap="round"/>
+<path d="M50 40 C50 14 110 14 110 40 Z" fill="#ffd23a" ${stroke(4)}/><rect x="46" y="36" width="68" height="9" rx="4" fill="#d9a020" ${stroke(3.5)}/><circle cx="80" cy="26" r="6" fill="#fff3a8" ${stroke(2.5)}/>`, lg('f', ['#a98466', '#7a5a42']));
+portrait('char_baron.svg', `<ellipse cx="80" cy="152" rx="46" ry="6" fill="#000" opacity=".25"/>
+<path d="M30 150 C26 110 40 96 80 96 C120 96 134 110 130 150 Z" fill="#3a2a5c" ${stroke(4.5)}/>
+<path d="M62 100 L80 128 L98 100 Z" fill="#fff" ${stroke(3.5)}/><circle cx="80" cy="124" r="5" fill="#e5483a" ${stroke(2.5)}/>
+<circle cx="80" cy="70" r="36" fill="#f0c8a0" ${stroke(4.5)}/>
+<path d="M44 40 L116 40 L110 10 L50 10 Z" fill="#17171f" ${stroke(4.5)}/><rect x="36" y="38" width="88" height="10" rx="5" fill="#17171f" ${stroke(4.5)}/><rect x="50" y="30" width="60" height="7" fill="#e5483a"/>
+<circle cx="64" cy="68" r="6" fill="#fff" ${stroke(2.5)}/><circle cx="96" cy="68" r="9" fill="#fff" ${stroke(3.5)}/><circle cx="66" cy="69" r="3" fill="${INK}"/><circle cx="96" cy="69" r="4" fill="${INK}"/>
+<path d="M96 77 l8 24" stroke="#d9a020" stroke-width="2.5"/>
+<path d="M48 84 Q64 74 80 82 Q96 74 112 84 Q96 96 80 90 Q64 96 48 84 Z" fill="#3a2a2a" ${stroke(3.5)}/>
+<path d="M66 102 Q80 108 94 102" stroke="${INK}" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+<path d="M58 56 l12 4 M102 56 l-12 4" stroke="${INK}" stroke-width="3.5" stroke-linecap="round"/>`);
+
+put('icon_freeze.svg', iconBase(`<g stroke="${INK}" stroke-width="9" stroke-linecap="round"><path d="M32 6 V58 M9 19 L55 45 M9 45 L55 19"/></g><g stroke="#bfeaff" stroke-width="4.5" stroke-linecap="round"><path d="M32 6 V58 M9 19 L55 45 M9 45 L55 19"/></g><circle cx="32" cy="32" r="8" fill="#fff" ${stroke(3)}/>`));
+put('icon_ticket.svg', iconBase(`<path d="M6 16 H58 V28 a5 5 0 0 0 0 8 V48 H6 V36 a5 5 0 0 0 0 -8 Z" fill="url(#g)" ${stroke(3.5)}/><path d="M22 18 V46" stroke="${INK}" stroke-width="3" stroke-dasharray="4 4"/><path d="M32 26 L44 32 L32 38 Z" fill="${INK}"/>`, lg('g', ['#9aff7a', '#3aa84a'])));
+put('icon_crate.svg', iconBase(`<rect x="8" y="16" width="48" height="40" rx="4" fill="url(#g)" ${stroke(3.5)}/><path d="M8 28 H56 M8 44 H56" stroke="${INK}" stroke-width="3"/><rect x="26" y="16" width="12" height="40" fill="#ffd23a" ${stroke(3)}/><path d="M32 8 L38 16 H26 Z" fill="#ffd23a" ${stroke(2.5)}/><path d="M28 36 c0 -6 8 -6 8 0 c0 3 -4 3 -4 7" stroke="${INK}" stroke-width="3" fill="none" stroke-linecap="round"/>`, lg('g', ['#b9733a', '#7a4a22'])));
+put('icon_shop.svg', iconBase(`<path d="M8 24 L14 8 H50 L56 24 Z" fill="#e5483a" ${stroke(3.5)}/><path d="M8 24 a8 8 0 0 0 16 0 a8 8 0 0 0 16 0 a8 8 0 0 0 16 0" fill="#fff" ${stroke(3.5)}/><rect x="12" y="32" width="40" height="24" fill="#d9b48a" ${stroke(3.5)}/><rect x="26" y="40" width="12" height="16" fill="#7a4a22" ${stroke(3)}/>`));
+put('icon_wrench.svg', iconBase(`<path d="M44 6 a14 14 0 0 0 -14 18 L8 46 a6 6 0 0 0 10 10 L40 34 a14 14 0 0 0 18 -14 l-10 8 l-8 -2 l-2 -8 Z" fill="url(#g)" ${stroke(3.5)}/>`, lg('g', ['#e0e4e8', '#8a929a'])));
+put('icon_book.svg', iconBase(`<path d="M8 10 H30 a4 4 0 0 1 2 1 a4 4 0 0 1 2 -1 H56 V52 H34 a4 4 0 0 0 -2 1 a4 4 0 0 0 -2 -1 H8 Z" fill="#fff6dc" ${stroke(3.5)}/><path d="M32 11 V53" stroke="${INK}" stroke-width="3"/><path d="M14 20 H26 M14 28 H26 M38 20 H50 M38 28 H50" stroke="#a87a4a" stroke-width="3" stroke-linecap="round"/>`));
 
 console.log('art written to', OUT_DIR);
