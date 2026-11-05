@@ -132,3 +132,20 @@ export const TWIST = {
   blackoutStart: 6.5,
   blackoutSec: 3,
 } as const;
+
+/** Short one-time tips, each tied to something the player meets in a level. Returns the first unseen one. */
+export function tipFor(level: LevelDef, seen: readonly string[]): string | null {
+  const has = (t: string) => level.objects.some((o) => o.type === t);
+  const order: Array<[string, boolean]> = [
+    ['keg', has('keg')],
+    ['bag', has('bag')],
+    ['slime', has('slime')],
+    ['beetle', has('beetle')],
+    ['chest', has('chest')],
+    ['rockL', has('rockL') && level.id > 3],
+    ['combo', level.id >= 2],
+    ['mission', level.id >= 3],
+  ];
+  for (const [id, applies] of order) if (applies && !seen.includes(id)) return id;
+  return null;
+}

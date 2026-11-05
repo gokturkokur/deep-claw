@@ -274,3 +274,14 @@ describe('boss twists', () => {
     expect(rush).toBeGreaterThan(calm * 1.3);
   });
 });
+
+describe('tips', () => {
+  it('shows each tip once, tied to what is in the level', async () => {
+    const { tipFor } = await import('../src/systems/Campaign');
+    const lvl: LevelDef = { id: 5, name: 't', target: 1, objects: [o('keg', 100, 500), o('bag', 300, 600)] };
+    expect(tipFor(lvl, [])).toBe('keg');
+    expect(tipFor(lvl, ['keg'])).toBe('bag');
+    expect(tipFor(lvl, ['keg', 'bag', 'combo', 'mission'])).toBeNull();
+    expect(tipFor({ ...lvl, id: 1, objects: [o('goldS', 100, 500)] }, [])).toBeNull();
+  });
+});

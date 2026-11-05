@@ -99,7 +99,7 @@ export type ImageKey = keyof typeof IMAGES;
 
 export const SOUNDS = [
   'click', 'tick', 'launch', 'reel', 'hook', 'gold', 'diamond', 'rock', 'bag', 'explosion',
-  'blast', 'win', 'lose', 'buy', 'deny', 'music_menu', 'music_game',
+  'blast', 'win', 'lose', 'buy', 'deny', 'music_menu', 'music_game', 'music_cave', 'music_lava', 'music_ice', 'music_abyss', 'music_boss',
 ] as const;
 
 export type SoundKey = (typeof SOUNDS)[number];

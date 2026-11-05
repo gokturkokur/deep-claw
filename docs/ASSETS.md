@@ -122,6 +122,11 @@ All sounds were synthesised for this project (no samples, no licences needed). R
 | `buy` | `public/assets/audio/buy.wav` | Shop purchase |
 | `deny` | `public/assets/audio/deny.wav` | Not enough money / cannot do that |
 | `music_menu` | `public/assets/audio/music_menu.wav` | Menu and shop music loop (about 23 s) |
+| `music_cave` | `public/assets/audio/music_cave.wav` | World 2 gameplay loop |
+| `music_lava` | `public/assets/audio/music_lava.wav` | World 3 gameplay loop |
+| `music_ice` | `public/assets/audio/music_ice.wav` | World 4 gameplay loop |
+| `music_abyss` | `public/assets/audio/music_abyss.wav` | World 5 gameplay loop |
+| `music_boss` | `public/assets/audio/music_boss.wav` | Boss levels (every 20th) |
 | `music_game` | `public/assets/audio/music_game.wav` | Gameplay music loop (about 17 s) |
 
 To regenerate the placeholder art or sounds from scratch: `npm run assets:art` and `npm run assets:audio` (this overwrites your replacements, so only do it on purpose).

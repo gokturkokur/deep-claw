@@ -127,6 +127,17 @@ export const tr: Strings = {
     goldRush: { name: 'Altın Ateşi', desc: 'Sonraki bölüm: altınlar x1,5 değerinde.' },
     extraMiner: { name: 'Yardımcı Madenci', desc: 'Sonraki bölüm: yardımcı 7 sn\'de bir en yakın altını alır.' },
   },
+  tips: {
+    keg: 'Barut fıçıları dokunulunca patlar ve çevresini yok eder. Bilerek kullan!',
+    bag: 'Gizemli Torbalarda para, Patlatıcı veya çekme gücü olabilir. Şansını dene.',
+    beetle: 'Yuva böcekleri bir o yana bir bu yana yürür. Zamanlamayı tut. Bazıları elmas taşır!',
+    slime: 'Asit balçığı paranı yer. Dokunma.',
+    chest: 'Hazine sandıkları ağırdır ama 800 öder.',
+    rockL: 'Büyük kayalar yavaştır ve neredeyse değersizdir. Sadece yol açmak için çek.',
+    combo: 'Art arda çekişler SERİ yapar ve daha çok öder. Boş çekiş ve kaya seriyi bozar.',
+    mission: 'Her bölümün bir yan görevi var. Tamamla, bonus para kazan.',
+    freeze: 'Zaman Dondurucu saati ve böcekleri durdurur. F tuşu veya kar tanesi düğmesi.',
+  },
   upgrades: {
     winch: { name: 'Hızlı Vinç', desc: 'Her seviyede ip %10 daha hızlı iner.' },
     muscle: { name: 'Güçlü Kollar', desc: 'Her seviyede %8 daha hızlı çekersin.' },

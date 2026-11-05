@@ -125,6 +125,17 @@ export const en = {
     goldRush: { name: 'Gold Fever', desc: 'Next level: gold nuggets worth x1.5.' },
     extraMiner: { name: 'Extra Miner', desc: 'Next level: a helper grabs the nearest gold every 7 s.' },
   },
+  tips: {
+    keg: 'Powder kegs explode when touched and destroy everything nearby. Use them on purpose!',
+    bag: 'Mystery Bags hide coins, Blast Caps or a pull boost. Worth a gamble.',
+    beetle: 'Burrow beetles walk back and forth. Time your drop. Some carry a diamond!',
+    slime: 'Acid slime eats your money. Leave it alone.',
+    chest: 'Treasure chests are heavy but pay $800.',
+    rockL: 'Big rocks are slow and worth almost nothing. Pull them only to clear a path.',
+    combo: 'Back to back pulls build a COMBO and pay more. Empty pulls and rocks break it.',
+    mission: 'Every level has a side mission. Complete it for bonus coins.',
+    freeze: 'Time Freeze stops the clock and beetles. Press F or the snowflake button.',
+  },
   upgrades: {
     winch: { name: 'Fast Winch', desc: 'The rope drops 10 % faster per level.' },
     muscle: { name: 'Strong Arms', desc: 'Pull 8 % faster per level.' },

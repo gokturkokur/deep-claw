@@ -1,15 +1,15 @@
 import Phaser from 'phaser';
-import { IMAGES } from '../assets/manifest';
+import { IMAGES, type SoundKey } from '../assets/manifest';
 import { COSMETICS, OBJECTS, WEEKLY, type ObjType } from '../config/economy';
 import { CLAW, DESIGN, FX, LEVEL_RULES, WORLD } from '../config/game';
-import { CLAW_TYPES } from '../config/economy';
+import { CLAW_TYPES, COMBO } from '../config/economy';
 import { LEVELS, type LevelDef } from '../data/levels';
 import { storyBeatFor } from '../data/story';
-import { missionText, money, t } from '../i18n';
+import { missionText, money, t, tipText } from '../i18n';
 import { services } from '../services';
 import { Session, type SessionEvent } from '../systems/Session';
 import { estimateLevel } from '../systems/Balance';
-import { TWIST, twistFor, isBoss, missionDone, missionFor, missionGoal, missionIsRestriction, missionProgress, themeOf, worldOf, type Mission, type ThemeId } from '../systems/Campaign';
+import { TWIST, twistFor, isBoss, missionDone, missionFor, missionGoal, missionIsRestriction, missionProgress, themeOf, tipFor, worldOf, type Mission, type ThemeId } from '../systems/Campaign';
 import { weekId, weeklyLevel } from '../systems/Fields';
 import { checkAchievements, commitEndless, commitOutcome, commitWeekly, mergeStats } from '../systems/Progress';
 import { activeModifiers } from '../systems/Shop';
@@ -33,6 +33,9 @@ export class Game extends Phaser.Scene {
   private lastFreeze = -1;
   private lastWave = 0;
   private lastMission = '';
+  private comboText!: Phaser.GameObjects.Text;
+  private lastCombo = 0;
+  private tip?: Phaser.GameObjects.Container;
   private dark!: Phaser.GameObjects.Rectangle;
   private wasRushing = false;
   private twist = { rush: false, blackout: false };
@@ -92,6 +95,7 @@ export class Game extends Phaser.Scene {
     this.missionShown = false;
     this.lastFreeze = -1;
     this.lastWave = 0;
+    this.lastCombo = 0;
     this.lastMission = '';
     this.sprites = new Map();
     this.boostIcons = [];
@@ -138,7 +142,8 @@ export class Game extends Phaser.Scene {
     this.wasRushing = false;
     this.theme = this.mode === 'campaign' ? themeOf(this.levelId) : this.mode === 'weekly' ? 'ice' : 'abyss';
 
-    audio.playMusic('music_game');
+    const trackFor: Record<ThemeId, SoundKey> = { mine: 'music_game', cave: 'music_cave', lava: 'music_lava', ice: 'music_ice', abyss: 'music_abyss' };
+    audio.playMusic(this.mode === 'campaign' && isBoss(this.levelId) ? 'music_boss' : trackFor[this.theme]);
     this.backdrop = createBackdrop(this, this.layout, { theme: this.theme });
     this.createRig();
     this.createEntities();
@@ -178,8 +183,29 @@ export class Game extends Phaser.Scene {
         this.paused = true;
         this.scene.pause();
         this.scene.launch('Story', { beat: beat.id, from: 'Game' });
-      } else if (isBoss(this.levelId)) this.showBanner(t('boss'));
+      } else {
+        if (isBoss(this.levelId)) this.showBanner(t('boss'));
+        const tip = tipFor(this.level, save.data.tipsSeen) ?? (save.data.inventory.freeze > 0 && !save.data.tipsSeen.includes('freeze') ? 'freeze' : null);
+        if (tip && !this.skipStory()) this.showTip(tip);
+      }
     } else if (this.mode === 'endless') this.showBanner(t('wave', { n: 1 }));
+  }
+
+  /** One-time tip from Pebble: appears at the start of a level, fades after a few seconds or when the claw launches. */
+  private showTip(id: string): void {
+    const save = services.save;
+    save.data.tipsSeen.push(id);
+    save.save();
+    const cx = DESIGN.width / 2;
+    const y = 600;
+    const g = this.add.container(0, 0).setDepth(D.float + 5).setAlpha(0);
+    const bg = this.add.nineslice(cx, y, 'panel', undefined, 640, 190, 56, 56, 56, 56);
+    const face = this.add.image(cx - 250, y, 'char_pebble').setDisplaySize(110, 110);
+    const text = txt(this, cx - 170, y, tipText(id), 28, { originX: 0, align: 'left', wrap: 410, strokeW: 4, shadow: false });
+    g.add([bg, face, text]);
+    this.tweens.add({ targets: g, alpha: 1, duration: 300, delay: 600 });
+    this.tweens.add({ targets: g, alpha: 0, delay: 6500, duration: 500, onComplete: () => g.destroy() });
+    this.tip = g;
   }
 
   /** Debug / test switch: ?nostory=1 skips dialogue. */
@@ -322,6 +348,7 @@ export class Game extends Phaser.Scene {
       bx += 58;
     }
 
+    this.comboText = txt(this, DESIGN.width / 2 + 40, top + 186, '', 38, { color: COLORS.textGreen, strokeW: 7 }).setDepth(D.hud + 1).setVisible(false);
     this.missionText = txt(this, E.left + 24, top + 352, '', 26, { originX: 0, color: '#f4dba8', strokeW: 5 }).setDepth(D.hud + 1);
     this.freezeBtn = new Button(this, E.right - 70, top + 380, {
       round: true,
@@ -361,6 +388,7 @@ export class Game extends Phaser.Scene {
     this.blastBtn.setPosition(E.right - 70, top + 262);
     this.blastCount.setPosition(E.right - 70 + 34, top + 262 + 34);
     this.missionText.setPosition(E.left + 24, top + 352);
+    this.comboText.setPosition(DESIGN.width / 2 + 40, top + 186);
     this.freezeBtn.setPosition(E.right - 70, top + 380);
     this.freezeCount.setPosition(E.right - 70 + 34, top + 380 + 34);
     let bx = E.left + 24 + 26;
@@ -404,6 +432,11 @@ export class Game extends Phaser.Scene {
   private tryLaunch(): void {
     if (this.paused || this.ending) return;
     if (this.session.launch()) {
+      if (this.tip) {
+        const tp = this.tip;
+        this.tip = undefined;
+        this.tweens.add({ targets: tp, alpha: 0, duration: 250, onComplete: () => tp.destroy() });
+      }
       const save = services.save;
       if (!save.data.hintShown) {
         save.data.hintShown = true;
@@ -791,6 +824,15 @@ export class Game extends Phaser.Scene {
         this.warnPulse = secs;
         this.tweens.add({ targets: this.timerText, scale: { from: 1.35, to: 1 }, duration: 380, ease: 'Quad.Out' });
       }
+    }
+    // combo meter
+    if (s.combo !== this.lastCombo) {
+      this.lastCombo = s.combo;
+      if (s.combo >= 2) {
+        const m = Math.min(COMBO.max, 1 + COMBO.step * (s.combo - 1));
+        this.comboText.setText(t('combo', { m: m.toFixed(1) })).setVisible(true);
+        this.tweens.add({ targets: this.comboText, scale: { from: 1.4, to: 1 }, duration: 220, ease: 'Back.Out' });
+      } else this.comboText.setVisible(false);
     }
     // mission line
     if (this.mission) {

@@ -68,6 +68,7 @@ export class LevelSelect extends Phaser.Scene {
             .setDisplaySize(IMAGES.star_full.w * 0.38, IMAGES.star_full.h * 0.38);
           cell.add(star);
         }
+        if (save.data.levels[String(lvl.id)]?.mission) cell.add(this.add.image(CELL_W / 2 - 22, -CELL_H / 2 + 22, 'icon_coin').setDisplaySize(30, 30));
         const best = save.best(lvl.id);
         cell.add(txt(this, 0, 62, best > 0 ? money(best) : money(lvl.target), 24, { color: best > 0 ? COLORS.textGreen : '#f4dba8', strokeW: 4 }));
       } else {

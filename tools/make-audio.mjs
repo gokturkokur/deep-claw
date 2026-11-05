@@ -103,4 +103,10 @@ function music(name, bpm, bars, chords, arpPattern, lead, rootShift = 0, drive =
 // A minor / pentatonic-ish mine feel
 music('music_menu.wav', 84, 8, [[57, 60, 64], [53, 57, 60], [48, 52, 55], [55, 59, 62]], [0, 1, 2, 1, 0, 2, 1, 2], [76, null, 72, null, 69, null, 71, null], 0, 0);
 music('music_game.wav', 116, 8, [[57, 60, 64], [60, 64, 67], [53, 57, 60], [55, 59, 62]], [0, 2, 1, 2, 0, 1, 2, 1], [81, 79, 76, 79, 77, 76, 72, 74], 0, 1);
+// one track per world + the boss theme
+music('music_cave.wav', 96, 6, [[52, 55, 59], [48, 52, 55], [50, 53, 57], [47, 52, 55]], [0, 1, 2, 1, 2, 1, 0, 2], [79, null, 76, null, 74, null, 71, null], 0, 0);
+music('music_lava.wav', 132, 6, [[45, 48, 52], [47, 50, 54], [48, 52, 55], [50, 53, 57]], [0, 2, 1, 2, 0, 1, 2, 1], [81, 83, 81, 79, 84, 83, 81, 79], 0, 1);
+music('music_ice.wav', 78, 6, [[60, 64, 67], [55, 59, 62], [57, 60, 64], [53, 57, 60]], [0, 1, 2, 2, 1, 0, 2, 1], [88, null, 86, null, 84, null, 83, null], 0, 0);
+music('music_abyss.wav', 70, 6, [[40, 43, 47], [38, 41, 45], [36, 40, 43], [41, 44, 48]], [0, 2, 1, 2, 0, 2, 1, 0], [71, null, null, 69, null, null, 67, null], 0, 0);
+music('music_boss.wav', 150, 6, [[45, 48, 52], [44, 47, 51], [43, 46, 50], [44, 47, 51]], [0, 1, 2, 1, 0, 2, 1, 2], [84, 81, 84, 88, 86, 84, 81, 79], 0, 1);
 console.log('audio written to', OUT);

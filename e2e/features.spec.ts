@@ -28,6 +28,18 @@ test.describe('new features', () => {
     expect(errors).toEqual([]);
   });
 
+  test('a one-time tip appears for something new (powder keg) and is remembered', async ({ page }) => {
+    await open(page, '&norender=1');
+    await page.evaluate(() => {
+      const d = (window as any).__dc;
+      d.services.save.data.storySeen = ['w1_intro'];
+      d.game.scene.getScene('MainMenu').scene.start('Game', { levelId: 5 });
+    });
+    await waitScene(page, 'Game');
+    await page.waitForTimeout(300);
+    expect((await saveData(page)).tipsSeen).toContain('keg');
+  });
+
   test('story: Skip ends the dialogue at once', async ({ page }) => {
     await open(page, '&norender=1');
     await clickButton(page, 'Play');

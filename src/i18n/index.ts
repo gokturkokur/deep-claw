@@ -63,3 +63,7 @@ export function worldName(world: number): string {
 export function money(n: number): string {
   return '$' + Math.round(n).toLocaleString(current === 'tr' ? 'tr-TR' : 'en-US');
 }
+
+export function tipText(id: string): string {
+  return (TABLES[current].tips as Record<string, string>)[id] ?? '';
+}

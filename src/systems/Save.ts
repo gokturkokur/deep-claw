@@ -44,6 +44,7 @@ export interface SaveData {
   inventory: { blastCaps: number; freeze: number; skip: number };
   cosmetics: { owned: string[]; equipped: Record<CosmeticSlot, string> };
   storySeen: string[];
+  tipsSeen: string[];
   /** Boosts bought for the next level. */
   boosts: Record<BoostId, boolean>;
   shop: ShopState | null;
@@ -70,6 +71,7 @@ export function defaultSave(): SaveData {
     inventory: { blastCaps: 0, freeze: 0, skip: 0 },
     cosmetics: { owned: COSMETICS.filter((c) => c.price === 0).map((c) => c.id), equipped: { ...DEFAULT_COSMETICS } },
     storySeen: [],
+    tipsSeen: [],
     boosts: { turbo: false, lantern: false, gemLens: false, crusher: false, hourglass: false, goldRush: false, extraMiner: false },
     shop: null,
     stats: defaultStats(),
@@ -152,6 +154,7 @@ export function sanitize(raw: unknown): SaveData {
       }
     }
   }
+  if (Array.isArray(r.tipsSeen)) d.tipsSeen = r.tipsSeen.filter((x): x is string => typeof x === 'string').slice(0, 100);
   if (Array.isArray(r.storySeen)) d.storySeen = r.storySeen.filter((x): x is string => typeof x === 'string').slice(0, 100);
   if (isObj(r.boosts)) for (const id of BOOST_IDS) d.boosts[id] = bool(r.boosts[id], false);
 
