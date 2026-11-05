@@ -19,7 +19,7 @@ mkdirSync(OUT, { recursive: true });
 for (const [name, w, h] of SIZES) {
   test(`layout ${name}: no bars, HUD inside the screen, nothing overlaps`, async ({ page }) => {
     await page.setViewportSize({ width: w, height: h });
-    const errors = await open(page, '&nostory=1');
+    const errors = await open(page, '&nostory=1&notut=1');
     await page.waitForTimeout(800);
     await page.screenshot({ path: `${OUT}/${name}-menu.png` });
 
@@ -85,7 +85,7 @@ for (const [name, w, h] of SIZES) {
 
 test('screens gallery (shop, level select, complete, game over, pause, settings) at 390x844', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
-  const errors = await open(page, '&nostory=1');
+  const errors = await open(page, '&nostory=1&notut=1');
   const goto = async (key: string, data?: object) => {
     await page.evaluate(([k, d]) => {
       const g = (window as any).__game;

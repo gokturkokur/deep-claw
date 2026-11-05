@@ -44,6 +44,10 @@
 - Ana ekran canlı: Dusty (seçili kıyafetiyle) ve Çakıl yerde durur, nefes alır, göz kırpar, konuşma balonlarıyla konuşur (hediye ve çark hatırlatması dahil); dokununca tepki verirler.
 - Ses: hâlâ sentezlenmiş, çünkü lisanssız gerçek kayıt kullanamıyorum. Ancak ses motoru geliştirildi (katmanlı tonlar, oda yankısı, yumuşak doygunluk, müzikte pad, hi-hat ve snare). Gerçek kayıtların için `docs/ASSETS.md`: aynı adla `.wav` koymak yeterli.
 
+## Eğitim kartları
+
+Bir menü düğmesi ilk kez açıldığında ana ekranda küçük bir kart çıkar ve ne işe yaradığını anlatır (Dükkân, Ödüller, Günlük hediye, Atölye, Çark, Sonsuz, Haftalık). Aynı ziyarette sadece bir kart gösterilir, kapatınca ilgili düğme birkaç kez büyüyüp küçülür. Dükkâna ve bölüm seçimine ilk girişte de birer kart vardır. Ayarlar'daki "İpuçlarını tekrar göster" hepsini sıfırlar. Kartlar `src/data/tutorials.ts` içinde (İngilizce ve Türkçe), testler için `&notut=1` ile kapatılır.
+
 ## Ekonomi incelemesi
 
 `npx vite-node tools/economy-report.ts` bir bölümü "%30 payla" geçen oyuncunun toplam gelirini hesaplar: 100 bölümde yaklaşık 525.000. Önceki hâlde kalıcı harcamalar sadece 140.000 idi, yani 40. bölümden sonra para birikiyordu. Düzeltmeler:
@@ -60,8 +64,8 @@ Diğer fiyatlar: Patlatıcı 700 (bölümle 1200'e kadar artar), Paket 1800, Zam
 
 ## Test sonuçları
 
-- Birim testleri (Vitest): **307 test geçti** (kanca, çarpışma, oturum, seri, dondurma, yükseltmeler, dükkân, sandık, kozmetik, günlük hediye, başarımlar, kayıt, hikaye, görevler, 100 bölümün geçerliliği ve dengesi).
-- Tarayıcı testleri (Playwright): **29 test geçti** (temel akış, hikaye diyaloğu, sonsuz mod, haftalık, atölye alışverişi, günlük hediye, başarımlar, dünya sayfaları, dondurma, sandık, 5 ekran boyutunda düzen kontrolü, ekran galerisi).
+- Birim testleri (Vitest): **308 test geçti** (kanca, çarpışma, oturum, seri, dondurma, yükseltmeler, dükkân, sandık, kozmetik, günlük hediye, başarımlar, kayıt, hikaye, görevler, 100 bölümün geçerliliği ve dengesi).
+- Tarayıcı testleri (Playwright): **30 test geçti** (temel akış, hikaye diyaloğu, sonsuz mod, haftalık, atölye alışverişi, günlük hediye, başarımlar, dünya sayfaları, dondurma, sandık, 5 ekran boyutunda düzen kontrolü, ekran galerisi).
 - Ekran görüntüleri: `docs/screenshots/`.
 
 ## Bilinen eksikler ve dürüst notlar

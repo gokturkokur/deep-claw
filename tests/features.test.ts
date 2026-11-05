@@ -377,3 +377,19 @@ describe('menu unlocks', () => {
     expect(MENU_UNLOCK.endless).toBeGreaterThan(MENU_UNLOCK.workshop);
   });
 });
+
+describe('tutorial cards', () => {
+  it('every menu feature has a card in both languages, in unlock order', async () => {
+    const { TUTORIALS, UNLOCK_TUTORIALS, tutorialById } = await import('../src/data/tutorials');
+    const { MENU_UNLOCK } = await import('../src/systems/Campaign');
+    for (const t of TUTORIALS) {
+      expect(t.en.title.length).toBeGreaterThan(3);
+      expect(t.tr.text.length).toBeGreaterThan(20);
+    }
+    for (const u of UNLOCK_TUTORIALS) expect(tutorialById(u.id)).toBeDefined();
+    const features = UNLOCK_TUTORIALS.map((u) => u.feature).filter((f) => f !== 'gift');
+    expect(features.sort()).toEqual(Object.keys(MENU_UNLOCK).sort());
+    const levels = UNLOCK_TUTORIALS.filter((u) => u.feature !== 'gift').map((u) => MENU_UNLOCK[u.feature as keyof typeof MENU_UNLOCK]);
+    expect([...levels].sort((a, b) => a - b)).toEqual(levels);
+  });
+});

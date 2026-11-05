@@ -9,6 +9,7 @@ import { randomSeed } from '../systems/Rng';
 import { buy, dealOffers, reroll, rerollCost, supplyOffers, type CrateReward, type ShopOffer } from '../systems/Shop';
 import { createBackdrop, type Backdrop } from '../ui/Backdrop';
 import { Button, FloatingTexts, panel } from '../ui/components';
+import { showTutorial } from '../ui/Tutorial';
 import { COLORS, Layout, fadeIn, goTo, txt } from '../ui/theme';
 
 type Tab = 'supplies' | 'deals';
@@ -94,6 +95,7 @@ export class Shop extends Phaser.Scene {
       next.setY(layout.bottom - 100);
     });
     fadeIn(this);
+    this.time.delayedCall(700, () => showTutorial(this, layout, 'scene_shop'));
   }
 
   private setTab(tab: Tab): void {

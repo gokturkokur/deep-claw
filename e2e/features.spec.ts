@@ -40,6 +40,28 @@ test.describe('new features', () => {
     expect((await saveData(page)).tipsSeen).toContain('keg');
   });
 
+  test('tutorial cards: a new menu button explains itself once', async ({ page }) => {
+    await open(page, '&norender=1&nostory=1');
+    await page.evaluate(() => {
+      (window as any).__dc.services.save.data.unlockedLevel = 3;
+      (window as any).__game.scene.getScene('MainMenu').scene.restart();
+    });
+    await waitScene(page, 'MainMenu');
+    await page.waitForTimeout(1500);
+    await clickButton(page, 'Got it!');
+    await page.waitForTimeout(500);
+    expect((await saveData(page)).tipsSeen).toContain('tut_unlock_shop');
+    // the next visit explains the next feature, never the same card twice
+    await page.evaluate(() => (window as any).__game.scene.getScene('MainMenu').scene.restart());
+    await waitScene(page, 'MainMenu');
+    await page.waitForTimeout(1500);
+    await clickButton(page, 'Got it!');
+    await page.waitForTimeout(500);
+    const seen = (await saveData(page)).tipsSeen as string[];
+    expect(seen).toContain('tut_unlock_awards');
+    expect(seen.filter((x) => x === 'tut_unlock_shop').length).toBe(1);
+  });
+
   test('story: Skip ends the dialogue at once', async ({ page }) => {
     await open(page, '&norender=1');
     await clickButton(page, 'Play');

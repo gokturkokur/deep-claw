@@ -3,6 +3,7 @@ import { DESIGN } from '../config/game';
 import { getLang, setLang, t } from '../i18n';
 import { services } from '../services';
 import { Button, Slider, createConfirm, dim, panel } from '../ui/components';
+import { resetTutorials } from '../ui/Tutorial';
 import { COLORS, Layout, txt } from '../ui/theme';
 import type { Lang } from '../systems/Save';
 
@@ -32,18 +33,18 @@ export class Settings extends Phaser.Scene {
     const cy = DESIGN.height / 2;
 
     dim(this, layout, 0.7);
-    panel(this, cx, cy, 640, 980);
-    txt(this, cx, cy - 410, t('settings').toUpperCase(), 64, { color: COLORS.textGold, strokeW: 9 });
+    panel(this, cx, cy, 640, 1060);
+    txt(this, cx, cy - 450, t('settings').toUpperCase(), 64, { color: COLORS.textGold, strokeW: 9 });
 
     // sliders
     const sliderW = 420;
-    txt(this, cx, cy - 320, t('music'), 38);
-    new Slider(this, cx, cy - 265, sliderW, save.data.settings.music, (v) => audio.setMusicVolume(v), () => save.save());
-    txt(this, cx, cy - 180, t('sfx'), 38);
+    txt(this, cx, cy - 360, t('music'), 38);
+    new Slider(this, cx, cy - 305, sliderW, save.data.settings.music, (v) => audio.setMusicVolume(v), () => save.save());
+    txt(this, cx, cy - 220, t('sfx'), 38);
     new Slider(
       this,
       cx,
-      cy - 125,
+      cy - 165,
       sliderW,
       save.data.settings.sfx,
       (v) => audio.setSfxVolume(v),
@@ -54,8 +55,8 @@ export class Settings extends Phaser.Scene {
     );
 
     // vibration
-    txt(this, cx - 130, cy - 20, t('vibration'), 38);
-    const vib = new Button(this, cx + 170, cy - 20, {
+    txt(this, cx - 130, cy - 60, t('vibration'), 38);
+    const vib = new Button(this, cx + 170, cy - 60, {
       w: 190,
       h: 96,
       label: save.data.settings.vibration ? t('on') : t('off'),
@@ -71,9 +72,9 @@ export class Settings extends Phaser.Scene {
     });
 
     // language
-    txt(this, cx, cy + 80, t('language'), 38);
+    txt(this, cx, cy + 40, t('language'), 38);
     const mk = (lang: Lang, label: string, x: number) => {
-      const b = new Button(this, x, cy + 160, {
+      const b = new Button(this, x, cy + 120, {
         w: 250,
         h: 96,
         label,
@@ -91,9 +92,22 @@ export class Settings extends Phaser.Scene {
     mk('en', 'English', cx - 140);
     mk('tr', 'Türkçe', cx + 140);
 
+    // tutorials again
+    const hintsBtn = new Button(this, cx, cy + 235, {
+      w: 480,
+      h: 96,
+      label: t('showHints'),
+      fontSize: 36,
+      tint: COLORS.blue,
+      onClick: () => {
+        resetTutorials();
+        hintsBtn.setLabel(t('hintsReset'));
+      },
+    });
+
     // reset
     const confirm = createConfirm(this, layout);
-    new Button(this, cx, cy + 290, {
+    new Button(this, cx, cy + 345, {
       w: 480,
       h: 96,
       label: t('resetProgress'),
@@ -106,7 +120,7 @@ export class Settings extends Phaser.Scene {
         }),
     });
 
-    new Button(this, cx, cy + 400, {
+    new Button(this, cx, cy + 450, {
       w: 320,
       h: 96,
       label: t('close'),

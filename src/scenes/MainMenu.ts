@@ -3,6 +3,8 @@ import { DESIGN } from '../config/game';
 import { itemText, money, quips, rankName, t } from '../i18n';
 import { MENU_UNLOCK, rankIndex, totalStars, type MenuFeature } from '../systems/Campaign';
 import { COSMETICS } from '../config/economy';
+import { UNLOCK_TUTORIALS } from '../data/tutorials';
+import { showTutorial } from '../ui/Tutorial';
 import { LEVELS } from '../data/levels';
 import { canClaimDaily, claimDaily, dayKey, nextStreak, type DailyResult } from '../systems/Daily';
 import { services } from '../services';
@@ -18,6 +20,7 @@ export class MainMenu extends Phaser.Scene {
   private pebbleBase = 1;
   private bubble!: Phaser.GameObjects.Container;
   private quipIndex = 0;
+  private dockButtons: Record<string, Phaser.GameObjects.Container> = {};
 
   constructor() {
     super('MainMenu');
@@ -141,6 +144,7 @@ export class MainMenu extends Phaser.Scene {
         },
         silent: true,
       }).setDepth(20).setName(name);
+      this.dockButtons[name] = b;
       txt(this, x, dockY + 68, locked ? String(need) : label, 22, { strokeW: 4, wrap: 112, color: locked ? '#b8b8b8' : undefined }).setDepth(20);
       if (!locked && name === 'wheel' && save.data.spins > 0) {
         this.tweens.add({ targets: b, scale: { from: 1, to: 1.08 }, duration: 600, yoyo: true, repeat: -1 });
@@ -196,6 +200,20 @@ export class MainMenu extends Phaser.Scene {
 
     this.events.on('resume', () => services.audio.playMusic('music_menu'));
     fadeIn(this);
+
+    // one tutorial card per visit, for the first unlocked feature that was not explained yet
+    for (const { id, feature } of UNLOCK_TUTORIALS) {
+      const open = feature === 'gift' ? save.data.unlockedLevel >= 2 : save.data.unlockedLevel >= MENU_UNLOCK[feature];
+      if (!open) continue;
+      if (save.data.tipsSeen.includes('tut_' + id)) continue;
+      this.time.delayedCall(900, () =>
+        showTutorial(this, layout, id, () => {
+          const target = feature === 'gift' ? this.children.getByName('gift') : this.dockButtons[feature];
+          if (target) this.tweens.add({ targets: target, scale: { from: 1, to: 1.35 }, duration: 260, yoyo: true, repeat: 3 });
+        }),
+      );
+      break;
+    }
   }
 
   /** A short speech bubble above Dusty or Pebble. */

@@ -7,6 +7,7 @@ import { LEVELS_PER_WORLD, WORLD_COUNT, themeOf, worldOf } from '../systems/Camp
 import { services } from '../services';
 import { createBackdrop, type Backdrop } from '../ui/Backdrop';
 import { Button } from '../ui/components';
+import { showTutorial } from '../ui/Tutorial';
 import { COLORS, Layout, fadeIn, goTo, txt } from '../ui/theme';
 
 const COLS = 4;
@@ -101,6 +102,7 @@ export class LevelSelect extends Phaser.Scene {
     }).setDepth(20);
     layout.onChange(() => back.setY(layout.bottom - 90));
     fadeIn(this);
+    this.time.delayedCall(600, () => showTutorial(this, layout, 'scene_levels'));
   }
 
   update(time: number, delta: number): void {
