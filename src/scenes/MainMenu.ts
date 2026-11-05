@@ -1,7 +1,8 @@
 import Phaser from 'phaser';
 import { DESIGN } from '../config/game';
-import { itemText, money, rankName, t } from '../i18n';
-import { rankIndex, totalStars } from '../systems/Campaign';
+import { itemText, money, quips, rankName, t } from '../i18n';
+import { MENU_UNLOCK, rankIndex, totalStars, type MenuFeature } from '../systems/Campaign';
+import { COSMETICS } from '../config/economy';
 import { LEVELS } from '../data/levels';
 import { canClaimDaily, claimDaily, dayKey, nextStreak, type DailyResult } from '../systems/Daily';
 import { services } from '../services';
@@ -11,6 +12,12 @@ import { COLORS, Layout, fadeIn, goTo, txt } from '../ui/theme';
 
 export class MainMenu extends Phaser.Scene {
   private backdrop!: Backdrop;
+  private dusty!: Phaser.GameObjects.Image;
+  private pebble!: Phaser.GameObjects.Image;
+  private dustyBase = 1;
+  private pebbleBase = 1;
+  private bubble!: Phaser.GameObjects.Container;
+  private quipIndex = 0;
 
   constructor() {
     super('MainMenu');
@@ -84,21 +91,58 @@ export class MainMenu extends Phaser.Scene {
       onClick: () => goTo(this, 'LevelSelect'),
     }).setDepth(20);
 
+    // living menu: Dusty and Pebble stand on the ground, breathe, blink and chat
+    const outfit = COSMETICS.find((c) => c.id === save.data.cosmetics.equipped.outfit)?.texture ?? 'miner';
+    const ground = 322;
+    this.dusty = this.add.image(120, ground + 4, outfit).setOrigin(0.5, 1).setDisplaySize(118, 150).setDepth(18).setInteractive({ useHandCursor: true });
+    this.dustyBase = this.dusty.scaleY;
+    this.tweens.add({ targets: this.dusty, scaleY: this.dustyBase * 1.03, duration: 900, yoyo: true, repeat: -1, ease: 'Sine.InOut' });
+    this.pebble = this.add.image(535, ground + 10, 'char_pebble').setOrigin(0.5, 1).setDisplaySize(110, 110).setDepth(18).setFlipX(true).setInteractive({ useHandCursor: true });
+    this.pebbleBase = this.pebble.scaleY;
+    this.tweens.add({ targets: this.pebble, y: ground - 4, duration: 1100, yoyo: true, repeat: -1, ease: 'Sine.InOut' });
+    this.time.addEvent({ delay: 3200, loop: true, callback: () => this.tweens.add({ targets: this.pebble, scaleY: this.pebbleBase * 0.15, duration: 70, yoyo: true }) });
+    this.dusty.on('pointerdown', () => {
+      this.tweens.add({ targets: this.dusty, y: ground - 24, duration: 160, yoyo: true, ease: 'Quad.Out' });
+      this.sayRandom();
+    });
+    this.pebble.on('pointerdown', () => {
+      this.tweens.add({ targets: this.pebble, angle: { from: -10, to: 10 }, duration: 90, yoyo: true, repeat: 2, onComplete: () => this.pebble.setAngle(0) });
+      this.sayRandom();
+    });
+    this.bubble = this.add.container(0, 0).setDepth(30).setAlpha(0);
+    this.time.delayedCall(1200, () => this.sayRandom());
+    this.time.addEvent({ delay: 7000, loop: true, callback: () => this.sayRandom() });
+
     // bottom dock: one round icon per mode, label underneath
     const dockY = 1010;
     const dock: Array<[string, string, string, number, string, object | undefined]> = [
       ['shop', 'icon_shop', t('shopBtn'), COLORS.gold, 'Shop', undefined],
+      ['awards', 'icon_trophy', t('achievements'), COLORS.green, 'Achievements', undefined],
       ['workshop', 'icon_wrench', t('workshop'), COLORS.blue, 'Workshop', { back: 'MainMenu' }],
+      ['wheel', 'icon_wheel', t('wheelShort'), COLORS.red, 'Wheel', undefined],
       ['endless', 'icon_infinity', t('endless'), 0x7a5ad8, 'Game', { mode: 'endless' }],
       ['weekly', 'icon_calendar', t('weekly'), 0x2aa8b8, 'Game', { mode: 'weekly' }],
-      ['awards', 'icon_trophy', t('achievements'), COLORS.green, 'Achievements', undefined],
-      ['wheel', 'icon_wheel', t('wheelShort'), COLORS.red, 'Wheel', undefined],
     ];
     dock.forEach(([name, icon, label, tint, scene, data], i) => {
       const x = cx + (i - 2.5) * 116;
-      const b = new Button(this, x, dockY, { round: true, w: 100, h: 100, icon: icon as never, tint, onClick: () => goTo(this, scene, data) }).setDepth(20).setName(name);
-      txt(this, x, dockY + 68, label, 22, { strokeW: 4, wrap: 112 }).setDepth(20);
-      if (name === 'wheel' && save.data.spins > 0) {
+      const need = MENU_UNLOCK[name as MenuFeature];
+      const locked = save.data.unlockedLevel < need;
+      const b = new Button(this, x, dockY, {
+        round: true,
+        w: 100,
+        h: 100,
+        icon: (locked ? 'icon_lock' : icon) as never,
+        tint: locked ? COLORS.grey : tint,
+        onClick: () => {
+          if (!locked) return goTo(this, scene, data);
+          audio.sfx('deny');
+          this.tweens.add({ targets: b, x: x + 8, duration: 50, yoyo: true, repeat: 2, onComplete: () => b.setX(x) });
+          this.say(t('unlocksAt', { n: need }), 'dusty');
+        },
+        silent: true,
+      }).setDepth(20).setName(name);
+      txt(this, x, dockY + 68, locked ? String(need) : label, 22, { strokeW: 4, wrap: 112, color: locked ? '#b8b8b8' : undefined }).setDepth(20);
+      if (!locked && name === 'wheel' && save.data.spins > 0) {
         this.tweens.add({ targets: b, scale: { from: 1, to: 1.08 }, duration: 600, yoyo: true, repeat: -1 });
         this.add.circle(x + 38, dockY - 38, 18, 0xe5483a).setStrokeStyle(4, 0x2b1608).setDepth(26);
         txt(this, x + 38, dockY - 38, String(save.data.spins), 24, { strokeW: 4 }).setDepth(27);
@@ -152,6 +196,32 @@ export class MainMenu extends Phaser.Scene {
 
     this.events.on('resume', () => services.audio.playMusic('music_menu'));
     fadeIn(this);
+  }
+
+  /** A short speech bubble above Dusty or Pebble. */
+  private say(text: string, who: 'dusty' | 'pebble' = 'pebble'): void {
+    const src = who === 'dusty' ? this.dusty : this.pebble;
+    const x = Phaser.Math.Clamp(src.x, 190, DESIGN.width - 190);
+    const y = src.y - src.displayHeight - 40;
+    this.bubble.removeAll(true);
+    const label = txt(this, 0, 0, text, 26, { wrap: 300, strokeW: 4, shadow: false });
+    const w = Math.max(160, label.width + 44);
+    const h = label.height + 40;
+    const bg = this.add.nineslice(0, 0, 'panel', undefined, w, h, 40, 40, 40, 40);
+    this.bubble.add([bg, label]);
+    this.bubble.setPosition(x, y).setAlpha(0);
+    this.tweens.killTweensOf(this.bubble);
+    this.tweens.add({ targets: this.bubble, alpha: 1, duration: 200 });
+    this.tweens.add({ targets: this.bubble, alpha: 0, delay: 3200, duration: 300 });
+  }
+
+  private sayRandom(): void {
+    const save = services.save.data;
+    const list: string[] = [...quips()];
+    if (canClaimDaily(save, dayKey(new Date()))) list.push(t('quipGift'), t('quipGift'));
+    if (save.spins > 0) list.push(t('quipWheel'));
+    this.quipIndex = (this.quipIndex + 1 + Math.floor(Math.random() * 3)) % list.length;
+    this.say(list[this.quipIndex], Math.random() < 0.5 ? 'dusty' : 'pebble');
   }
 
   private openGift(layout: Layout, today: string): void {

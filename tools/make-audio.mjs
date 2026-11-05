@@ -10,7 +10,67 @@ mkdirSync(OUT, { recursive: true });
 const SR = 22050;
 const TAU = Math.PI * 2;
 
-const wav = (name, data) => {
+// ---- post processing: warmth (soft clip), a small room reverb and a gentle low-pass
+function comb(x, delay, fb) {
+  const d = Math.floor(delay * SR);
+  const y = new Float32Array(x.length);
+  for (let i = 0; i < x.length; i++) y[i] = x[i] + (i >= d ? y[i - d] * fb : 0);
+  return y;
+}
+function allpass(x, delay, g) {
+  const d = Math.floor(delay * SR);
+  const y = new Float32Array(x.length);
+  for (let i = 0; i < x.length; i++) {
+    const xd = i >= d ? x[i - d] : 0;
+    const yd = i >= d ? y[i - d] : 0;
+    y[i] = -g * x[i] + xd + g * yd;
+  }
+  return y;
+}
+function roomReverb(x, mix) {
+  let wet = new Float32Array(x.length);
+  for (const [d, fb] of [[0.0297, 0.74], [0.0371, 0.72], [0.0411, 0.7], [0.0437, 0.68]]) {
+    const c = comb(x, d, fb);
+    for (let i = 0; i < wet.length; i++) wet[i] += c[i] * 0.25;
+  }
+  wet = allpass(allpass(wet, 0.005, 0.5), 0.0017, 0.5);
+  const out = new Float32Array(x.length);
+  for (let i = 0; i < x.length; i++) out[i] = x[i] * (1 - mix * 0.4) + wet[i] * mix;
+  return out;
+}
+function lowpass(x, a) {
+  const y = new Float32Array(x.length);
+  let p = 0;
+  for (let i = 0; i < x.length; i++) {
+    p += (x[i] - p) * a;
+    y[i] = p;
+  }
+  return y;
+}
+function finish(name, data) {
+  const isLoop = name.startsWith('music_') || name === 'reel.wav';
+  const wetMix = name.startsWith('music_') ? 0.22 : name === 'reel.wav' ? 0 : 0.2;
+  let x = data;
+  if (isLoop) {
+    // run the reverb over two copies and keep the second, so the loop point is seamless
+    if (wetMix > 0) {
+      const two = new Float32Array(x.length * 2);
+      two.set(x, 0);
+      two.set(x, x.length);
+      x = roomReverb(two, wetMix).slice(x.length);
+    }
+  } else {
+    const padded = new Float32Array(x.length + Math.floor(0.4 * SR));
+    padded.set(x, 0);
+    x = roomReverb(padded, wetMix);
+  }
+  x = lowpass(x, name.startsWith('music_') ? 0.55 : 0.85);
+  for (let i = 0; i < x.length; i++) x[i] = Math.tanh(x[i] * 1.4) / Math.tanh(1.4);
+  return x;
+}
+
+const wav = (name, raw) => {
+  const data = finish(name, raw);
   const n = data.length;
   const buf = Buffer.alloc(44 + n * 2);
   buf.write('RIFF', 0); buf.writeUInt32LE(36 + n * 2, 4); buf.write('WAVE', 8); buf.write('fmt ', 12);
@@ -37,12 +97,15 @@ function tone(buf, start, dur, freq, vol, shape = 'sin', a = 0.005, d = 0.05, su
   const s0 = Math.floor(start * SR);
   const n = Math.floor(dur * SR);
   let ph = 0;
+  let ph2 = 0;
   for (let i = 0; i < n && s0 + i < buf.length; i++) {
     const t = i / SR;
     const f = freq * (1 + slide * (t / dur));
     ph += (TAU * f) / SR;
     const w = shape === 'sq' ? sq(ph) * 0.6 : shape === 'tri' ? tri(ph) : shape === 'saw' ? ((ph / TAU) % 1) * 2 - 1 : Math.sin(ph);
-    buf[s0 + i] += w * vol * env(t, a, d, sus, dur);
+    ph2 += (TAU * f * 1.006) / SR;
+    const w2 = shape === 'sq' ? sq(ph2) * 0.6 : shape === 'tri' ? tri(ph2) : shape === 'saw' ? ((ph2 / TAU) % 1) * 2 - 1 : Math.sin(ph2);
+    buf[s0 + i] += (w * 0.65 + w2 * 0.45) * vol * env(t, a, d, sus, dur);
   }
 }
 function burst(buf, start, dur, vol, lp = 0.2, decay = 4) {
@@ -86,7 +149,11 @@ function music(name, bpm, bars, chords, arpPattern, lead, rootShift = 0, drive =
     }
     tone(b, bar * 4 * beat, beat * 1.8, midi(chord[0] - 12 + rootShift), 0.3, 'tri', 0.01, 0.2, 0.7);
     tone(b, (bar * 4 + 2) * beat, beat * 1.8, midi(chord[0] - 12 + rootShift), 0.26, 'tri', 0.01, 0.2, 0.7);
+    // soft pad under the chord
+    for (const nt of chord) tone(b, bar * 4 * beat, beat * 4, midi(nt + rootShift), 0.035, 'saw', 0.4, 0.5, 0.7);
+    for (let h = 0; h < 8; h++) burst(b, (bar * 4 + h * 0.5) * beat, 0.025, drive ? 0.07 : 0.03, 0.95, 9);
     if (drive) {
+      for (const sn of [1, 3]) burst(b, (bar * 4 + sn) * beat, 0.12, 0.16, 0.5, 6);
       for (let k = 0; k < 4; k++) {
         const t = (bar * 4 + k) * beat;
         tone(b, t, 0.12, 60, 0.35, 'sin', 0.001, 0.05, 0.1, -0.5);

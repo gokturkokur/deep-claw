@@ -72,3 +72,7 @@ export function rankName(i: number): string {
   const r = TABLES[current].ranks;
   return r[Math.min(i, r.length - 1)];
 }
+
+export function quips(): readonly string[] {
+  return TABLES[current].quips;
+}

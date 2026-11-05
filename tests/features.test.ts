@@ -367,3 +367,13 @@ describe('perfect hit and rank', () => {
     expect(totalStars({ a: { stars: 3 }, b: { stars: 2 } })).toBe(5);
   });
 });
+
+describe('menu unlocks', () => {
+  it('buttons open one after another and every one opens before the end of world 1', async () => {
+    const { MENU_UNLOCK } = await import('../src/systems/Campaign');
+    const levels = Object.values(MENU_UNLOCK);
+    expect(Math.min(...levels)).toBeGreaterThanOrEqual(2);
+    expect(Math.max(...levels)).toBeLessThanOrEqual(10);
+    expect(MENU_UNLOCK.endless).toBeGreaterThan(MENU_UNLOCK.workshop);
+  });
+});

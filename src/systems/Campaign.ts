@@ -162,3 +162,14 @@ export function rankIndex(stars: number): number {
   for (let i = 0; i < RANK_STARS.length; i++) if (stars >= RANK_STARS[i]) r = i;
   return r;
 }
+
+/** Main menu buttons open one by one so a new player only sees Play at first (level = highest unlocked level needed). */
+export type MenuFeature = 'shop' | 'awards' | 'workshop' | 'wheel' | 'endless' | 'weekly';
+export const MENU_UNLOCK: Record<MenuFeature, number> = {
+  shop: 2,
+  awards: 2,
+  workshop: 3,
+  wheel: 4,
+  endless: 5,
+  weekly: 6,
+};

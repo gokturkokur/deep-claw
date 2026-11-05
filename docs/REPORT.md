@@ -38,6 +38,12 @@
 - **Rütbe**: toplam yıldıza göre 7 unvan (Çırak ... Efsane), ana menüde sol üstte.
 - **GitHub Pages**: `.github/workflows/pages.yml` oyunu web sayfası olarak yayınlar. Bir kez GitHub'da Settings > Pages > Source: "GitHub Actions" seçilmeli. PR `main`'e birleşince oyun `https://gokturkokur.github.io/deep-claw/` adresinde açılır.
 
+## Ana ekran ve ses güncellemesi
+
+- Ana ekran sadeleştirildi: üstte rütbe ve cüzdan, ortada Oyna/Devam/Bölümler, altta altı simgelik bir sıra. Yeni oyuncuda simgeler kilitli (kilit + açılacağı bölüm numarası): Dükkân ve Ödüller 2. bölümde, Atölye 3, Çark 4, Sonsuz 5, Haftalık 6. Kilitli düğmeye basınca Dusty kısaca uyarır.
+- Ana ekran canlı: Dusty (seçili kıyafetiyle) ve Çakıl yerde durur, nefes alır, göz kırpar, konuşma balonlarıyla konuşur (hediye ve çark hatırlatması dahil); dokununca tepki verirler.
+- Ses: hâlâ sentezlenmiş, çünkü lisanssız gerçek kayıt kullanamıyorum. Ancak ses motoru geliştirildi (katmanlı tonlar, oda yankısı, yumuşak doygunluk, müzikte pad, hi-hat ve snare). Gerçek kayıtların için `docs/ASSETS.md`: aynı adla `.wav` koymak yeterli.
+
 ## Ekonomi incelemesi
 
 `npx vite-node tools/economy-report.ts` bir bölümü "%30 payla" geçen oyuncunun toplam gelirini hesaplar: 100 bölümde yaklaşık 525.000. Önceki hâlde kalıcı harcamalar sadece 140.000 idi, yani 40. bölümden sonra para birikiyordu. Düzeltmeler:
@@ -54,7 +60,7 @@ Diğer fiyatlar: Patlatıcı 700 (bölümle 1200'e kadar artar), Paket 1800, Zam
 
 ## Test sonuçları
 
-- Birim testleri (Vitest): **306 test geçti** (kanca, çarpışma, oturum, seri, dondurma, yükseltmeler, dükkân, sandık, kozmetik, günlük hediye, başarımlar, kayıt, hikaye, görevler, 100 bölümün geçerliliği ve dengesi).
+- Birim testleri (Vitest): **307 test geçti** (kanca, çarpışma, oturum, seri, dondurma, yükseltmeler, dükkân, sandık, kozmetik, günlük hediye, başarımlar, kayıt, hikaye, görevler, 100 bölümün geçerliliği ve dengesi).
 - Tarayıcı testleri (Playwright): **29 test geçti** (temel akış, hikaye diyaloğu, sonsuz mod, haftalık, atölye alışverişi, günlük hediye, başarımlar, dünya sayfaları, dondurma, sandık, 5 ekran boyutunda düzen kontrolü, ekran galerisi).
 - Ekran görüntüleri: `docs/screenshots/`.
 

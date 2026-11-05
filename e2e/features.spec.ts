@@ -151,6 +151,15 @@ test.describe('new features', () => {
 
   test('achievements screen opens and lists the awards', async ({ page }) => {
     await open(page);
+    // a fresh game shows the Awards button locked: it opens after level 1
+    await clickButton(page, 'awards');
+    await page.waitForTimeout(300);
+    expect(await page.evaluate(() => (window as any).__game.scene.isActive('Achievements'))).toBe(false);
+    await page.evaluate(() => {
+      (window as any).__dc.services.save.data.unlockedLevel = 6;
+      (window as any).__game.scene.getScene('MainMenu').scene.restart();
+    });
+    await waitScene(page, 'MainMenu');
     await clickButton(page, 'awards');
     await waitScene(page, 'Achievements');
   });
