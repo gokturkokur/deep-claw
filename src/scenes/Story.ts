@@ -86,7 +86,7 @@ export class Story extends Phaser.Scene {
     this.nameText.setText(lang === 'tr' ? WHO_NAME[who].tr : WHO_NAME[who].en);
     const p = PORTRAIT[who];
     const left = who === 'dusty';
-    this.portrait.setTexture(p.key).setDisplaySize(p.w, p.h).setVisible(true).setPosition(left ? 130 : DESIGN.width - 130, 840);
+    this.portrait.setTexture(p.key).setDisplaySize(p.w, p.h).setVisible(true).setPosition(left ? 130 : DESIGN.width - 130, 870 - p.h / 2 + 4);
     this.portrait.setFlipX(!left && who !== 'baron' ? true : false);
     this.portrait.setScale(this.portrait.scaleX * 0.9);
     this.tweens.add({ targets: this.portrait, scale: this.portrait.scaleX / 0.9, duration: 160, ease: 'Back.Out' });

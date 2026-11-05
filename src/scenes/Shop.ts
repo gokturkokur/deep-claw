@@ -8,7 +8,7 @@ import { leaveShop } from '../systems/Progress';
 import { randomSeed } from '../systems/Rng';
 import { buy, dealOffers, reroll, rerollCost, supplyOffers, type CrateReward, type ShopOffer } from '../systems/Shop';
 import { createBackdrop, type Backdrop } from '../ui/Backdrop';
-import { Button, FloatingTexts, dim, panel } from '../ui/components';
+import { Button, FloatingTexts, panel } from '../ui/components';
 import { COLORS, Layout, fadeIn, goTo, txt } from '../ui/theme';
 
 type Tab = 'supplies' | 'deals';
@@ -193,24 +193,111 @@ export class Shop extends Phaser.Scene {
     this.refresh();
   }
 
+  /** Opening scene: black screen, a wooden door shakes and slides open, light rays pour out, the prize appears. */
   private showCrate(r: CrateReward): void {
     const cx = DESIGN.width / 2;
-    const cy = DESIGN.height / 2;
+    const cy = DESIGN.height / 2 - 40;
+    const L = this.layoutRef;
     let what = '';
-    if (r.kind === 'money') what = t('crateMoney', { n: money(r.amount).replace('$', '') });
-    else if (r.kind === 'caps') what = t('crateCaps', { n: r.amount });
-    else if (r.kind === 'freeze') what = t('crateFreeze');
-    else if (r.kind === 'skip') what = t('crateSkip');
-    else what = t('crateBoost', { name: itemText(r.boost).name });
+    let icon = 'icon_crate';
+    if (r.kind === 'money') {
+      what = t('crateMoney', { n: money(r.amount).replace('$', '') });
+      icon = 'icon_coin';
+    } else if (r.kind === 'caps') {
+      what = t('crateCaps', { n: r.amount });
+      icon = 'icon_blast';
+    } else if (r.kind === 'freeze') {
+      what = t('crateFreeze');
+      icon = 'icon_freeze';
+    } else if (r.kind === 'skip') {
+      what = t('crateSkip');
+      icon = 'icon_ticket';
+    } else {
+      what = t('crateBoost', { name: itemText(r.boost).name });
+      icon = ITEMS[r.boost].icon;
+    }
+    const big = r.kind === 'skip' || r.kind === 'boost' || (r.kind === 'money' && r.amount > 1500);
+
     const g = this.add.container(0, 0).setDepth(300);
-    const shade = dim(this, this.layoutRef, 0.7);
-    const p = panel(this, cx, cy, 600, 480);
-    const icon = this.add.image(cx, cy - 120, 'icon_crate').setDisplaySize(150, 150);
-    const title = txt(this, cx, cy + 10, t('crateGot', { what }), 38, { wrap: 520, color: COLORS.textGold, strokeW: 6 });
-    const ok = new Button(this, cx, cy + 150, { w: 300, label: 'OK', fontSize: 44, tint: COLORS.green, key: 'ENTER', onClick: () => g.destroy() });
-    g.add([shade, p, icon, title, ok]);
-    this.tweens.add({ targets: icon, angle: { from: -12, to: 12 }, duration: 300, yoyo: true, repeat: 3 });
-    services.audio.sfx('bag');
+    const black = this.add.rectangle(cx, DESIGN.height / 2, L.width + 8, L.height + 8, 0x000000, 1).setInteractive();
+    black.setAlpha(0);
+    g.add(black);
+    this.tweens.add({ targets: black, alpha: 1, duration: 220 });
+
+    // light rays + glow sit behind the doors
+    const rays = this.add.container(cx, cy).setAlpha(0);
+    for (let i = 0; i < 12; i++) {
+      const ray = this.add.rectangle(0, 0, 26, 1800, 0xfff0b0, 0.17).setBlendMode(Phaser.BlendModes.ADD);
+      ray.setAngle(i * 15);
+      rays.add(ray);
+    }
+    const glow = this.add.image(cx, cy, 'glow').setBlendMode(Phaser.BlendModes.ADD).setDisplaySize(40, 40).setAlpha(0);
+    g.add([rays, glow]);
+
+    // the prize, hidden until the door opens
+    const prize = this.add.image(cx, cy, icon).setDisplaySize(170, 170).setVisible(false);
+    const prizeScale = prize.scaleX;
+    prize.setScale(0);
+    const title = txt(this, cx, cy + 190, t('crateGot', { what }), 40, { wrap: 560, color: COLORS.textGold, strokeW: 7 }).setAlpha(0);
+    g.add([prize, title]);
+
+    // door: two halves with planks, a handle and a lit seam
+    const door = this.add.container(cx, cy).setAlpha(0);
+    const halfW = 215;
+    const doorH = 560;
+    const mkHalf = (dir: -1 | 1) => {
+      const h = this.add.container(dir * (halfW / 2), 0);
+      h.add(this.add.rectangle(0, 0, halfW, doorH, 0x7a4a22).setStrokeStyle(8, 0x2b1608));
+      for (let i = 1; i < 4; i++) h.add(this.add.rectangle(0, -doorH / 2 + i * (doorH / 4), halfW - 12, 6, 0x4a2c14));
+      h.add(this.add.rectangle(dir * -halfW / 2 + dir * 26, 0, 12, doorH - 20, 0xd9a020));
+      h.add(this.add.circle(-dir * 40, 20, 18, 0xffd23a).setStrokeStyle(5, 0x2b1608));
+      return h;
+    };
+    const left = mkHalf(-1);
+    const right = mkHalf(1);
+    const seam = this.add.rectangle(0, 0, 6, doorH, 0xfff0b0, 0).setBlendMode(Phaser.BlendModes.ADD);
+    door.add([left, right, seam]);
+    g.add(door);
+    this.tweens.add({ targets: door, alpha: 1, duration: 260, delay: 160 });
+
+    const audio = services.audio;
+    audio.sfx('launch', 0.7, 0.5);
+    // 1) rumble
+    this.tweens.add({ targets: door, x: { from: cx - 6, to: cx + 6 }, duration: 55, yoyo: true, repeat: 14, delay: 500 });
+    this.time.delayedCall(500, () => audio.sfx('tick', 0.8));
+    this.time.delayedCall(800, () => audio.sfx('tick', 0.8));
+    this.tweens.add({ targets: seam, alpha: 0.9, duration: 700, delay: 700 });
+    // 2) doors slide open, light bursts
+    this.time.delayedCall(1500, () => {
+      door.x = cx;
+      audio.sfx('bag');
+      this.tweens.add({ targets: left, x: -halfW * 2.2, duration: 650, ease: 'Cubic.In' });
+      this.tweens.add({ targets: right, x: halfW * 2.2, duration: 650, ease: 'Cubic.In' });
+      this.tweens.add({ targets: seam, alpha: 0, duration: 200 });
+      this.tweens.add({ targets: glow, alpha: 0.95, displayWidth: 900, displayHeight: 900, duration: 700, ease: 'Cubic.Out' });
+      this.tweens.add({ targets: rays, alpha: 1, duration: 500 });
+      this.tweens.add({ targets: rays, angle: 90, duration: 6000, ease: 'Linear' });
+      this.cameras.main.flash(180, 255, 240, 180, true);
+    });
+    // 3) the prize rises out of the light
+    this.time.delayedCall(2050, () => {
+      prize.setVisible(true);
+      this.tweens.add({ targets: prize, scale: prizeScale, duration: 520, ease: 'Back.Out' });
+      this.tweens.add({ targets: prize, y: cy - 20, yoyo: true, duration: 900, repeat: -1, ease: 'Sine.InOut' });
+      this.tweens.add({ targets: title, alpha: 1, y: cy + 180, duration: 400, delay: 250 });
+      audio.sfx(big ? 'win' : 'gold');
+      audio.vibrate(big ? 80 : 40);
+      for (let i = 0; i < 10; i++) {
+        const sp = this.add.image(cx, cy, 'spark').setBlendMode(Phaser.BlendModes.ADD).setScale(0.8);
+        g.add(sp);
+        const a = (i / 10) * Math.PI * 2;
+        this.tweens.add({ targets: sp, x: cx + Math.cos(a) * 280, y: cy + Math.sin(a) * 280, alpha: 0, scale: 0, duration: 700, onComplete: () => sp.destroy() });
+      }
+    });
+    this.time.delayedCall(2600, () => {
+      const ok = new Button(this, cx, cy + 330, { w: 300, label: 'OK', fontSize: 44, tint: COLORS.green, key: 'ENTER', onClick: () => g.destroy() });
+      g.add(ok);
+    });
   }
 
   private refresh(): void {

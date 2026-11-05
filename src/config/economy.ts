@@ -84,11 +84,11 @@ export interface ItemDef {
 }
 
 export const ITEMS: Record<ItemId, ItemDef> = {
-  blastCap: { id: 'blastCap', kind: 'stack', priceMin: 400, priceMax: 900, icon: 'icon_blast' },
-  blastPack: { id: 'blastPack', kind: 'pack', priceMin: 1100, priceMax: 1100, icon: 'icon_blast' },
-  freeze: { id: 'freeze', kind: 'stack', priceMin: 500, priceMax: 500, icon: 'icon_freeze' },
-  skip: { id: 'skip', kind: 'stack', priceMin: 2500, priceMax: 2500, icon: 'icon_ticket' },
-  crate: { id: 'crate', kind: 'crate', priceMin: 700, priceMax: 700, icon: 'icon_crate' },
+  blastCap: { id: 'blastCap', kind: 'stack', priceMin: 700, priceMax: 1200, icon: 'icon_blast' },
+  blastPack: { id: 'blastPack', kind: 'pack', priceMin: 1800, priceMax: 1800, icon: 'icon_blast' },
+  freeze: { id: 'freeze', kind: 'stack', priceMin: 1000, priceMax: 1000, icon: 'icon_freeze' },
+  skip: { id: 'skip', kind: 'stack', priceMin: 6000, priceMax: 6000, icon: 'icon_ticket' },
+  crate: { id: 'crate', kind: 'crate', priceMin: 1500, priceMax: 1500, icon: 'icon_crate' },
   turbo: { id: 'turbo', kind: 'boost', priceMin: 900, priceMax: 1500, icon: 'icon_turbo' },
   lantern: { id: 'lantern', kind: 'boost', priceMin: 600, priceMax: 1100, icon: 'icon_lantern' },
   gemLens: { id: 'gemLens', kind: 'boost', priceMin: 1000, priceMax: 1800, icon: 'icon_gem' },
@@ -230,11 +230,12 @@ export const DEFAULT_COSMETICS = { outfit: 'outfit_orange', clawSkin: 'claw_stee
 
 /** Mystery Crate: weighted rewards. */
 export const CRATE = {
-  money: { weight: 40, min: 300, max: 1500 },
-  caps: { weight: 22, min: 1, max: 3 },
-  freeze: { weight: 14 },
-  boost: { weight: 18 },
-  skip: { weight: 6 },
+  /** Money prizes are usually small: `bigChance` of them are a profit over the 1500 price. */
+  money: { weight: 45, small: 600, bigChance: 0.33, big: [2000, 2400] as readonly number[] },
+  caps: { weight: 25, amount: 1 },
+  freeze: { weight: 12 },
+  boost: { weight: 10 },
+  skip: { weight: 2 },
 } as const;
 
 /** Lucky Wheel: one spin token is earned for each level cleared with 3 stars for the first time. */

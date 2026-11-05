@@ -32,9 +32,15 @@
 - **Haftalık meydan okuma**: haftaya göre sabit yerleşim, haftada bir kez ödül.
 - **Günlük hediye** (7 günlük seri), **16 başarım** (ödüllü, ilerleme çubuklu).
 
+## Ekonomi ayarı (sandık)
+
+Gizemli Sandık 1500. Para çıkarsa çoğunlukla 600, üçte biri 2000-2400 (kâr). Diğer ödüller: 1 Patlatıcı Kapsül (en sık), Zaman Dondurucu, güçlendirme, çok nadir Atlama Bileti (6000). Ortalama değer fiyatın %80'inin altında (testle doğrulanıyor), yani sandık alıp para büyütmek mümkün değil. Açılış animasyonu: siyah ekranda kapı sallanır, açılır, ışıklar çıkar.
+
+Diğer fiyatlar: Patlatıcı 700 (bölümle 1200'e kadar artar), Paket 1800, Zaman Dondurucu 1000, Atlama Bileti 6000.
+
 ## Test sonuçları
 
-- Birim testleri (Vitest): **303 test geçti** (kanca, çarpışma, oturum, seri, dondurma, yükseltmeler, dükkân, sandık, kozmetik, günlük hediye, başarımlar, kayıt, hikaye, görevler, 100 bölümün geçerliliği ve dengesi).
+- Birim testleri (Vitest): **304 test geçti** (kanca, çarpışma, oturum, seri, dondurma, yükseltmeler, dükkân, sandık, kozmetik, günlük hediye, başarımlar, kayıt, hikaye, görevler, 100 bölümün geçerliliği ve dengesi).
 - Tarayıcı testleri (Playwright): **29 test geçti** (temel akış, hikaye diyaloğu, sonsuz mod, haftalık, atölye alışverişi, günlük hediye, başarımlar, dünya sayfaları, dondurma, sandık, 5 ekran boyutunda düzen kontrolü, ekran galerisi).
 - Ekran görüntüleri: `docs/screenshots/`.
 

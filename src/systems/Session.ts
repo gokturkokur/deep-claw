@@ -32,7 +32,7 @@ export type SessionEvent =
   | { type: 'launch' }
   | { type: 'hit'; id: number }
   | { type: 'miss' }
-  | { type: 'collect'; id: number; kind: ObjType; value: number; x: number; y: number; bag?: BagOutcome; combo: number; mult: number }
+  | { type: 'collect'; id: number; kind: ObjType; value: number; x: number; y: number; bag?: BagOutcome; combo: number; mult: number; bonus: number }
   | { type: 'wave'; wave: number }
   | { type: 'freeze'; seconds: number }
   | { type: 'explode'; id: number; x: number; y: number }
@@ -307,7 +307,7 @@ export class Session implements ClawHost {
     this.earned += value;
     this.stats.collected++;
     if (best.type === 'diamond') this.stats.diamonds++;
-    this.events.push({ type: 'collect', id: best.id, kind: best.type, value, x: best.x, y: best.y, combo: this.combo, mult: 1 });
+    this.events.push({ type: 'collect', id: best.id, kind: best.type, value, x: best.x, y: best.y, combo: this.combo, mult: 1, bonus: 0 });
   }
 
   private moveBeetles(dt: number): void {
@@ -378,6 +378,7 @@ export class Session implements ClawHost {
     }
     // combo: back to back deliveries worth something raise the multiplier
     let mult = 1;
+    const baseValue = value;
     if (value >= COMBO.minValue) {
       this.combo++;
       mult = Math.min(COMBO.max, 1 + COMBO.step * (this.combo - 1));
@@ -393,7 +394,7 @@ export class Session implements ClawHost {
     if (e.type === 'slime') this.stats.slimes++;
     if (e.type === 'beetle') this.stats.beetles++;
     this.earned = Math.max(0, this.earned + value);
-    this.events.push({ type: 'collect', id, kind: e.type, value, x: e.x, y: e.y, bag, combo: this.combo, mult });
+    this.events.push({ type: 'collect', id, kind: e.type, value, x: e.x, y: e.y, bag, combo: this.combo, mult, bonus: Math.max(0, value - baseValue) });
   }
 
   /** Ends the level only when the claw is home: a pull in progress always finishes first. */

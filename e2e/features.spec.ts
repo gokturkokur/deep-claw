@@ -189,10 +189,11 @@ test.describe('new features', () => {
       d.game.scene.getScene('MainMenu').scene.start('Shop');
     });
     await waitScene(page, 'Shop');
-    await clickButton(page, '$700'); // Mystery Crate
+    await clickButton(page, '$1,500'); // Mystery Crate
     await page.waitForTimeout(500);
     let save = await saveData(page);
     expect(save.wallet).not.toBe(20000);
+    await page.waitForTimeout(3600); // the opening animation
     await clickButton(page, 'OK');
     await clickButton(page, 'Deals');
     await page.waitForTimeout(400);

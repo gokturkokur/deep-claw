@@ -34,8 +34,13 @@ export class Game extends Phaser.Scene {
   private lastWave = 0;
   private lastMission = '';
   private comboText!: Phaser.GameObjects.Text;
+  private bonusText!: Phaser.GameObjects.Text;
+  private bonusSum = 0;
+  private bonusTimer?: Phaser.Time.TimerEvent;
+  private missionDoneAt = -1;
   private lastCombo = 0;
   private tip?: Phaser.GameObjects.Container;
+  private storyPending = false;
   private dark!: Phaser.GameObjects.Rectangle;
   private wasRushing = false;
   private twist = { rush: false, blackout: false };
@@ -96,6 +101,8 @@ export class Game extends Phaser.Scene {
     this.lastFreeze = -1;
     this.lastWave = 0;
     this.lastCombo = 0;
+    this.bonusSum = 0;
+    this.missionDoneAt = -1;
     this.lastMission = '';
     this.sprites = new Map();
     this.boostIcons = [];
@@ -143,6 +150,7 @@ export class Game extends Phaser.Scene {
     this.theme = this.mode === 'campaign' ? themeOf(this.levelId) : this.mode === 'weekly' ? 'ice' : 'abyss';
 
     const trackFor: Record<ThemeId, SoundKey> = { mine: 'music_game', cave: 'music_cave', lava: 'music_lava', ice: 'music_ice', abyss: 'music_abyss' };
+    this.storyPending = this.mode === 'campaign' && !!storyBeatFor(this.levelId) && !save.data.storySeen.includes(storyBeatFor(this.levelId)?.id ?? '') && !this.skipStory();
     audio.playMusic(this.mode === 'campaign' && isBoss(this.levelId) ? 'music_boss' : trackFor[this.theme]);
     this.backdrop = createBackdrop(this, this.layout, { theme: this.theme });
     this.createRig();
@@ -174,12 +182,14 @@ export class Game extends Phaser.Scene {
       dbg.session = this.session;
       dbg.gameScene = this;
     }
-    fadeIn(this);
-
     // story beat before the level (once), boss banner
+    const storyBeat = this.mode === 'campaign' ? storyBeatFor(this.levelId) : null;
+    const playStory = !!storyBeat && !save.data.storySeen.includes(storyBeat.id) && !this.skipStory();
+    // a fade that gets paused halfway would leave the field black behind the dialogue
+    if (!playStory) fadeIn(this);
     if (this.mode === 'campaign') {
-      const beat = storyBeatFor(this.levelId);
-      if (beat && !save.data.storySeen.includes(beat.id) && !this.skipStory()) {
+      const beat = storyBeat;
+      if (beat && playStory) {
         this.paused = true;
         this.scene.pause();
         this.scene.launch('Story', { beat: beat.id, from: 'Game' });
@@ -204,7 +214,7 @@ export class Game extends Phaser.Scene {
     const text = txt(this, cx - 170, y, tipText(id), 28, { originX: 0, align: 'left', wrap: 410, strokeW: 4, shadow: false });
     g.add([bg, face, text]);
     this.tweens.add({ targets: g, alpha: 1, duration: 300, delay: 600 });
-    this.tweens.add({ targets: g, alpha: 0, delay: 6500, duration: 500, onComplete: () => g.destroy() });
+    this.tweens.add({ targets: g, alpha: 0, delay: 3500, duration: 400, onComplete: () => g.destroy() });
     this.tip = g;
   }
 
@@ -249,8 +259,11 @@ export class Game extends Phaser.Scene {
       const a = IMAGES[def.texture as keyof typeof IMAGES];
       const s = this.add.image(e.x, e.y, def.texture).setDisplaySize(a.w, a.h).setDepth(D.entity + e.y / 10000);
       const base = s.scaleX;
-      s.setScale(0);
-      this.tweens.add({ targets: s, scaleX: base, scaleY: base, duration: 260, delay: 80 + i * 22, ease: 'Back.Out' });
+      // while a dialogue is about to pause the scene the field must already be visible
+      if (!this.storyPending) {
+        s.setScale(0);
+        this.tweens.add({ targets: s, scaleX: base, scaleY: base, duration: 260, delay: 80 + i * 22, ease: 'Back.Out' });
+      }
       if (e.type === 'bag') {
         this.tweens.add({ targets: s, angle: { from: -5, to: 5 }, duration: 700 + (i % 3) * 120, yoyo: true, repeat: -1, ease: 'Sine.InOut' });
       }
@@ -350,7 +363,8 @@ export class Game extends Phaser.Scene {
       bx += 58;
     }
 
-    this.comboText = txt(this, DESIGN.width / 2 + 40, top + 186, '', 38, { color: COLORS.textGreen, strokeW: 7 }).setDepth(D.hud + 1).setVisible(false);
+    this.comboText = txt(this, E.right - 20, top + 178, '', 26, { originX: 1, color: COLORS.textGreen, strokeW: 5 }).setDepth(D.hud + 1).setVisible(false);
+    this.bonusText = txt(this, E.left + 300, top + 98, '', 34, { originX: 0, color: COLORS.textGreen, strokeW: 6 }).setDepth(D.hud + 1).setVisible(false);
     this.missionText = txt(this, E.left + 24, top + 352, '', 26, { originX: 0, color: '#f4dba8', strokeW: 5 }).setDepth(D.hud + 1);
     this.freezeBtn = new Button(this, E.right - 70, top + 380, {
       round: true,
@@ -390,7 +404,7 @@ export class Game extends Phaser.Scene {
     this.blastBtn.setPosition(E.right - 70, top + 262);
     this.blastCount.setPosition(E.right - 70 + 34, top + 262 + 34);
     this.missionText.setPosition(E.left + 24, top + 352);
-    this.comboText.setPosition(DESIGN.width / 2 + 40, top + 186);
+    this.comboText.setPosition(E.right - 20, top + 178);
     this.freezeBtn.setPosition(E.right - 70, top + 380);
     this.freezeCount.setPosition(E.right - 70 + 34, top + 380 + 34);
     let bx = E.left + 24 + 26;
@@ -589,7 +603,7 @@ export class Game extends Phaser.Scene {
       this.floats.show(this, px, py - 30, money(ev.value), COLORS.textRed, 56);
       return;
     }
-    if (ev.combo >= 2 && ev.mult > 1) this.floats.show(this, px + 90, py + 40, t('combo', { m: ev.mult.toFixed(1) }), COLORS.textGreen, 36);
+    if (ev.bonus > 0) this.addBonus(ev.bonus);
     if (ev.kind === 'diamond' || ev.kind === 'chest') {
       this.cameras.main.flash(110, 255, 255, 255, true);
       this.cameras.main.shake(140, 0.004);
@@ -600,6 +614,18 @@ export class Game extends Phaser.Scene {
     else audio.sfx('gold', 1, Math.min(1.5, 1 + 0.05 * ev.combo));
     if (ev.value > 0) this.floats.show(this, px, py - 30, '+' + money(ev.value), COLORS.textGold, ev.value >= 500 ? 64 : 52);
     audio.vibrate(ev.value >= 500 ? 35 : 15);
+  }
+
+  /** Extra money from the combo shows as a green "+N" next to the main money for a moment. */
+  private addBonus(n: number): void {
+    this.bonusSum += n;
+    this.bonusText.setText('+' + this.bonusSum.toLocaleString()).setVisible(true).setAlpha(1);
+    this.bonusText.setX(this.moneyText.x + this.moneyText.width + 14);
+    this.tweens.add({ targets: this.bonusText, scale: { from: 1.3, to: 1 }, duration: 160 });
+    this.bonusTimer?.remove();
+    this.bonusTimer = this.time.delayedCall(1400, () => {
+      this.tweens.add({ targets: this.bonusText, alpha: 0, duration: 300, onComplete: () => { this.bonusText.setVisible(false); this.bonusSum = 0; } });
+    });
   }
 
   private onExplode(id: number, x: number, y: number): void {
@@ -833,7 +859,7 @@ export class Game extends Phaser.Scene {
       if (s.combo >= 2) {
         const m = Math.min(COMBO.max, 1 + COMBO.step * (s.combo - 1));
         this.comboText.setText(t('combo', { m: m.toFixed(1) })).setVisible(true);
-        this.tweens.add({ targets: this.comboText, scale: { from: 1.4, to: 1 }, duration: 220, ease: 'Back.Out' });
+        this.tweens.add({ targets: this.comboText, scale: { from: 1.25, to: 1 }, duration: 200, ease: 'Back.Out' });
       } else this.comboText.setVisible(false);
     }
     // mission line
@@ -849,10 +875,13 @@ export class Game extends Phaser.Scene {
         this.missionText.setText(line).setColor(done ? COLORS.textGreen : failed ? COLORS.textRed : '#f4dba8');
         if (done && !this.missionShown) {
           this.missionShown = true;
-          this.floats.show(this, DESIGN.width / 2, 520, t('missionDone', { n: m.reward }), COLORS.textGreen, 44);
+          this.missionDoneAt = this.session.elapsed;
+          this.floats.show(this, DESIGN.width / 2, 520, t('missionDone', { n: m.reward }), COLORS.textGreen, 40);
         }
       }
     } else if (this.missionText.text !== '') this.missionText.setText('');
+    // a finished mission disappears 2 s after it was reached
+    if (this.missionDoneAt >= 0 && s.elapsed - this.missionDoneAt > 2 && this.missionText.visible) this.missionText.setVisible(false);
     if (this.mode === 'endless' && s.wave !== this.lastWave) this.lastWave = s.wave;
     // freeze button
     if (s.freezeCount !== this.lastFreeze) {

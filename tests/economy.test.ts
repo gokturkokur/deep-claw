@@ -5,7 +5,7 @@ import { starsFor, rollBag, bagExpectedValue, NO_MODIFIERS } from '../src/system
 import { commitOutcome, leaveShop } from '../src/systems/Progress';
 import { makeRng } from '../src/systems/Rng';
 import { defaultSave, MemoryStore, migrate, sanitize, SaveManager } from '../src/systems/Save';
-import { activeModifiers, blastCapPrice, buy, buyCosmetic, dealOffers, equipCosmetic, reroll, rerollCost, supplyOffers } from '../src/systems/Shop';
+import { activeModifiers, blastCapPrice, buy, buyCosmetic, dealOffers, equipCosmetic, openCrate, reroll, rerollCost, supplyOffers } from '../src/systems/Shop';
 
 describe('shop', () => {
   it('deals: 4 boosts, one on sale; same seed and reroll count = same shop', () => {
@@ -31,8 +31,8 @@ describe('shop', () => {
         expect(o.price).toBeLessThanOrEqual(def.priceMax);
       }
     }
-    expect(blastCapPrice(1)).toBe(400);
-    expect(blastCapPrice(100)).toBe(900);
+    expect(blastCapPrice(1)).toBe(700);
+    expect(blastCapPrice(100)).toBe(1200);
     expect(ITEMS.extraMiner.priceMin).toBeGreaterThanOrEqual(3000);
   });
 
@@ -68,23 +68,49 @@ describe('shop', () => {
   it('pack gives 3 caps, freeze and skip tickets stack with limits', () => {
     const save = defaultSave();
     save.wallet = 99999;
-    buy(save, { id: 'blastPack', price: 1100 });
+    buy(save, { id: 'blastPack', price: 1800 });
     expect(save.inventory.blastCaps).toBe(SHOP.blastPackSize);
-    for (let i = 0; i < 10; i++) buy(save, { id: 'freeze', price: 500 });
+    for (let i = 0; i < 10; i++) buy(save, { id: 'freeze', price: 1000 });
     expect(save.inventory.freeze).toBe(SHOP.maxFreeze);
-    for (let i = 0; i < 10; i++) buy(save, { id: 'skip', price: 2500 });
+    for (let i = 0; i < 10; i++) buy(save, { id: 'skip', price: 6000 });
     expect(save.inventory.skip).toBe(SHOP.maxSkip);
   });
 
   it('crate pays out something real and costs money', () => {
     for (let seed = 1; seed < 60; seed++) {
       const save = defaultSave();
-      save.wallet = 1000;
-      const r = buy(save, { id: 'crate', price: 700 }, makeRng(seed));
+      save.wallet = 2000;
+      const r = buy(save, { id: 'crate', price: 1500 }, makeRng(seed));
       expect(r.ok).toBe(true);
-      const gained = save.wallet - 300 + save.inventory.blastCaps + save.inventory.freeze + save.inventory.skip + Object.values(save.boosts).filter(Boolean).length;
+      const gained = save.wallet - 500 + save.inventory.blastCaps + save.inventory.freeze + save.inventory.skip + Object.values(save.boosts).filter(Boolean).length;
       expect(gained).toBeGreaterThan(0);
     }
+  });
+
+  it('crate: usually 600, about a third of money prizes are a profit, average value stays well below the price', () => {
+    let moneyPrizes = 0;
+    let profit = 0;
+    let small = 0;
+    let value = 0;
+    const n = 20000;
+    const rng = makeRng(99);
+    for (let i = 0; i < n; i++) {
+      const save = defaultSave();
+      const r = openCrate(save, rng);
+      if (r.kind === 'money') {
+        moneyPrizes++;
+        value += r.amount;
+        if (r.amount > 1500) profit++;
+        if (r.amount === 600) small++;
+      } else if (r.kind === 'caps') value += 700;
+      else if (r.kind === 'freeze') value += 1000;
+      else if (r.kind === 'boost') value += 1300;
+      else value += 6000;
+    }
+    expect(profit / moneyPrizes).toBeGreaterThan(0.28);
+    expect(profit / moneyPrizes).toBeLessThan(0.38);
+    expect(small / moneyPrizes).toBeGreaterThan(0.6);
+    expect(value / n / ITEMS.crate.priceMin).toBeLessThan(0.8);
   });
 
   it('reroll costs more each time and changes the deals', () => {

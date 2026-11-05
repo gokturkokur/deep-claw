@@ -75,17 +75,16 @@ export function openCrate(save: SaveData, rng: Rng): CrateReward {
   const total = CRATE.money.weight + CRATE.caps.weight + CRATE.freeze.weight + CRATE.boost.weight + CRATE.skip.weight;
   let r = rng() * total;
   const money = (): CrateReward => {
-    const amount = Math.round((CRATE.money.min + (CRATE.money.max - CRATE.money.min) * rng()) / 50) * 50;
+    const big = rng() < CRATE.money.bigChance;
+    const amount = big ? CRATE.money.big[Math.floor(rng() * CRATE.money.big.length)] : CRATE.money.small;
     save.wallet += amount;
     return { kind: 'money', amount };
   };
   if ((r -= CRATE.money.weight) < 0) return money();
   if ((r -= CRATE.caps.weight) < 0) {
-    const room = SHOP.maxBlastCaps - save.inventory.blastCaps;
-    if (room <= 0) return money();
-    const amount = Math.min(room, CRATE.caps.min + Math.floor(rng() * (CRATE.caps.max - CRATE.caps.min + 1)));
-    save.inventory.blastCaps += amount;
-    return { kind: 'caps', amount };
+    if (save.inventory.blastCaps >= SHOP.maxBlastCaps) return money();
+    save.inventory.blastCaps += CRATE.caps.amount;
+    return { kind: 'caps', amount: CRATE.caps.amount };
   }
   if ((r -= CRATE.freeze.weight) < 0) {
     if (save.inventory.freeze >= SHOP.maxFreeze) return money();
