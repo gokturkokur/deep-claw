@@ -1,4 +1,5 @@
 import type { ObjType } from '../config/economy';
+import { GENERATED_LEVELS } from './generatedLevels';
 
 export interface LevelObject {
   type: ObjType;
@@ -44,7 +45,7 @@ const bt = (y: number, laneMinX: number, laneMaxX: number, speed = 70, carriesDi
   carriesDiamond,
 });
 
-export const LEVELS: LevelDef[] = [
+export const HAND_LEVELS: LevelDef[] = [
   {
     id: 1,
     name: "Warm Up",
@@ -286,3 +287,6 @@ export const LEVELS: LevelDef[] = [
     ],
   },
 ];
+
+/** The full campaign: 20 hand-designed levels, then 80 baked generated ones (see tools/build-levels.ts). */
+export const LEVELS: LevelDef[] = [...HAND_LEVELS, ...GENERATED_LEVELS];

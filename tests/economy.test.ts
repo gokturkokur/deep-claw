@@ -167,7 +167,7 @@ describe('save', () => {
       unlockedLevel: 999,
       currentLevel: 0,
       wallet: -50,
-      levels: { '1': { stars: 9, best: -1 }, '99': { stars: 1, best: 1 }, x: {} },
+      levels: { '1': { stars: 9, best: -1 }, '199': { stars: 1, best: 1 }, x: {} },
       inventory: { blastCaps: 500 },
       settings: { music: 5, sfx: -1, lang: 'fr', vibration: 'yes' },
     });
@@ -175,7 +175,7 @@ describe('save', () => {
     expect(s.currentLevel).toBe(1);
     expect(s.wallet).toBe(0);
     expect(s.levels['1']).toEqual({ stars: 3, best: 0 });
-    expect(s.levels['99']).toBeUndefined();
+    expect(s.levels['199']).toBeUndefined();
     expect(s.inventory.blastCaps).toBe(SHOP.maxBlastCaps);
     expect(s.settings.music).toBe(1);
     expect(s.settings.sfx).toBe(0);
