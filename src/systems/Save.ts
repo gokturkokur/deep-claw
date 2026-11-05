@@ -55,6 +55,7 @@ export interface SaveData {
   claws: { owned: ClawId[]; equipped: ClawId };
   endless: { best: number; bestWaves: number };
   weekly: { week: string; best: number; claimed: boolean };
+  spins: number;
   hasProgress: boolean;
   hintShown: boolean;
   settings: { music: number; sfx: number; vibration: boolean; lang: Lang | null };
@@ -81,6 +82,7 @@ export function defaultSave(): SaveData {
     claws: { owned: ['standard'], equipped: 'standard' },
     endless: { best: 0, bestWaves: 0 },
     weekly: { week: '', best: 0, claimed: false },
+    spins: 0,
     hasProgress: false,
     hintShown: false,
     settings: { music: 0.6, sfx: 0.8, vibration: true, lang: null },
@@ -129,6 +131,7 @@ export function sanitize(raw: unknown): SaveData {
   d.phase = r.phase === 'shop' ? 'shop' : 'level';
   d.wallet = int(r.wallet, 0, 0, 1e9);
   d.hasProgress = bool(r.hasProgress, false);
+  d.spins = int(r.spins, 0, 0, 20);
   d.hintShown = bool(r.hintShown, false);
 
   if (isObj(r.levels)) {

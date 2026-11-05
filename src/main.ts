@@ -14,6 +14,7 @@ import { Story } from './scenes/Story';
 import { Results } from './scenes/Results';
 import { Workshop } from './scenes/Workshop';
 import { Achievements } from './scenes/Achievements';
+import { Wheel } from './scenes/Wheel';
 
 document.title = 'DEEP CLAW';
 
@@ -32,5 +33,5 @@ new Phaser.Game({
   render: { antialias: true, powerPreference: 'high-performance', roundPixels: false },
   input: { activePointers: 2 },
   fps: { target: 60 },
-  scene: [Boot, Preload, MainMenu, LevelSelect, Game, Pause, Settings, LevelComplete, GameOver, Shop, Story, Results, Workshop, Achievements],
+  scene: [Boot, Preload, MainMenu, LevelSelect, Game, Pause, Settings, LevelComplete, GameOver, Shop, Story, Results, Workshop, Achievements, Wheel],
 });

@@ -229,3 +229,22 @@ export const CRATE = {
   boost: { weight: 18 },
   skip: { weight: 6 },
 } as const;
+
+/** Lucky Wheel: one spin token is earned for each level cleared with 3 stars for the first time. */
+export type WheelPrize =
+  | { kind: 'money'; amount: number }
+  | { kind: 'caps'; amount: number }
+  | { kind: 'freeze' }
+  | { kind: 'boost' }
+  | { kind: 'skip' };
+export const WHEEL: ReadonlyArray<{ prize: WheelPrize; weight: number; color: number; icon?: string }> = [
+  { prize: { kind: 'money', amount: 300 }, weight: 22, color: 0xd9a020 },
+  { prize: { kind: 'money', amount: 800 }, weight: 15, color: 0x58c24a },
+  { prize: { kind: 'caps', amount: 2 }, weight: 14, color: 0xe5483a, icon: 'icon_blast' },
+  { prize: { kind: 'money', amount: 2000 }, weight: 6, color: 0x3a8fe0 },
+  { prize: { kind: 'freeze' }, weight: 14, color: 0x7fd0ff, icon: 'icon_freeze' },
+  { prize: { kind: 'boost' }, weight: 12, color: 0xb07aff, icon: 'icon_gift' },
+  { prize: { kind: 'skip' }, weight: 5, color: 0x3aa84a, icon: 'icon_ticket' },
+  { prize: { kind: 'money', amount: 6000 }, weight: 2, color: 0xffd23a },
+];
+export const MAX_SPINS = 20;

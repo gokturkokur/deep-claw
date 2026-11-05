@@ -1,7 +1,7 @@
 import { LEVELS } from '../data/levels';
 import { BOOST_IDS } from '../config/economy';
 import { LEVEL_RULES } from '../config/game';
-import { SHOP, WEEKLY } from '../config/economy';
+import { MAX_SPINS, SHOP, WEEKLY } from '../config/economy';
 import { checkAchievements, type AchievementDef } from './Achievements';
 import type { RunStats } from './Session';
 import { starsFor } from './Economy';
@@ -30,6 +30,8 @@ export interface CompletionResult {
   newBest: boolean;
   walletGain: number;
   missionBonus: number;
+  /** A Lucky Wheel token was earned (first 3 star clear). */
+  spinEarned: boolean;
 }
 
 /**
@@ -49,6 +51,7 @@ export function commitOutcome(save: SaveData, o: LevelOutcome, seed: number = ra
   if (o.missionDone && !prev.mission) missionBonus = o.missionReward ?? 0;
   save.levels[key] = { stars: Math.max(prev.stars, stars), best: Math.max(prev.best, o.earned), mission: !!prev.mission || !!o.missionDone };
   save.wallet += missionBonus;
+  if (stars === 3 && prev.stars < 3) save.spins = Math.min(MAX_SPINS, save.spins + 1);
 
   save.inventory.blastCaps = o.blastCapsLeft;
   if (o.freezeLeft !== undefined) save.inventory.freeze = o.freezeLeft;
@@ -65,7 +68,7 @@ export function commitOutcome(save: SaveData, o: LevelOutcome, seed: number = ra
     save.shop = { seed, afterLevel: o.levelId, bought: [], rerolls: 0 };
     save.stats.levelsWon++;
   }
-  return { stars, firstClear, newBest, walletGain, missionBonus };
+  return { stars, firstClear, newBest, walletGain, missionBonus, spinEarned: stars === 3 && prev.stars < 3 };
 }
 
 /** Skip Ticket: counts as a 1 star clear (no money, no shop) and opens the next level. */

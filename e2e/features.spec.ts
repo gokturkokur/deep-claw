@@ -134,6 +134,21 @@ test.describe('new features', () => {
     expect(save.wallet + save.inventory.blastCaps + Object.values(save.boosts).filter(Boolean).length).toBeGreaterThan(0);
   });
 
+  test('lucky wheel: spend a token and get a real prize', async ({ page }) => {
+    await open(page);
+    await page.evaluate(() => {
+      const d = (window as any).__dc;
+      d.services.save.data.spins = 1;
+      d.game.scene.getScene('MainMenu').scene.start('Wheel');
+    });
+    await waitScene(page, 'Wheel');
+    await clickButton(page, 'SPIN');
+    await expect.poll(() => page.evaluate(() => (window as any).__game.scene.getScene('Wheel').result.text), { timeout: 60_000 }).toContain(':');
+    const save = await saveData(page);
+    expect(save.spins).toBe(0);
+    expect(save.wallet + save.inventory.blastCaps + save.inventory.freeze + save.inventory.skip + Object.values(save.boosts).filter(Boolean).length).toBeGreaterThan(0);
+  });
+
   test('achievements screen opens and lists the awards', async ({ page }) => {
     await open(page);
     await clickButton(page, 'Awards');

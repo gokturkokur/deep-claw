@@ -285,3 +285,41 @@ describe('tips', () => {
     expect(tipFor({ ...lvl, id: 1, objects: [o('goldS', 100, 500)] }, [])).toBeNull();
   });
 });
+
+describe('lucky wheel', () => {
+  it('earns a token for the first 3 star clear only, and spending needs a token', async () => {
+    const { spinWheel } = await import('../src/systems/Wheel');
+    const save = defaultSave();
+    expect(spinWheel(save, makeRng(1))).toBeNull();
+    const target = LEVELS[0].target;
+    const r = commitOutcome(save, { levelId: 1, earned: Math.ceil(target * 1.5), target, won: true, blastCapsLeft: 0 })!;
+    expect(r.stars).toBe(3);
+    expect(r.spinEarned).toBe(true);
+    expect(save.spins).toBe(1);
+    const r2 = commitOutcome(save, { levelId: 1, earned: Math.ceil(target * 1.6), target, won: true, blastCapsLeft: 0 })!;
+    expect(r2.spinEarned).toBe(false);
+    expect(save.spins).toBe(1);
+    const spin = spinWheel(save, makeRng(3))!;
+    expect(spin).not.toBeNull();
+    expect(save.spins).toBe(0);
+  });
+  it('every prize is real, full inventories become money', async () => {
+    const { spinWheel } = await import('../src/systems/Wheel');
+    for (let seed = 1; seed <= 80; seed++) {
+      const save = defaultSave();
+      save.spins = 1;
+      save.wallet = 0;
+      const before = JSON.stringify([save.inventory, save.boosts]);
+      spinWheel(save, makeRng(seed));
+      const changed = save.wallet > 0 || JSON.stringify([save.inventory, save.boosts]) !== before;
+      expect(changed).toBe(true);
+    }
+    const full = defaultSave();
+    full.spins = 50;
+    full.inventory = { blastCaps: 9, freeze: 5, skip: 3 };
+    for (const b of Object.keys(full.boosts) as Array<keyof typeof full.boosts>) full.boosts[b] = true;
+    for (let i = 0; i < 30; i++) spinWheel(full, makeRng(i + 1));
+    expect(full.inventory).toEqual({ blastCaps: 9, freeze: 5, skip: 3 });
+    expect(full.wallet).toBeGreaterThan(0);
+  });
+});

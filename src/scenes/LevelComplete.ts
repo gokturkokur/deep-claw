@@ -22,6 +22,7 @@ interface Data {
   mission?: Mission | null;
   missionOk?: boolean;
   extraBonus?: number;
+  spinEarned?: boolean;
 }
 
 export class LevelComplete extends Phaser.Scene {
@@ -100,6 +101,10 @@ export class LevelComplete extends Phaser.Scene {
       this.tweens.add({ targets: nb, scale: { from: 1, to: 1.12 }, duration: 500, yoyo: true, repeat: -1 });
     }
 
+    let ay0 = 0;
+    if (d.spinEarned) {
+      ay0 = 38;
+    }
     let ay = rowY + 205 + (d.newBest && !d.firstClear ? 45 : 0);
     if (d.mission && d.firstClear !== undefined) {
       const ok = !!d.missionOk;
@@ -113,6 +118,10 @@ export class LevelComplete extends Phaser.Scene {
     if ((d.extraBonus ?? 0) > 0 && d.firstClear) {
       txt(this, cx, ay, t('boss') + ' ' + t('bonus') + ': +' + money(d.extraBonus ?? 0), 30, { color: COLORS.textGold, wrap: 560 }).setDepth(21);
       ay += 40;
+    }
+    if (d.spinEarned) {
+      txt(this, cx, ay, t('spinEarned'), 28, { color: COLORS.textGreen, wrap: 560 }).setDepth(21);
+      ay += ay0;
     }
     for (const id of unlocked) {
       txt(this, cx, ay, t('unlocked', { name: achText(id).name }), 28, { color: COLORS.textGold, wrap: 560 }).setDepth(21);

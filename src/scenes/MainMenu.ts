@@ -98,6 +98,13 @@ export class MainMenu extends Phaser.Scene {
       this.tweens.add({ targets: gift, scale: { from: 1, to: 1.12 }, angle: { from: -6, to: 6 }, duration: 500, yoyo: true, repeat: -1 });
     }
 
+    // lucky wheel
+    const wheelBtn = new Button(this, DESIGN.width - 100, 455, { round: true, icon: 'icon_trophy', tint: 0x7a5ad8, onClick: () => goTo(this, 'Wheel') }).setDepth(25).setName('wheel');
+    if (save.data.spins > 0) {
+      this.tweens.add({ targets: wheelBtn, scale: { from: 1, to: 1.1 }, duration: 600, yoyo: true, repeat: -1 });
+      txt(this, DESIGN.width - 62, 488, String(save.data.spins), 30, { color: COLORS.textGold, strokeW: 6 }).setDepth(26);
+    }
+
     // bottom corners: sound toggle and settings
     const muted = () => save.data.settings.music <= 0.001 && save.data.settings.sfx <= 0.001;
     const sound = new Button(this, 110, layout.bottom - 100, {
